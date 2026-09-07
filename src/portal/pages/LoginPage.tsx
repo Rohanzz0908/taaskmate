@@ -10,8 +10,7 @@ import {
   KeyRound, 
   Building2,
   AlertCircle,
-  CheckCircle2,
-  Sparkles
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -58,22 +57,15 @@ export const LoginPage: React.FC = () => {
     try {
       const res = await login(emailOrUser, password, rememberMe);
       if (res.success) {
-        const from = (location.state as any)?.from?.pathname || '/portal';
-        navigate(from, { replace: true });
+        navigate('/portal', { replace: true });
       } else {
-        setErrorMsg(res.message || 'Login failed. Please verify your credentials.');
+        setErrorMsg(res.message || 'Invalid credentials. Please try again.');
       }
-    } catch (err) {
-      setErrorMsg('An unexpected error occurred. Please try again.');
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Login failed. Please verify your credentials.');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleAutofill = (user: string, pass: string) => {
-    setEmailOrUser(user);
-    setPassword(pass);
-    setErrorMsg('');
   };
 
   const handleResetSubmit = (e: React.FormEvent) => {
@@ -235,29 +227,6 @@ export const LoginPage: React.FC = () => {
               )}
             </button>
           </form>
-
-          {/* Quick Demo Credentials Autofill Pill */}
-          <div className="mt-8 pt-6 border-t border-gray-800/80 text-xs text-gray-400">
-            <div className="flex items-center gap-1.5 text-gray-300 font-semibold mb-2.5">
-              <Sparkles className="w-3.5 h-3.5 text-brand-green" />
-              <span>Quick Demo Account (Click to Autofill):</span>
-            </div>
-            <div>
-              <button
-                type="button"
-                onClick={() => handleAutofill('admin@taaskmate.com', 'admin123')}
-                className="w-full p-2.5 rounded-xl bg-white/5 hover:bg-brand-green/10 hover:border-brand-green/30 border border-white/5 text-left transition-all cursor-pointer group flex items-center justify-between"
-              >
-                <div>
-                  <div className="font-bold text-white group-hover:text-brand-green text-xs">Administrator</div>
-                  <div className="text-[11px] text-gray-400">admin@taaskmate.com • Password: admin123</div>
-                </div>
-                <span className="text-[11px] font-semibold text-brand-green bg-brand-green/10 border border-brand-green/20 px-2.5 py-1 rounded-lg group-hover:bg-brand-green group-hover:text-white transition-colors">
-                  Autofill
-                </span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Footer info */}
