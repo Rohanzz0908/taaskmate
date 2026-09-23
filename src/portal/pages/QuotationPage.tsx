@@ -25,6 +25,14 @@ import {
 } from '../types';
 import { db, formatINR } from '../services/db';
 
+interface QuotationFormItem extends Omit<QuotationItem, 'quantity' | 'rate' | 'discount' | 'taxPercent' | 'uom'> {
+  quantity: number | '';
+  rate: number | '';
+  discount: number | '';
+  taxPercent: number | '';
+  uom: string;
+}
+
 export const QuotationPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -40,7 +48,7 @@ export const QuotationPage: React.FC = () => {
   const [status, setStatus] = useState<QuotationStatus>('Draft');
   const [selectedClientId, setSelectedClientId] = useState('');
   const [clientSnapshot, setClientSnapshot] = useState<ClientSnapshot | null>(null);
-  const [items, setItems] = useState<QuotationItem[]>([]);
+  const [items, setItems] = useState<QuotationFormItem[]>([]);
   const [notes, setNotes] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('');
 
@@ -75,7 +83,14 @@ export const QuotationPage: React.FC = () => {
         setStatus(existingQuote.status);
         setSelectedClientId(existingQuote.clientId);
         setClientSnapshot(existingQuote.clientSnapshot);
-        setItems(existingQuote.items);
+        setItems(existingQuote.items.map(it => ({
+          ...it,
+          quantity: it.quantity ?? '',
+          rate: it.rate ?? '',
+          discount: it.discount ?? '',
+          taxPercent: it.taxPercent ?? '',
+          uom: it.uom || '',
+        })));
         setNotes(existingQuote.notes || '');
         setPaymentTerms(existingQuote.paymentTerms || '');
       } else {
@@ -92,21 +107,20 @@ export const QuotationPage: React.FC = () => {
       setNotes('1. All materials supplied conform strictly to Indian ISI/ISO and LEED safety benchmarks.\n2. Work will be executed by certified and insured Taaskmate facility specialists.\n3. Any structural civil changes outside the scope will require additional estimation.');
       setPaymentTerms('50% mobilization advance along with signed Purchase Order, balance 50% upon successful joint inspection and sign-off within 15 days.');
 
-      // Default first row
-      const firstCat = cats[0];
+      // Default first row starts blank and unselected
       setItems([
         {
           itemId: `item-${Date.now()}-1`,
-          categoryId: firstCat ? firstCat.categoryId : '',
-          materialName: firstCat ? firstCat.categoryName : 'Plumbing & Pipeline Spares',
-          uom: 'Nos',
-          quantity: 1,
-          rate: 1500,
-          discount: 0,
-          taxPercent: 18,
-          taxAmount: 270,
-          amount: 1770,
-          purpose: 'Scheduled preventive inspection & fixture tuning',
+          categoryId: '',
+          materialName: '',
+          uom: '',
+          quantity: '',
+          rate: '',
+          discount: '',
+          taxPercent: '',
+          taxAmount: 0,
+          amount: 0,
+          purpose: '',
         }
       ]);
     }
@@ -135,7 +149,7 @@ export const QuotationPage: React.FC = () => {
   // Recalculate row amounts
   const updateItemField = (
     index: number, 
-    field: keyof QuotationItem, 
+    field: keyof QuotationFormItem, 
     value: any
   ) => {
     setItems(prevItems => {
@@ -143,9 +157,15 @@ export const QuotationPage: React.FC = () => {
       const item = { ...updated[index], [field]: value };
 
       if (field === 'categoryId') {
-        const cat = categories.find(c => c.categoryId === value);
-        if (cat) {
-          item.materialName = cat.categoryName;
+        if (!value) {
+          item.categoryId = '';
+          item.materialName = '';
+        } else {
+          const cat = categories.find(c => c.categoryId === value);
+          if (cat) {
+            item.categoryId = cat.categoryId;
+            item.materialName = cat.categoryName;
+          }
         }
       }
 
@@ -154,15 +174,10 @@ export const QuotationPage: React.FC = () => {
       const rate = Math.max(0, Number(item.rate) || 0);
       const discount = Math.max(0, Number(item.discount) || 0);
       const taxPercent = Math.max(0, Number(item.taxPercent) || 0);
-
       const baseAmount = Math.max(0, (qty * rate) - discount);
       const taxAmount = (baseAmount * taxPercent) / 100;
       const totalAmount = baseAmount + taxAmount;
 
-      item.quantity = qty;
-      item.rate = rate;
-      item.discount = discount;
-      item.taxPercent = taxPercent;
       item.taxAmount = parseFloat(taxAmount.toFixed(2));
       item.amount = parseFloat(totalAmount.toFixed(2));
 
@@ -172,18 +187,17 @@ export const QuotationPage: React.FC = () => {
   };
 
   const addItemRow = () => {
-    const firstCat = categories[0];
-    const newItem: QuotationItem = {
+    const newItem: QuotationFormItem = {
       itemId: `item-${Date.now()}-${items.length + 1}`,
-      categoryId: firstCat ? firstCat.categoryId : '',
-      materialName: firstCat ? firstCat.categoryName : 'General Maintenance Item',
-      uom: 'Nos',
-      quantity: 1,
-      rate: 1000,
-      discount: 0,
-      taxPercent: 18,
-      taxAmount: 180,
-      amount: 1180,
+      categoryId: '',
+      materialName: '',
+      uom: '',
+      quantity: '',
+      rate: '',
+      discount: '',
+      taxPercent: '',
+      taxAmount: 0,
+      amount: 0,
       purpose: '',
     };
     setItems(prev => [...prev, newItem]);
@@ -205,11 +219,14 @@ export const QuotationPage: React.FC = () => {
     let grandTotal = 0;
 
     items.forEach(item => {
-      const lineSubtotal = item.quantity * item.rate;
+      const qty = Number(item.quantity) || 0;
+      const rate = Number(item.rate) || 0;
+      const discount = Number(item.discount) || 0;
+      const lineSubtotal = qty * rate;
       subtotal += lineSubtotal;
-      totalDiscount += item.discount;
-      totalTax += item.taxAmount;
-      grandTotal += item.amount;
+      totalDiscount += discount;
+      totalTax += Number(item.taxAmount) || 0;
+      grandTotal += Number(item.amount) || 0;
     });
 
     return {
@@ -236,15 +253,15 @@ export const QuotationPage: React.FC = () => {
     }
 
     for (let i = 0; i < items.length; i++) {
-      if (!items[i].materialName.trim()) {
-        errors.items = `Row #${i + 1}: Material item name is required.`;
+      if (!items[i].categoryId && !items[i].materialName.trim()) {
+        errors.items = `Row #${i + 1}: Please select a material item category.`;
         break;
       }
-      if (items[i].quantity <= 0) {
+      if (Number(items[i].quantity) <= 0) {
         errors.items = `Row #${i + 1}: Quantity must be greater than 0.`;
         break;
       }
-      if (items[i].rate < 0) {
+      if (Number(items[i].rate) < 0) {
         errors.items = `Row #${i + 1}: Rate cannot be negative.`;
         break;
       }
@@ -264,7 +281,16 @@ export const QuotationPage: React.FC = () => {
       validUntil,
       clientId: selectedClientId,
       clientSnapshot,
-      items,
+      items: items.map(it => ({
+        ...it,
+        uom: (it.uom || 'Nos') as any,
+        quantity: Number(it.quantity) || 0,
+        rate: Number(it.rate) || 0,
+        discount: Number(it.discount) || 0,
+        taxPercent: Number(it.taxPercent) || 0,
+        taxAmount: Number(it.taxAmount) || 0,
+        amount: Number(it.amount) || 0,
+      })),
       subtotal: totals.subtotal,
       totalDiscount: totals.totalDiscount,
       totalTax: totals.totalTax,
@@ -549,10 +575,11 @@ export const QuotationPage: React.FC = () => {
                   {/* Category / Material */}
                   <td className="py-3 px-4">
                     <select
-                      value={item.categoryId}
+                      value={item.categoryId || ''}
                       onChange={(e) => updateItemField(idx, 'categoryId', e.target.value)}
                       className="w-full px-2 py-1 rounded bg-white border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] mb-1 cursor-pointer"
                     >
+                      <option value="">-- Select Material / Category --</option>
                       {categories.map(c => (
                         <option key={c.categoryId} value={c.categoryId}>
                           {c.categoryName} ({c.categoryId})
@@ -571,10 +598,11 @@ export const QuotationPage: React.FC = () => {
                   {/* UOM */}
                   <td className="py-3 px-3">
                     <select
-                      value={item.uom}
-                      onChange={(e) => updateItemField(idx, 'uom', e.target.value as UOMType)}
+                      value={item.uom || ''}
+                      onChange={(e) => updateItemField(idx, 'uom', e.target.value)}
                       className="w-full px-2 py-1 rounded bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] cursor-pointer"
                     >
+                      <option value="">Select</option>
                       {UOM_OPTIONS.map(uom => (
                         <option key={uom} value={uom}>{uom}</option>
                       ))}
@@ -585,10 +613,11 @@ export const QuotationPage: React.FC = () => {
                   <td className="py-3 px-3">
                     <input
                       type="number"
-                      min="1"
-                      step="1"
+                      min="0"
+                      step="any"
+                      placeholder=""
                       value={item.quantity}
-                      onChange={(e) => updateItemField(idx, 'quantity', e.target.value)}
+                      onChange={(e) => updateItemField(idx, 'quantity', e.target.value === '' ? '' : e.target.value)}
                       className="w-full px-2 py-1 rounded bg-white border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] text-right"
                     />
                   </td>
@@ -598,9 +627,10 @@ export const QuotationPage: React.FC = () => {
                     <input
                       type="number"
                       min="0"
-                      step="50"
+                      step="any"
+                      placeholder=""
                       value={item.rate}
-                      onChange={(e) => updateItemField(idx, 'rate', e.target.value)}
+                      onChange={(e) => updateItemField(idx, 'rate', e.target.value === '' ? '' : e.target.value)}
                       className="w-full px-2 py-1 rounded bg-white border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] text-right"
                     />
                   </td>
@@ -610,26 +640,26 @@ export const QuotationPage: React.FC = () => {
                     <input
                       type="number"
                       min="0"
-                      step="100"
+                      step="any"
+                      placeholder=""
                       value={item.discount}
-                      onChange={(e) => updateItemField(idx, 'discount', e.target.value)}
+                      onChange={(e) => updateItemField(idx, 'discount', e.target.value === '' ? '' : e.target.value)}
                       className="w-full px-2 py-1 rounded bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] text-right"
                     />
                   </td>
 
-                  {/* Tax % */}
+                  {/* GST % */}
                   <td className="py-3 px-3">
-                    <select
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="any"
+                      placeholder=""
                       value={item.taxPercent}
-                      onChange={(e) => updateItemField(idx, 'taxPercent', e.target.value)}
-                      className="w-full px-2 py-1 rounded bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] text-right cursor-pointer"
-                    >
-                      <option value={0}>0%</option>
-                      <option value={5}>5%</option>
-                      <option value={12}>12%</option>
-                      <option value={18}>18%</option>
-                      <option value={28}>28%</option>
-                    </select>
+                      onChange={(e) => updateItemField(idx, 'taxPercent', e.target.value === '' ? '' : e.target.value)}
+                      className="w-full px-2 py-1 rounded bg-white border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] text-right"
+                    />
                   </td>
 
                   {/* Net Total */}

@@ -68,13 +68,20 @@ export const ServiceReportPage: React.FC = () => {
 
     if (preselectedTid) {
       handleSelectTransaction(preselectedTid, list);
-    } else if (list.length > 0) {
-      handleSelectTransaction(list[0].transactionId, list);
     }
   }, [preselectedTid]);
 
   const handleSelectTransaction = (tid: string, list = eligibleTransactions) => {
     setSelectedTid(tid);
+    if (!tid) {
+      setSelectedTransaction(null);
+      setIsEditMode(false);
+      setMaterialsUsed([]);
+      setCustomerName('');
+      setLocation('');
+      setServiceType('');
+      return;
+    }
     const found = list.find(t => t.transactionId === tid) || db.getTransactionById(tid);
     
     if (found) {
@@ -277,8 +284,9 @@ export const ServiceReportPage: React.FC = () => {
               <select
                 value={selectedTid}
                 onChange={(e) => handleSelectTransaction(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-[#00C878] focus:border-transparent outline-none bg-white"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-[#00C878] focus:border-transparent outline-none bg-white cursor-pointer"
               >
+                <option value="">-- Select Master Transaction ID --</option>
                 {eligibleTransactions.map(t => (
                   <option key={t.transactionId} value={t.transactionId}>
                     {t.transactionId} — {t.clientSnapshot.clientName} ({t.overallStatus})
@@ -308,7 +316,7 @@ export const ServiceReportPage: React.FC = () => {
           </div>
 
           {/* Auto-populated Client Snapshot */}
-          {selectedTransaction && (
+          {selectedTransaction ? (
             <div className="p-4 rounded-lg bg-slate-50 border border-slate-200/80 text-xs grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <span className="text-[10px] uppercase font-semibold text-slate-400">Client / Premises</span>
@@ -331,6 +339,10 @@ export const ServiceReportPage: React.FC = () => {
                   Quotation Status: <span className="font-medium text-slate-700">{selectedTransaction.quotation?.status || '—'}</span>
                 </div>
               </div>
+            </div>
+          ) : (
+            <div className="p-4 rounded-lg border border-dashed border-slate-200 text-center text-slate-400 text-xs">
+              Select a Master Transaction ID above to preview client details and quotation scope.
             </div>
           )}
         </div>
