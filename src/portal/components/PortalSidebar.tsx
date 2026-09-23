@@ -17,7 +17,9 @@ import {
   User,
   Wrench,
   Receipt,
-  FileSpreadsheet
+  FileSpreadsheet,
+  HardHat,
+  Store
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -134,6 +136,16 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({
               <NavLink to="/portal/client-master" className={navItemClass}>
                 <Users className="w-4 h-4 shrink-0" />
                 {!isCollapsed && <span>Client Master</span>}
+              </NavLink>
+
+              <NavLink to="/portal/technician-master" className={navItemClass}>
+                <HardHat className="w-4 h-4 shrink-0" />
+                {!isCollapsed && <span>Technician Master</span>}
+              </NavLink>
+
+              <NavLink to="/portal/vendor-master" className={navItemClass}>
+                <Store className="w-4 h-4 shrink-0" />
+                {!isCollapsed && <span>Vendor Master</span>}
               </NavLink>
             </div>
           )}

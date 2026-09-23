@@ -4,28 +4,28 @@ export const WhyChooseUs: React.FC = () => {
   const points = [
     {
       num: '1',
-      title: 'Flexible Solutions',
-      desc: 'Services tailored to your specific property and operational needs.',
+      title: 'Tailored Solutions',
+      desc: 'Service solutions designed around your specific needs.',
     },
     {
       num: '2',
       title: 'Reliable Service',
-      desc: 'Professional teams focused on quality, punctuality and consistent service.',
+      desc: 'Prompt, professional, and dependable service you can trust.',
     },
     {
       num: '3',
-      title: 'Skilled Professionals',
-      desc: 'Experienced technicians and trained service professionals.',
+      title: 'Skilled Technicians',
+      desc: 'Experienced professionals trained to handle your equipment with care.',
     },
     {
       num: '4',
-      title: 'Technology Driven',
-      desc: 'Smart processes and technology that improve efficiency and transparency.',
+      title: 'Smart Technology',
+      desc: 'Modern technology and efficient processes for better service and results.',
     },
     {
       num: '5',
-      title: 'Customer First',
-      desc: 'We put your satisfaction, safety and convenience at the center of everything we do.',
+      title: 'Customer Focused',
+      desc: 'Your safety, satisfaction, and convenience are always our priority.',
     },
   ];
 
@@ -44,8 +44,8 @@ export const WhyChooseUs: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/60 via-transparent to-transparent"></div>
               
               <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-white/90 backdrop-blur-md border border-white/40 shadow-lg">
-                <div className="text-xs uppercase font-bold tracking-wider text-brand-green mb-1">Guaranteed SLA</div>
-                <div className="text-sm font-extrabold text-brand-navy">99.4% First-Visit Resolution Rate across 50k+ jobs</div>
+                <div className="text-xs uppercase font-bold tracking-wider text-brand-green mb-1">Guaranteed Quality</div>
+                <div className="text-sm font-extrabold text-brand-navy">High First-Visit Resolution Rate with Certified Experts</div>
               </div>
             </div>
           </div>
@@ -57,7 +57,7 @@ export const WhyChooseUs: React.FC = () => {
                 Why Choose Us?
               </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy tracking-tight mt-2 mb-4">
-                Taaskmate, your trusted service partner
+                Your Trusted Service Partner
               </h2>
             </div>
 

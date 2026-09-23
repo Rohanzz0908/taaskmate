@@ -4,8 +4,6 @@ import { ServicesGrid } from '../components/home/ServicesGrid';
 import { AboutSection } from '../components/home/AboutSection';
 import { WhyChooseUs } from '../components/home/WhyChooseUs';
 import { ProcessFlow } from '../components/home/ProcessFlow';
-import { PropertyManagementPreview } from '../components/home/PropertyManagementPreview';
-import { InteriorDesignPreview } from '../components/home/InteriorDesignPreview';
 import { Testimonials } from '../components/home/Testimonials';
 import { CTASection } from '../components/home/CTASection';
 import { ContactSection } from '../components/home/ContactSection';
@@ -22,8 +20,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenQuote }) => {
       <AboutSection />
       <WhyChooseUs />
       <ProcessFlow />
-      <PropertyManagementPreview />
-      <InteriorDesignPreview />
       <Testimonials />
       <CTASection onOpenQuote={() => onOpenQuote()} />
       <ContactSection />

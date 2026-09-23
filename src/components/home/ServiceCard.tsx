@@ -41,9 +41,9 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onOpenQuote }
 
         <button
           onClick={() => onOpenQuote(service.name)}
-          className="text-xs font-semibold text-gray-500 hover:text-brand-navy hover:underline cursor-pointer"
+          className="text-xs font-semibold text-brand-navy hover:text-brand-green hover:underline cursor-pointer"
         >
-          Book Now
+          Scheduled Consultation
         </button>
       </div>
     </div>

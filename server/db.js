@@ -48,3 +48,12 @@ export function getClientsCollection() {
 export function getTransactionsCollection() {
   return getDB().collection('transactions');
 }
+
+export function getTechniciansCollection() {
+  return getDB().collection('technicians');
+}
+
+export function getVendorsCollection() {
+  return getDB().collection('vendors');
+}
+

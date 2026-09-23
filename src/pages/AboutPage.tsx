@@ -46,9 +46,6 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onOpenQuote }) => {
       {/* Header */}
       <section className="bg-brand-navy text-white py-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/20 text-brand-green text-xs font-bold uppercase tracking-wider mb-4 border border-brand-green/30">
-            About Taaskmate
-          </span>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4">
             Your Task. Our Expertise.
           </h1>
@@ -72,23 +69,23 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onOpenQuote }) => {
               Property maintenance historically meant dealing with unreliable local vendors, unpredictable pricing, and substandard workmanship. Taaskmate was established to bridge this gap with institutional-grade standards.
             </p>
             <p className="text-gray-600 text-base leading-relaxed">
-              Today, we serve leading IT parks, hospitals, apartment communities, and corporate enterprises across Bengaluru, Hyderabad, Mumbai, and Delhi NCR with verified technicians and ironclad service guarantees.
+              Built for modern residential homes, gated communities, and commercial facilities, Taaskmate brings verified specialists, seamless digital booking, and dependable service guarantees.
             </p>
 
             <div className="pt-2 flex items-center gap-6">
               <div>
-                <div className="text-3xl font-extrabold text-brand-navy">50,000+</div>
-                <div className="text-xs text-gray-500 font-semibold mt-1">Tasks Completed</div>
+                <div className="text-3xl font-extrabold text-brand-navy">100%</div>
+                <div className="text-xs text-gray-500 font-semibold mt-1">Verified Specialists</div>
               </div>
               <div className="w-px h-12 bg-gray-300"></div>
               <div>
-                <div className="text-3xl font-extrabold text-brand-navy">15M+</div>
-                <div className="text-xs text-gray-500 font-semibold mt-1">Sq. Ft. Managed</div>
+                <div className="text-3xl font-extrabold text-brand-navy">Prompt</div>
+                <div className="text-xs text-gray-500 font-semibold mt-1">Response SLA</div>
               </div>
               <div className="w-px h-12 bg-gray-300"></div>
               <div>
-                <div className="text-3xl font-extrabold text-brand-green">99.4%</div>
-                <div className="text-xs text-gray-500 font-semibold mt-1">SLA Adherence</div>
+                <div className="text-3xl font-extrabold text-brand-green">Guaranteed</div>
+                <div className="text-xs text-gray-500 font-semibold mt-1">Service Quality</div>
               </div>
             </div>
           </div>

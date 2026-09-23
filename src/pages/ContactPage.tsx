@@ -20,7 +20,7 @@ export const ContactPage: React.FC = () => {
     email: '',
     service: 'Plumbing',
     propertyType: 'Residential',
-    city: 'Bengaluru',
+    city: 'Hyderabad',
     message: '',
   });
 
@@ -29,28 +29,10 @@ export const ContactPage: React.FC = () => {
 
   const offices = [
     {
-      city: 'Bengaluru (HQ)',
-      address: 'Taaskmate Facility Towers, #42, Outer Ring Road, Bellandur, Bengaluru 560103',
-      phone: '+91 80 4567 8900',
-      email: 'blr@taaskmate.com'
-    },
-    {
-      city: 'Mumbai',
-      address: 'Level 5, One BKC, G Block, Bandra Kurla Complex, Mumbai 400051',
-      phone: '+91 22 6789 1234',
-      email: 'mum@taaskmate.com'
-    },
-    {
-      city: 'Hyderabad',
-      address: 'Unit 302, Cyber Towers, Hitec City, Madhapur, Hyderabad 500081',
-      phone: '+91 40 4321 9876',
-      email: 'hyd@taaskmate.com'
-    },
-    {
-      city: 'Delhi NCR',
-      address: 'Tower B, DLF Cyber City, Phase 2, Gurugram, Haryana 122002',
-      phone: '+91 124 5566 778',
-      email: 'delhi@taaskmate.com'
+      city: 'Hyderabad (Headquarters)',
+      address: 'Office address updating shortly (Hyderabad, Telangana)',
+      phone: 'Updating Shortly',
+      email: 'Updating Shortly'
     }
   ];
 
@@ -83,14 +65,11 @@ export const ContactPage: React.FC = () => {
       {/* Hero Banner */}
       <section className="bg-brand-navy text-white py-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/20 text-brand-green text-xs font-bold uppercase tracking-wider mb-4 border border-brand-green/30">
-            24/7 Responsive Dispatch
-          </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4">
             Contact Taaskmate
           </h1>
           <p className="text-gray-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            Reach our central operations desk or speak with our facility managers across 4 major metropolitan hubs.
+            Reach our central operations desk or speak with our facility managers in Hyderabad.
           </p>
         </div>
       </section>
@@ -168,12 +147,7 @@ export const ContactPage: React.FC = () => {
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                         className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green bg-white"
                       >
-                        <option>Bengaluru</option>
-                        <option>Mumbai</option>
                         <option>Hyderabad</option>
-                        <option>Delhi NCR</option>
-                        <option>Pune</option>
-                        <option>Chennai</option>
                       </select>
                     </div>
                   </div>

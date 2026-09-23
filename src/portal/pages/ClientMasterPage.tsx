@@ -16,7 +16,10 @@ import {
   ShieldCheck,
   Check,
   Copy,
-  UserCheck
+  UserCheck,
+  Eye,
+  MapPin,
+  ArrowLeft
 } from 'lucide-react';
 import { Client } from '../types';
 import { db, validateGSTIN } from '../services/db';
@@ -47,6 +50,14 @@ export const ClientMasterPage: React.FC = () => {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
+  // View Modal & Context Menu State
+  const [clientToView, setClientToView] = useState<Client | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    client: Client;
+  } | null>(null);
+
   // Delete Modal State
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -67,6 +78,31 @@ export const ClientMasterPage: React.FC = () => {
   useEffect(() => {
     loadClients();
   }, []);
+
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setContextMenu(null);
+        setClientToView(null);
+      }
+    };
+    window.addEventListener('click', handleClick);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('click', handleClick);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const handleContextMenu = (e: React.MouseEvent, client: Client) => {
+    e.preventDefault();
+    const menuWidth = 200;
+    const menuHeight = 160;
+    const x = e.clientX + menuWidth > window.innerWidth ? window.innerWidth - menuWidth - 10 : e.clientX;
+    const y = e.clientY + menuHeight > window.innerHeight ? window.innerHeight - menuHeight - 10 : e.clientY;
+    setContextMenu({ x, y, client });
+  };
 
   const openCreateModal = () => {
     setIsEditing(false);
@@ -251,8 +287,439 @@ export const ClientMasterPage: React.FC = () => {
         </div>
       )}
 
-      {/* Header Banner - Clean Professional SaaS Style */}
-      <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {showFormModal ? (
+        /* Full Page Form View */
+        <div className="space-y-6 animate-fadeIn">
+          {/* Form Page Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowFormModal(false);
+                  setFormErrors({});
+                }}
+                className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors shadow-xs cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+                title="Back to Clients"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+                  <Building2 className="w-6 h-6 text-[#00C878]" />
+                  <span>{isEditing ? `Edit Client (${formData.clientId})` : 'Register New Client'}</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {isEditing ? 'Modifying client information and GSTIN credentials' : 'Add a verified corporate or residential client'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowFormModal(false);
+                  setFormErrors({});
+                }}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-xs font-bold shadow-xs transition-all cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+                <span>Cancel</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Full Form Card */}
+          <div className="w-full bg-white rounded-2xl shadow-xs border border-slate-200/90 p-6 sm:p-8">
+            <div className="flex items-center gap-2 pb-4 mb-6 border-b border-slate-100">
+              <span className={`w-2.5 h-2.5 rounded-full ${isEditing ? 'bg-amber-500' : 'bg-[#00C878]'}`}></span>
+              <h3 className="text-base font-bold text-slate-800">
+                {isEditing ? 'Client Profile Details' : 'New Client Details'}
+              </h3>
+              {isEditing && (
+                <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 ml-auto">
+                  Editing Mode Active
+                </span>
+              )}
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {formErrors.general && (
+                <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-2 text-xs">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{formErrors.general}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Client ID */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Client ID <span className="text-slate-400 font-normal normal-case">(System Generated)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.clientId}
+                    disabled
+                    className="w-full px-3.5 py-2.5 bg-slate-100 text-slate-600 rounded-xl border border-slate-200 text-sm font-mono font-bold cursor-not-allowed"
+                  />
+                  <span className="text-[11px] text-slate-400 mt-1 block">Auto-assigned client code</span>
+                </div>
+
+                {/* Account Status */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Account Status
+                  </label>
+                  <div className="flex items-center gap-6 h-10 px-3.5 bg-slate-50/50 rounded-xl border border-slate-200">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="full_status"
+                        checked={formData.status === 'Active'}
+                        onChange={() => setFormData(prev => ({ ...prev, status: 'Active' }))}
+                        className="text-[#00C878] focus:ring-[#00C878] h-4 w-4"
+                      />
+                      <span className="text-xs font-semibold text-slate-800">Active</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="full_status"
+                        checked={formData.status === 'Inactive'}
+                        onChange={() => setFormData(prev => ({ ...prev, status: 'Inactive' }))}
+                        className="text-slate-400 focus:ring-slate-400 h-4 w-4"
+                      />
+                      <span className="text-xs font-medium text-slate-600">Inactive</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Company / Client Name */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                  Company / Client Name <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Prestige Cyber Park Management Pvt Ltd"
+                  value={formData.clientName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
+                  className={`w-full px-3.5 py-2.5 rounded-xl bg-white border ${
+                    formErrors.clientName ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:ring-[#00C878]'
+                  } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00C878]/20 transition-all text-sm`}
+                />
+                {formErrors.clientName && (
+                  <p className="text-[11px] text-rose-500 mt-1.5 flex items-center gap-1 font-medium">
+                    <AlertCircle className="w-3.5 h-3.5" /> {formErrors.clientName}
+                  </p>
+                )}
+              </div>
+
+              {/* Billing & Registered Address */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                  Billing & Registered Address <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Full physical billing address including building, street, city, state, and PIN code"
+                  value={formData.address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                  className={`w-full px-3.5 py-2.5 rounded-xl bg-white border ${
+                    formErrors.address ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:ring-[#00C878]'
+                  } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00C878]/20 transition-all resize-none text-sm`}
+                />
+                {formErrors.address && (
+                  <p className="text-[11px] text-rose-500 mt-1.5 flex items-center gap-1 font-medium">
+                    <AlertCircle className="w-3.5 h-3.5" /> {formErrors.address}
+                  </p>
+                )}
+              </div>
+
+              {/* Contact Person & GSTIN */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Contact Person & Role <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Suresh Nambiar (Facility Director)"
+                    value={formData.contactPerson}
+                    onChange={(e) => setFormData(prev => ({ ...prev, contactPerson: e.target.value }))}
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-white border ${
+                      formErrors.contactPerson ? 'border-rose-400' : 'border-slate-200'
+                    } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00C878]/20 transition-all text-sm`}
+                  />
+                  {formErrors.contactPerson && (
+                    <p className="text-[11px] text-rose-500 mt-1.5 flex items-center gap-1 font-medium">
+                      <AlertCircle className="w-3.5 h-3.5" /> {formErrors.contactPerson}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      GSTIN Number <span className="text-rose-500">*</span>
+                    </label>
+                    {formData.gstin && (
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        isGstinValid 
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                          : 'bg-rose-50 text-rose-700 border border-rose-200'
+                      }`}>
+                        {isGstinValid ? 'Valid Format' : 'Invalid format (15 digits)'}
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="e.g. 29AABCP1234F1Z5"
+                    maxLength={15}
+                    value={formData.gstin}
+                    onChange={(e) => setFormData(prev => ({ ...prev, gstin: e.target.value.toUpperCase() }))}
+                    className={`w-full px-3.5 py-2.5 rounded-xl font-mono uppercase bg-white border ${
+                      formErrors.gstin ? 'border-rose-400' : 'border-slate-200'
+                    } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00C878]/20 transition-all text-sm`}
+                  />
+                  {formErrors.gstin && (
+                    <p className="text-[11px] text-rose-500 mt-1.5 flex items-center gap-1 font-medium">
+                      <AlertCircle className="w-3.5 h-3.5" /> {formErrors.gstin}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Email & Phone */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Billing Email <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="facilities@company.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-white border ${
+                      formErrors.email ? 'border-rose-400' : 'border-slate-200'
+                    } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00C878]/20 transition-all text-sm`}
+                  />
+                  {formErrors.email && (
+                    <p className="text-[11px] text-rose-500 mt-1.5 flex items-center gap-1 font-medium">
+                      <AlertCircle className="w-3.5 h-3.5" /> {formErrors.email}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Phone Number <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="+91 80 6789 2200"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    className={`w-full px-3.5 py-2.5 rounded-xl bg-white border ${
+                      formErrors.phone ? 'border-rose-400' : 'border-slate-200'
+                    } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00C878]/20 transition-all text-sm`}
+                  />
+                  {formErrors.phone && (
+                    <p className="text-[11px] text-rose-500 mt-1.5 flex items-center gap-1 font-medium">
+                      <AlertCircle className="w-3.5 h-3.5" /> {formErrors.phone}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Form Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowFormModal(false);
+                    setFormErrors({});
+                  }}
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-[#00C878] hover:bg-[#00B069] text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
+                >
+                  {isEditing ? 'Update Client Profile' : 'Save Client'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : clientToView ? (
+        /* Full Page View Details */
+        <div className="space-y-6 animate-fadeIn">
+          {/* View Page Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setClientToView(null)}
+                className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors shadow-xs cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+                title="Back to Clients"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+                  <Building2 className="w-6 h-6 text-[#00C878]" />
+                  <span>Client Profile</span>
+                  <span className="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                    {clientToView.clientId}
+                  </span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Viewing full customer profile, registered billing address, and compliance credentials
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Full View Card */}
+          <div className="w-full bg-white rounded-2xl shadow-xs border border-slate-200/90 p-6 sm:p-8 space-y-6">
+            {/* Top Bar with Name and Status */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Company / Client Name</span>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900">{clientToView.clientName}</h3>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-slate-400 font-medium">Account Status:</span>
+                <span 
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                    clientToView.status === 'Active' 
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                      : 'bg-slate-100 text-slate-600 border border-slate-200'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${clientToView.status === 'Active' ? 'bg-[#00C878]' : 'bg-slate-400'}`} />
+                  <span>{clientToView.status}</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Grid Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Contact Person */}
+              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-1.5">
+                <div className="flex items-center gap-2 text-slate-400">
+                  <UserCheck className="w-4 h-4 text-slate-500" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Contact Person & Role</span>
+                </div>
+                <div className="text-sm font-bold text-slate-900">
+                  {clientToView.contactPerson || '—'}
+                </div>
+              </div>
+
+              {/* GSTIN Number */}
+              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <ShieldCheck className="w-4 h-4 text-[#00C878]" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">GSTIN Number</span>
+                  </div>
+                  {clientToView.gstin && (
+                    <button
+                      onClick={() => copyToClipboard(clientToView.gstin)}
+                      className="text-slate-400 hover:text-slate-700 text-[11px] font-medium flex items-center gap-1 cursor-pointer"
+                      title="Copy GSTIN"
+                    >
+                      {copiedGstin === clientToView.gstin ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-[#00C878]" />
+                          <span className="text-[#00C878]">Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+                <div className="font-mono text-sm font-bold text-slate-900 tracking-wide">
+                  {clientToView.gstin || '—'}
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-1.5">
+                <div className="flex items-center gap-2 text-slate-400">
+                  <Mail className="w-4 h-4 text-slate-500" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Billing Email</span>
+                </div>
+                <div>
+                  {clientToView.email ? (
+                    <a href={`mailto:${clientToView.email}`} className="text-sm font-semibold text-[#00C878] hover:underline">
+                      {clientToView.email}
+                    </a>
+                  ) : (
+                    <span className="text-sm text-slate-400">—</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-1.5">
+                <div className="flex items-center gap-2 text-slate-400">
+                  <Phone className="w-4 h-4 text-slate-500" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Phone Number</span>
+                </div>
+                <div>
+                  {clientToView.phone ? (
+                    <a href={`tel:${clientToView.phone}`} className="text-sm font-semibold text-slate-800 hover:text-[#00C878]">
+                      {clientToView.phone}
+                    </a>
+                  ) : (
+                    <span className="text-sm text-slate-400">—</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Registered Date */}
+              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-1.5">
+                <div className="flex items-center gap-2 text-slate-400">
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Registration Date</span>
+                </div>
+                <div className="text-sm font-semibold text-slate-800">
+                  {clientToView.createdAt || '—'}
+                </div>
+              </div>
+            </div>
+
+            {/* Registered Billing Address */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-slate-400">
+                <MapPin className="w-4 h-4 text-[#00C878]" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Billing & Registered Physical Address</span>
+              </div>
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm leading-relaxed whitespace-pre-wrap">
+                {clientToView.address || <span className="italic text-slate-400">No address recorded</span>}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Header Banner - Clean Professional SaaS Style */}
+          <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-lg bg-emerald-50 text-[#00C878] flex items-center justify-center shrink-0 border border-emerald-200/50">
             <Building2 className="w-5 h-5" />
@@ -390,7 +857,8 @@ export const ClientMasterPage: React.FC = () => {
                 paginatedClients.map((client) => (
                   <tr 
                     key={client.clientId} 
-                    className="hover:bg-slate-50/70 transition-colors group"
+                    onContextMenu={(e) => handleContextMenu(e, client)}
+                    className="hover:bg-slate-50/70 transition-colors group cursor-context-menu"
                   >
                     {/* Client ID */}
                     <td className="py-3.5 px-4 whitespace-nowrap">
@@ -468,6 +936,13 @@ export const ClientMasterPage: React.FC = () => {
                     {/* Actions */}
                     <td className="py-3.5 px-4 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setClientToView(client)}
+                          className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                          title="View client details"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={() => openEditModal(client)}
                           className="p-1 rounded text-slate-400 hover:text-[#00C878] hover:bg-emerald-50 transition-colors cursor-pointer"
@@ -549,248 +1024,10 @@ export const ClientMasterPage: React.FC = () => {
           </div>
         )}
       </div>
+    </>
+  )}
 
-      {/* CREATE / EDIT CLIENT MODAL */}
-      {showFormModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs overflow-y-auto animate-fadeIn">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-xl my-8 overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/60">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#00C878] flex items-center justify-center border border-emerald-200/60">
-                  <Building2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    {isEditing ? 'Edit Client Profile' : 'Register New Client'}
-                  </h3>
-                  <p className="text-[11px] text-slate-500">
-                    {isEditing ? `Modifying record for ${formData.clientId}` : 'Add a verified corporate or residential client'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowFormModal(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded-md transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
 
-            {/* Modal Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
-              {formErrors.general && (
-                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{formErrors.general}</span>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3">
-                {/* Client ID */}
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Client ID <span className="text-slate-400 font-normal">(System Generated)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.clientId}
-                    disabled
-                    className="w-full px-3 py-2 rounded-lg bg-slate-100 border border-slate-200 text-slate-500 font-mono text-xs font-semibold cursor-not-allowed"
-                  />
-                </div>
-
-                {/* Status Toggle */}
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Account Status
-                  </label>
-                  <div className="flex items-center gap-4 h-9">
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="status"
-                        checked={formData.status === 'Active'}
-                        onChange={() => setFormData(prev => ({ ...prev, status: 'Active' }))}
-                        className="text-[#00C878] focus:ring-[#00C878]"
-                      />
-                      <span className="text-xs font-medium text-slate-800">Active</span>
-                    </label>
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="status"
-                        checked={formData.status === 'Inactive'}
-                        onChange={() => setFormData(prev => ({ ...prev, status: 'Inactive' }))}
-                        className="text-slate-400 focus:ring-slate-400"
-                      />
-                      <span className="text-xs font-medium text-slate-600">Inactive</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Company / Client Name */}
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Company / Client Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Prestige Cyber Park Management Pvt Ltd"
-                  value={formData.clientName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
-                  className={`w-full px-3 py-2 rounded-lg bg-white border ${
-                    formErrors.clientName ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:ring-[#00C878]'
-                  } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1`}
-                />
-                {formErrors.clientName && (
-                  <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {formErrors.clientName}
-                  </p>
-                )}
-              </div>
-
-              {/* Registered Address */}
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Billing & Registered Address <span className="text-rose-500">*</span>
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Full physical billing address including PIN Code and State"
-                  value={formData.address}
-                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                  className={`w-full px-3 py-2 rounded-lg bg-white border ${
-                    formErrors.address ? 'border-rose-400 focus:ring-rose-400' : 'border-slate-200 focus:ring-[#00C878]'
-                  } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 resize-none`}
-                />
-                {formErrors.address && (
-                  <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {formErrors.address}
-                  </p>
-                )}
-              </div>
-
-              {/* Contact Person & GSTIN */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Contact Person & Role <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Suresh Nambiar (Facility Director)"
-                    value={formData.contactPerson}
-                    onChange={(e) => setFormData(prev => ({ ...prev, contactPerson: e.target.value }))}
-                    className={`w-full px-3 py-2 rounded-lg bg-white border ${
-                      formErrors.contactPerson ? 'border-rose-400' : 'border-slate-200'
-                    } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#00C878]`}
-                  />
-                  {formErrors.contactPerson && (
-                    <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {formErrors.contactPerson}
-                    </p>
-                  )}
-                </div>
-
-                {/* GSTIN Field with indicator */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block font-semibold text-slate-700">
-                      GSTIN Number <span className="text-rose-500">*</span>
-                    </label>
-                    {formData.gstin && (
-                      <span className={`text-[10px] font-semibold px-1.5 py-0.2 rounded ${
-                        isGstinValid 
-                          ? 'bg-emerald-50 text-emerald-700' 
-                          : 'bg-rose-50 text-rose-700'
-                      }`}>
-                        {isGstinValid ? 'Valid GSTIN' : 'Invalid format'}
-                      </span>
-                    )}
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="e.g. 29AABCP1234F1Z5"
-                    maxLength={15}
-                    value={formData.gstin}
-                    onChange={(e) => setFormData(prev => ({ ...prev, gstin: e.target.value.toUpperCase() }))}
-                    className={`w-full px-3 py-2 rounded-lg font-mono uppercase bg-white border ${
-                      formErrors.gstin ? 'border-rose-400' : 'border-slate-200'
-                    } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#00C878]`}
-                  />
-                  {formErrors.gstin && (
-                    <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {formErrors.gstin}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Email & Phone */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Billing Email <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="facilities@company.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className={`w-full px-3 py-2 rounded-lg bg-white border ${
-                      formErrors.email ? 'border-rose-400' : 'border-slate-200'
-                    } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#00C878]`}
-                  />
-                  {formErrors.email && (
-                    <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {formErrors.email}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Phone Number <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="+91 80 6789 2200"
-                    value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    className={`w-full px-3 py-2 rounded-lg bg-white border ${
-                      formErrors.phone ? 'border-rose-400' : 'border-slate-200'
-                    } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#00C878]`}
-                  />
-                  {formErrors.phone && (
-                    <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {formErrors.phone}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Form Actions */}
-              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowFormModal(false)}
-                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-lg bg-[#00C878] hover:bg-[#00B069] text-white font-semibold shadow-xs transition-colors cursor-pointer"
-                >
-                  {isEditing ? 'Update Client' : 'Save Client'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* DELETE CONFIRMATION MODAL */}
       {clientToDelete && (
@@ -835,6 +1072,53 @@ export const ClientMasterPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* RIGHT CLICK CONTEXT MENU */}
+      {contextMenu && (
+        <div 
+          className="fixed z-50 bg-white rounded-xl shadow-2xl border border-slate-200 py-1.5 w-48 text-xs font-medium text-slate-700 animate-fadeIn"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 truncate">
+            {contextMenu.client.clientId} — {contextMenu.client.clientName}
+          </div>
+          <button
+            onClick={() => {
+              setClientToView(contextMenu.client);
+              setContextMenu(null);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+          >
+            <Eye className="w-3.5 h-3.5 text-slate-400" />
+            <span>View Details</span>
+          </button>
+          <button
+            onClick={() => {
+              openEditModal(contextMenu.client);
+              setContextMenu(null);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-slate-50 hover:text-[#00C878] transition-colors cursor-pointer"
+          >
+            <Edit2 className="w-3.5 h-3.5 text-slate-400" />
+            <span>Edit Client</span>
+          </button>
+          <div className="h-px bg-slate-100 my-1" />
+          <button
+            onClick={() => {
+              setClientToDelete(contextMenu.client);
+              setDeleteError(null);
+              setContextMenu(null);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-red-50 text-red-600 transition-colors cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+            <span>Delete Client</span>
+          </button>
+        </div>
+      )}
+
+
     </div>
   );
 };

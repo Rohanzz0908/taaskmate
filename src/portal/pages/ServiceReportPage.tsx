@@ -22,7 +22,8 @@ import {
   ServiceReport, 
   QuotationItem, 
   UOM_OPTIONS,
-  ServiceReportStatus 
+  ServiceReportStatus,
+  Technician
 } from '../types';
 import { db, formatINR } from '../services/db';
 
@@ -35,6 +36,7 @@ export const ServiceReportPage: React.FC = () => {
   const [eligibleTransactions, setEligibleTransactions] = useState<MasterTransaction[]>([]);
   const [selectedTid, setSelectedTid] = useState<string>(preselectedTid);
   const [selectedTransaction, setSelectedTransaction] = useState<MasterTransaction | null>(null);
+  const [techniciansList, setTechniciansList] = useState<Technician[]>([]);
 
   // Form Fields
   const [serviceDate, setServiceDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -62,6 +64,7 @@ export const ServiceReportPage: React.FC = () => {
   useEffect(() => {
     const list = db.getEligibleTransactionsForServiceReport();
     setEligibleTransactions(list);
+    setTechniciansList(db.getTechnicians());
 
     if (preselectedTid) {
       handleSelectTransaction(preselectedTid, list);
@@ -355,9 +358,31 @@ export const ServiceReportPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Assigned Technician / Lead <span className="text-rose-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-slate-700">
+                  Assigned Technician / Lead <span className="text-rose-500">*</span>
+                </label>
+                {techniciansList.length > 0 && (
+                  <select
+                    onChange={(e) => {
+                      const tech = techniciansList.find(t => t.technicianId === e.target.value);
+                      if (tech) {
+                        setAssignedTechnician(`${tech.name} (${tech.specialization})`);
+                        setTechnicianName(tech.name);
+                      }
+                    }}
+                    defaultValue=""
+                    className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5 focus:outline-none cursor-pointer"
+                  >
+                    <option value="" disabled>Quick Pick from Master</option>
+                    {techniciansList.map(t => (
+                      <option key={t.technicianId} value={t.technicianId}>
+                        {t.name} — {t.specialization} ({t.status})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
               <input
                 type="text"
                 required

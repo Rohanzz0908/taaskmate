@@ -56,17 +56,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuote }) => {
           <div className="flex items-center gap-5">
             <span className="inline-flex items-center gap-2 text-gray-300">
               <span className="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
-              <span className="text-gray-400">24/7 Helpline:</span>
-              <a href="tel:+918045678900" className="text-white hover:text-brand-green font-semibold transition-colors">
-                +91 80 4567 8900
-              </a>
+              <span className="text-gray-400">Support Desk:</span>
+              <span className="text-white font-medium">Updating Shortly</span>
             </span>
             <span className="text-gray-600">|</span>
             <span className="inline-flex items-center gap-1.5">
               <span className="text-gray-400">Email:</span>
-              <a href="mailto:support@taaskmate.com" className="text-white hover:text-brand-green font-medium transition-colors">
-                support@taaskmate.com
-              </a>
+              <span className="text-white font-medium">Updating Shortly</span>
             </span>
           </div>
 
@@ -186,20 +182,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuote }) => {
               )}
             </div>
 
-            <NavLink to="/property-management" className={navLinkClasses}>
-              Property Management
-            </NavLink>
-
             <NavLink to="/interior-design" className={navLinkClasses}>
               Interior Design
             </NavLink>
 
             <NavLink to="/about" className={navLinkClasses}>
               About Us
-            </NavLink>
-
-            <NavLink to="/careers" className={navLinkClasses}>
-              Careers
             </NavLink>
 
             <NavLink to="/partner-with-us" className={navLinkClasses}>
@@ -286,17 +274,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuote }) => {
             </div>
 
             <NavLink
-              to="/property-management"
-              className={({ isActive }) =>
-                `block px-3 py-2.5 rounded-xl text-base font-medium ${
-                  isActive ? 'bg-brand-green-light text-brand-green font-semibold' : 'text-gray-800'
-                }`
-              }
-            >
-              Property Management
-            </NavLink>
-
-            <NavLink
               to="/interior-design"
               className={({ isActive }) =>
                 `block px-3 py-2.5 rounded-xl text-base font-medium ${
@@ -316,17 +293,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuote }) => {
               }
             >
               About Us
-            </NavLink>
-
-            <NavLink
-              to="/careers"
-              className={({ isActive }) =>
-                `block px-3 py-2.5 rounded-xl text-base font-medium ${
-                  isActive ? 'bg-brand-green-light text-brand-green font-semibold' : 'text-gray-800'
-                }`
-              }
-            >
-              Careers
             </NavLink>
 
             <NavLink

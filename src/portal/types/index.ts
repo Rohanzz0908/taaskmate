@@ -204,3 +204,109 @@ export interface UserSession {
   avatar?: string;
   lastLogin: string;
 }
+
+// ===================================================
+// 4. TECHNICIAN MASTER TYPES
+// ===================================================
+export type TechnicianSpecialization = 
+  | 'HVAC & MEP'
+  | 'Electrical Switchgear'
+  | 'Plumbing & Fire Safety'
+  | 'Carpentry & Hardware'
+  | 'Janitorial & Sanitization'
+  | 'Civil & Painting'
+  | 'General Facility';
+
+export const TECHNICIAN_SPECIALIZATIONS: TechnicianSpecialization[] = [
+  'HVAC & MEP',
+  'Electrical Switchgear',
+  'Plumbing & Fire Safety',
+  'Carpentry & Hardware',
+  'Janitorial & Sanitization',
+  'Civil & Painting',
+  'General Facility'
+];
+
+export type TechnicianStatus = 'Active' | 'On Leave' | 'Inactive';
+export type EmploymentType = 'Full-Time' | 'Contractor' | 'On-Demand';
+export type IdProofType = 'Aadhaar' | 'PAN' | 'Voter ID' | 'Driving License';
+
+export interface EmergencyContact {
+  name: string;
+  phone: string;
+  relation: string;
+}
+
+export interface Technician {
+  technicianId: string; // e.g. TECH-0001
+  name: string;
+  specialization: TechnicianSpecialization;
+  phone: string;
+  email: string;
+  experienceYears: number;
+  employmentType: EmploymentType;
+  idProofType: IdProofType;
+  idProofNumber: string;
+  emergencyContact: EmergencyContact;
+  skills: string[];
+  rating: number; // 1 to 5
+  address: string;
+  status: TechnicianStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ===================================================
+// 5. VENDOR MASTER TYPES
+// ===================================================
+export type VendorCategory = 
+  | 'Electrical & Lighting'
+  | 'HVAC & Refrigeration'
+  | 'Plumbing & Pumps'
+  | 'Safety & Fire Fighting'
+  | 'Hardware & Tools'
+  | 'Chemicals & Janitorial'
+  | 'Civil & Paints'
+  | 'General Spares';
+
+export const VENDOR_CATEGORIES: VendorCategory[] = [
+  'Electrical & Lighting',
+  'HVAC & Refrigeration',
+  'Plumbing & Pumps',
+  'Safety & Fire Fighting',
+  'Hardware & Tools',
+  'Chemicals & Janitorial',
+  'Civil & Paints',
+  'General Spares'
+];
+
+export type VendorStatus = 'Active' | 'Inactive' | 'Blacklisted';
+export type VendorTier = 'Preferred Partner' | 'Standard Supplier' | 'Under Review';
+export type VendorPaymentTerms = 'Immediate / Net 0' | 'Net 15' | 'Net 30' | 'Net 45' | '50% Advance';
+
+export const VENDOR_PAYMENT_TERMS: VendorPaymentTerms[] = [
+  'Immediate / Net 0',
+  'Net 15',
+  'Net 30',
+  'Net 45',
+  '50% Advance'
+];
+
+export interface Vendor {
+  vendorId: string; // e.g. VEN-0001
+  vendorName: string;
+  tradeCategory: VendorCategory;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  address: string;
+  gstin: string;
+  pan: string;
+  bankDetails: InvoiceBankDetails;
+  paymentTerms: VendorPaymentTerms;
+  tier: VendorTier;
+  status: VendorStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+

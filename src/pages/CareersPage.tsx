@@ -93,9 +93,6 @@ export const CareersPage: React.FC = () => {
       {/* Hero Banner */}
       <section className="bg-brand-navy text-white py-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/20 text-brand-green text-xs font-bold uppercase tracking-wider mb-4 border border-brand-green/30">
-            We Are Hiring
-          </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4">
             Build Your Career With Taaskmate
           </h1>

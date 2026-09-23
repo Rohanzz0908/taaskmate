@@ -8,10 +8,8 @@ import { QuoteModal } from './components/QuoteModal';
 // Public Marketing Pages
 import { HomePage } from './pages/HomePage';
 import { ServicesPage } from './pages/ServicesPage';
-import { PropertyManagementPage } from './pages/PropertyManagementPage';
 import { InteriorDesignPage } from './pages/InteriorDesignPage';
 import { AboutPage } from './pages/AboutPage';
-import { CareersPage } from './pages/CareersPage';
 import { PartnerPage } from './pages/PartnerPage';
 import { ContactPage } from './pages/ContactPage';
 
@@ -23,6 +21,8 @@ import { PortalLayout } from './portal/components/PortalLayout';
 import { DashboardPage } from './portal/pages/DashboardPage';
 import { CategoryMasterPage } from './portal/pages/CategoryMasterPage';
 import { ClientMasterPage } from './portal/pages/ClientMasterPage';
+import { TechnicianMasterPage } from './portal/pages/TechnicianMasterPage';
+import { VendorMasterPage } from './portal/pages/VendorMasterPage';
 import { QuotationPage } from './portal/pages/QuotationPage';
 import { QuotationListPage } from './portal/pages/QuotationListPage';
 import { QuotationViewPage } from './portal/pages/QuotationViewPage';
@@ -102,6 +102,8 @@ export function App() {
             <Route index element={<DashboardPage />} />
             <Route path="category-master" element={<CategoryMasterPage />} />
             <Route path="client-master" element={<ClientMasterPage />} />
+            <Route path="technician-master" element={<TechnicianMasterPage />} />
+            <Route path="vendor-master" element={<VendorMasterPage />} />
             <Route path="quotation" element={<QuotationPage />} />
             <Route path="quotation/edit/:id" element={<QuotationPage />} />
             <Route path="quotation/:id" element={<QuotationViewPage />} />
@@ -130,10 +132,8 @@ export function App() {
           <Route element={<PublicLayout onOpenQuote={handleOpenQuote} />}>
             <Route path="/" element={<HomePage onOpenQuote={handleOpenQuote} />} />
             <Route path="/services" element={<ServicesPage onOpenQuote={handleOpenQuote} />} />
-            <Route path="/property-management" element={<PropertyManagementPage onOpenQuote={handleOpenQuote} />} />
             <Route path="/interior-design" element={<InteriorDesignPage onOpenQuote={handleOpenQuote} />} />
             <Route path="/about" element={<AboutPage onOpenQuote={handleOpenQuote} />} />
-            <Route path="/careers" element={<CareersPage />} />
             <Route path="/partner-with-us" element={<PartnerPage />} />
             <Route path="/contact" element={<ContactPage />} />
             {/* Fallback public route */}

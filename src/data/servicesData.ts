@@ -21,7 +21,7 @@ export const servicesList: ServiceItem[] = [
     fullDesc: 'Certified plumbers providing comprehensive residential and commercial pipeline installations, sanitary fixtures, blocked drain clearings, booster pump maintenance, and round-the-clock emergency leak fixes.',
     highlights: ['Leak detection & repair', 'Sanitaryware fitting', 'Pressure pump servicing', 'Water tank & sump cleaning'],
     category: 'core',
-    turnaroundTime: '60 - 90 mins response',
+    turnaroundTime: 'Scheduled consultation',
     popular: true
   },
   {
@@ -45,7 +45,7 @@ export const servicesList: ServiceItem[] = [
     fullDesc: 'Certified appliance engineers equipped with genuine manufacturer parts for inverter ACs, cold storage, industrial laundry, microwave ovens, commercial kitchen exhausts, and home appliances.',
     highlights: ['AC gas refill & deep coil cleaning', 'Refrigerator & freezer repair', 'Washing machine servicing', 'Kitchen appliance overhaul'],
     category: 'core',
-    turnaroundTime: 'Same-day service',
+    turnaroundTime: 'Scheduled consultation',
     popular: true
   },
   {
@@ -53,11 +53,16 @@ export const servicesList: ServiceItem[] = [
     name: 'Painting',
     slug: 'painting',
     icon: 'Paintbrush',
-    shortDesc: 'Interior & exterior waterproofing, texture painting, dust-free roller application & finishes.',
-    fullDesc: 'Premium emulsion coating, exterior weather-guard painting, texture accents, and moisture barrier treatments using automated mechanized tools for clean, mess-free finishes.',
-    highlights: ['Interior royal luxury emulsions', 'Exterior weather-proof coatings', 'Waterproofing & anti-fungal primer', 'Mechanized dust-free sanding'],
+    shortDesc: 'Professional interior and exterior painting services for residential and commercial spaces, offering quality finishes, enhanced protection, and a refreshed look.',
+    fullDesc: 'Professional interior and exterior painting services for residential and commercial spaces, offering quality finishes, enhanced protection, and a refreshed look.',
+    highlights: [
+      'Interior & exterior painting',
+      'Texture & decorative painting',
+      'Waterproofing solutions',
+      'Protective coatings'
+    ],
     category: 'specialized',
-    turnaroundTime: 'Instant site survey',
+    turnaroundTime: 'Scheduled consultation',
     popular: false
   },
   {
@@ -69,7 +74,7 @@ export const servicesList: ServiceItem[] = [
     fullDesc: 'Licensed electricians handling high-voltage distribution boards, smart lighting installations, inverter & UPS setups, earth-leakage circuit breakers (ELCB), and phase load balancing.',
     highlights: ['Distribution board (DB) troubleshooting', 'Architectural lighting & automation', 'Inverter, UPS & generator wiring', 'Electrical safety audit'],
     category: 'core',
-    turnaroundTime: '45 mins priority dispatch',
+    turnaroundTime: 'Scheduled consultation',
     popular: true
   },
   {
@@ -81,7 +86,7 @@ export const servicesList: ServiceItem[] = [
     fullDesc: 'Government-approved, non-hazardous pest management utilizing targeted gel baiting, thermal fogging, pre & post-construction anti-termite piping systems, and commercial rodent control.',
     highlights: ['Eco-friendly herbal cockroach gel', 'Subterranean termite warranty', 'Rodent exclusion systems', 'Bedbug heat & spray treatments'],
     category: 'facility',
-    turnaroundTime: 'Scheduled slot booking',
+    turnaroundTime: 'Scheduled consultation',
     popular: true
   },
   {
@@ -93,7 +98,7 @@ export const servicesList: ServiceItem[] = [
     fullDesc: 'Master craftsmen specialized in modular kitchen repairs, hydraulic hinge adjustments, smart digital door lock installations, solid wood polishing, and bespoke wooden shelving.',
     highlights: ['Door alignment & lock installation', 'Modular cabinet restoration', 'Hardwood polishing & repair', 'Custom shelving & drywall mounts'],
     category: 'core',
-    turnaroundTime: 'Within 2 hours',
+    turnaroundTime: 'Scheduled consultation',
     popular: false
   },
   {
@@ -105,7 +110,7 @@ export const servicesList: ServiceItem[] = [
     fullDesc: 'Industrial single-disc scrubbing, high-pressure steam extraction for upholstery, facade glass cleaning, kitchen degreasing, and clinical-grade disinfectant fogging.',
     highlights: ['Full home deep sanitization', 'Industrial single-disc floor scrubbing', 'Steam extraction for sofas & rugs', 'Post-construction cleanup'],
     category: 'facility',
-    turnaroundTime: 'Next-day or express slot',
+    turnaroundTime: 'Scheduled consultation',
     popular: true
   },
   {
@@ -117,7 +122,7 @@ export const servicesList: ServiceItem[] = [
     fullDesc: 'Comprehensive staffing solutions providing vetted, PF/ESI-compliant facility attendants, office boys, janitorial staff, technicians, and supervisory building maintenance personnel.',
     highlights: ['Background-verified personnel', 'PF & ESI statutory compliance', 'Trained in SOPs & emergency response', 'Flexible shift allocation'],
     category: 'facility',
-    turnaroundTime: 'Rapid workforce onboarding',
+    turnaroundTime: 'Scheduled consultation',
     popular: false
   },
   {
@@ -129,7 +134,7 @@ export const servicesList: ServiceItem[] = [
     fullDesc: 'Turnkey safety infrastructure design, installation, and inspection covering IP CCTV cameras, biometric turnstiles, smoke detection alarms, fire sprinkler audits, and evacuation drill plans.',
     highlights: ['HD IP CCTV surveillance systems', 'Biometric & RFID access control', 'Fire extinguisher refills & certification', 'Smoke detector & sprinkler testing'],
     category: 'specialized',
-    turnaroundTime: 'Consultation & audit',
+    turnaroundTime: 'Scheduled consultation',
     popular: false
   },
   {
@@ -141,7 +146,7 @@ export const servicesList: ServiceItem[] = [
     fullDesc: 'Tailored maintenance agreements for societies, tech parks, hotels, and retail stores ensuring zero operational downtime through periodic audits, dedicated helpdesk, and priority dispatch.',
     highlights: ['Monthly preventive checkups', 'Guaranteed 2-hour SLA response', 'Discounted spare components', 'Dedicated facility relationship manager'],
     category: 'facility',
-    turnaroundTime: 'Custom enterprise contracts',
+    turnaroundTime: 'Scheduled consultation',
     popular: true
   },
   {
@@ -153,7 +158,7 @@ export const servicesList: ServiceItem[] = [
     fullDesc: 'On-demand multi-skill technicians capable of tackling general masonry repairs, ceiling seepage, acoustic tile replacements, signage repairs, and everyday property wear and tear.',
     highlights: ['General handyman repairs', 'Ceiling tile & drywall fixing', 'Glass & facade maintenance', 'Preventive building upkeep'],
     category: 'core',
-    turnaroundTime: 'Immediate booking',
+    turnaroundTime: 'Scheduled consultation',
     popular: false
   }
 ];

@@ -61,8 +61,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuote }) => {
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-sm font-bold">50,000+ Tasks</div>
-                <div className="text-xs text-gray-400">Completed On-Time</div>
+                <div className="text-sm font-bold">100% Verified</div>
+                <div className="text-xs text-gray-400">Certified Technicians</div>
               </div>
             </div>
 

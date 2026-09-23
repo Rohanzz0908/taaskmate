@@ -8,7 +8,9 @@ import {
   QuotationItem, 
   MasterTransactionStatus, 
   InvoiceBankDetails,
-  InvoicePayment
+  InvoicePayment,
+  Technician,
+  Vendor
 } from '../types';
 
 // Storage keys
@@ -16,6 +18,8 @@ const STORAGE_KEYS = {
   CATEGORIES: 'tm_portal_categories_v2',
   CLIENTS: 'tm_portal_clients_v2',
   TRANSACTIONS: 'tm_portal_master_transactions_v2',
+  TECHNICIANS: 'tm_portal_technicians_v2',
+  VENDORS: 'tm_portal_vendors_v2',
 };
 
 // Indian Currency Formatter (e.g. ₹ 1,25,000.00)
@@ -34,6 +38,13 @@ export const validateGSTIN = (gstin: string): boolean => {
   if (!gstin) return false;
   const regex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
   return regex.test(gstin.trim().toUpperCase());
+};
+
+// Indian PAN Validator (10 alphanumeric characters standard: ABCDE1234F)
+export const validatePAN = (pan: string): boolean => {
+  if (!pan) return false;
+  const regex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  return regex.test(pan.trim().toUpperCase());
 };
 
 // Default Company Bank Details
@@ -159,6 +170,239 @@ const SEED_CLIENTS: Client[] = [
     createdAt: '2026-08-24',
     updatedAt: '2026-08-24',
   },
+];
+
+// Initial Technicians Seed Data
+const SEED_TECHNICIANS: Technician[] = [
+  {
+    technicianId: 'TECH-0001',
+    name: 'Ramesh Gowda',
+    specialization: 'HVAC & MEP',
+    phone: '+91 98451 22334',
+    email: 'ramesh.gowda@taaskmate.com',
+    experienceYears: 9,
+    employmentType: 'Full-Time',
+    idProofType: 'Aadhaar',
+    idProofNumber: 'XXXX-XXXX-4821',
+    emergencyContact: {
+      name: 'Sunita Gowda',
+      phone: '+91 98451 99887',
+      relation: 'Spouse'
+    },
+    skills: ['Chiller Descaling', 'Condenser Overhaul', 'R-410A Refrigeration', 'AHU Balancing'],
+    rating: 5,
+    address: 'Indiranagar, Bengaluru, Karnataka 560038',
+    status: 'Active',
+    createdAt: '2026-08-01',
+    updatedAt: '2026-09-01'
+  },
+  {
+    technicianId: 'TECH-0002',
+    name: 'Anand Prakash',
+    specialization: 'Plumbing & Fire Safety',
+    phone: '+91 99160 55443',
+    email: 'anand.prakash@taaskmate.com',
+    experienceYears: 7,
+    employmentType: 'Full-Time',
+    idProofType: 'Aadhaar',
+    idProofNumber: 'XXXX-XXXX-7712',
+    emergencyContact: {
+      name: 'Prakash K',
+      phone: '+91 99160 11223',
+      relation: 'Father'
+    },
+    skills: ['Fire Hydrant Inspection', 'CO2 Nitrogen Refill', 'Sprinkler Testing', 'CPVC Line Pressure Test'],
+    rating: 5,
+    address: 'BTM Layout 2nd Stage, Bengaluru, Karnataka 560076',
+    status: 'Active',
+    createdAt: '2026-08-05',
+    updatedAt: '2026-09-03'
+  },
+  {
+    technicianId: 'TECH-0003',
+    name: 'Mohammed Farooq',
+    specialization: 'Electrical Switchgear',
+    phone: '+91 97402 88990',
+    email: 'm.farooq@taaskmate.com',
+    experienceYears: 11,
+    employmentType: 'Full-Time',
+    idProofType: 'PAN',
+    idProofNumber: 'ABCPE1234F',
+    emergencyContact: {
+      name: 'Amina Farooq',
+      phone: '+91 97402 44556',
+      relation: 'Spouse'
+    },
+    skills: ['LT/HT Panel Retrofitting', 'Schneider MCB Banks', 'Megger Insulation Testing', '3-Phase Busbar Balancing'],
+    rating: 4,
+    address: 'Shivajinagar, Bengaluru, Karnataka 560051',
+    status: 'Active',
+    createdAt: '2026-08-10',
+    updatedAt: '2026-09-02'
+  },
+  {
+    technicianId: 'TECH-0004',
+    name: 'Karthik Raja',
+    specialization: 'Carpentry & Hardware',
+    phone: '+91 98860 33445',
+    email: 'karthik.raja@taaskmate.com',
+    experienceYears: 5,
+    employmentType: 'Contractor',
+    idProofType: 'Aadhaar',
+    idProofNumber: 'XXXX-XXXX-3390',
+    emergencyContact: {
+      name: 'Raja Sundaram',
+      phone: '+91 98860 88776',
+      relation: 'Brother'
+    },
+    skills: ['Hydraulic Door Closers', 'Telescopic Channels', 'Acoustic Partitioning', 'Modular Furniture Repair'],
+    rating: 4,
+    address: 'Whitefield Main Road, Bengaluru, Karnataka 560066',
+    status: 'Active',
+    createdAt: '2026-08-15',
+    updatedAt: '2026-09-04'
+  },
+  {
+    technicianId: 'TECH-0005',
+    name: 'Sunil Mahajan',
+    specialization: 'Janitorial & Sanitization',
+    phone: '+91 96200 44112',
+    email: 'sunil.m@taaskmate.com',
+    experienceYears: 4,
+    employmentType: 'Full-Time',
+    idProofType: 'Voter ID',
+    idProofNumber: 'KA/02/123/456789',
+    emergencyContact: {
+      name: 'Rekha Mahajan',
+      phone: '+91 96200 77889',
+      relation: 'Spouse'
+    },
+    skills: ['Industrial Scrubbing', 'High-Rise Façade Cleaning', 'Cleanroom Disinfection', 'Waste Management Protocol'],
+    rating: 5,
+    address: 'Koramangala 4th Block, Bengaluru, Karnataka 560034',
+    status: 'On Leave',
+    createdAt: '2026-08-20',
+    updatedAt: '2026-09-05'
+  }
+];
+
+// Initial Vendors Seed Data
+const SEED_VENDORS: Vendor[] = [
+  {
+    vendorId: 'VEN-0001',
+    vendorName: 'Schneider Electric Industrial Spares Depot',
+    tradeCategory: 'Electrical & Lighting',
+    contactPerson: 'Vikas Agarwal (Key Account Mgr)',
+    phone: '+91 80 4112 8800',
+    email: 'orders.blr@schneider-distributor.in',
+    address: 'Plot 42, Peenya Industrial Area, 2nd Phase, Bengaluru, Karnataka 560058',
+    gstin: '29AABCS1234F1Z1',
+    pan: 'AABCS1234F',
+    bankDetails: {
+      bankName: 'HDFC Bank Ltd',
+      accountName: 'Schneider Electric Industrial Spares Depot',
+      accountNumber: '50200044556677',
+      ifsc: 'HDFC0000123',
+      branch: 'Peenya Industrial Area, Bengaluru'
+    },
+    paymentTerms: 'Net 30',
+    tier: 'Preferred Partner',
+    status: 'Active',
+    createdAt: '2026-08-01',
+    updatedAt: '2026-09-01'
+  },
+  {
+    vendorId: 'VEN-0002',
+    vendorName: 'Astral Pipes & Sanitary Solutions Pvt Ltd',
+    tradeCategory: 'Plumbing & Pumps',
+    contactPerson: 'Maheshwari R (Institutional Sales)',
+    phone: '+91 80 2221 4455',
+    email: 'bangalore.sales@astralpipesdepot.com',
+    address: '15/2, Lalbagh Fort Road, Doddamavalli, Bengaluru, Karnataka 560004',
+    gstin: '29AABCA9876K1Z4',
+    pan: 'AABCA9876K',
+    bankDetails: {
+      bankName: 'State Bank of India',
+      accountName: 'Astral Pipes & Sanitary Solutions',
+      accountNumber: '31098877665',
+      ifsc: 'SBIN0001244',
+      branch: 'Lalbagh Road, Bengaluru'
+    },
+    paymentTerms: 'Net 15',
+    tier: 'Preferred Partner',
+    status: 'Active',
+    createdAt: '2026-08-04',
+    updatedAt: '2026-09-02'
+  },
+  {
+    vendorId: 'VEN-0003',
+    vendorName: 'Daikin Central Chiller & HVAC Components',
+    tradeCategory: 'HVAC & Refrigeration',
+    contactPerson: 'Chetan Deshmukh (Regional Spares Head)',
+    phone: '+91 80 6677 3300',
+    email: 'spares.south@daikinservice-hub.in',
+    address: 'Survey 108, Bommasandra Industrial Area, Hosur Road, Bengaluru, Karnataka 560099',
+    gstin: '29AABCD5544E1Z7',
+    pan: 'AABCD5544E',
+    bankDetails: {
+      bankName: 'ICICI Bank Ltd',
+      accountName: 'Daikin Central Chiller Components',
+      accountNumber: '000205012345',
+      ifsc: 'ICIC0000002',
+      branch: 'Hosur Road, Bengaluru'
+    },
+    paymentTerms: '50% Advance',
+    tier: 'Preferred Partner',
+    status: 'Active',
+    createdAt: '2026-08-10',
+    updatedAt: '2026-09-03'
+  },
+  {
+    vendorId: 'VEN-0004',
+    vendorName: 'Ceasefire Extinguishers & Fire Safety Systems',
+    tradeCategory: 'Safety & Fire Fighting',
+    contactPerson: 'Deepak Bhatt (Safety Compliance Mgr)',
+    phone: '+91 80 2558 9911',
+    email: 'commercial.blr@ceasefiresafety.in',
+    address: '74, Richmond Road, Shanthala Nagar, Bengaluru, Karnataka 560025',
+    gstin: '29AAACC7788M1Z2',
+    pan: 'AAACC7788M',
+    bankDetails: {
+      bankName: 'Axis Bank Ltd',
+      accountName: 'Ceasefire Safety Systems Depot',
+      accountNumber: '918020033445566',
+      ifsc: 'UTIB0000115',
+      branch: 'Richmond Town, Bengaluru'
+    },
+    paymentTerms: 'Immediate / Net 0',
+    tier: 'Standard Supplier',
+    status: 'Active',
+    createdAt: '2026-08-15',
+    updatedAt: '2026-09-04'
+  },
+  {
+    vendorId: 'VEN-0005',
+    vendorName: 'Diversey Hygiene & Janitorial Solutions',
+    tradeCategory: 'Chemicals & Janitorial',
+    contactPerson: 'Sunayana Hegde (Client Relations)',
+    phone: '+91 80 4321 6789',
+    email: 'orders.karnataka@diversey-supplies.com',
+    address: 'Sy No 56, Electronic City Phase 2, Bengaluru, Karnataka 560100',
+    gstin: '29AABCD1122P1Z9',
+    pan: 'AABCD1122P',
+    bankDetails: {
+      bankName: 'Kotak Mahindra Bank',
+      accountName: 'Diversey Hygiene Facility Supplies',
+      accountNumber: '7711223344',
+      ifsc: 'KKBK0008012',
+      branch: 'Electronic City, Bengaluru'
+    },
+    paymentTerms: 'Net 30',
+    tier: 'Standard Supplier',
+    status: 'Active',
+    createdAt: '2026-08-20',
+    updatedAt: '2026-09-05'
+  }
 ];
 
 // Seed Master Transactions (All sharing ONE Master Transaction ID per lifecycle)
@@ -586,6 +830,8 @@ class DatabaseService {
   private categories: Category[] = [];
   private clients: Client[] = [];
   private transactions: MasterTransaction[] = [];
+  private technicians: Technician[] = [];
+  private vendors: Vendor[] = [];
 
   constructor() {
     this.init();
@@ -617,11 +863,29 @@ class DatabaseService {
         this.transactions = SEED_TRANSACTIONS;
         this.saveTransactions();
       }
+
+      const storedTechnicians = localStorage.getItem(STORAGE_KEYS.TECHNICIANS);
+      if (storedTechnicians) {
+        this.technicians = JSON.parse(storedTechnicians);
+      } else {
+        this.technicians = SEED_TECHNICIANS;
+        this.saveTechnicians();
+      }
+
+      const storedVendors = localStorage.getItem(STORAGE_KEYS.VENDORS);
+      if (storedVendors) {
+        this.vendors = JSON.parse(storedVendors);
+      } else {
+        this.vendors = SEED_VENDORS;
+        this.saveVendors();
+      }
     } catch (e) {
       console.error('Error initializing portal database:', e);
       this.categories = SEED_CATEGORIES;
       this.clients = SEED_CLIENTS;
       this.transactions = SEED_TRANSACTIONS;
+      this.technicians = SEED_TECHNICIANS;
+      this.vendors = SEED_VENDORS;
     }
   }
 
@@ -642,6 +906,14 @@ class DatabaseService {
         if (Array.isArray(data.transactions) && data.transactions.length > 0) {
           this.transactions = data.transactions.map(({ _id, ...rest }: any) => rest);
           localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(this.transactions));
+        }
+        if (Array.isArray(data.technicians) && data.technicians.length > 0) {
+          this.technicians = data.technicians.map(({ _id, ...rest }: any) => rest);
+          localStorage.setItem(STORAGE_KEYS.TECHNICIANS, JSON.stringify(this.technicians));
+        }
+        if (Array.isArray(data.vendors) && data.vendors.length > 0) {
+          this.vendors = data.vendors.map(({ _id, ...rest }: any) => rest);
+          localStorage.setItem(STORAGE_KEYS.VENDORS, JSON.stringify(this.vendors));
         }
         console.log('[DatabaseService] Successfully synced with MongoDB Atlas');
         return true;
@@ -712,6 +984,46 @@ class DatabaseService {
     }
   }
 
+  private async apiSaveTechnician(technician: Technician) {
+    try {
+      await fetch('/api/technicians', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(technician),
+      });
+    } catch (e) {
+      console.warn('[DatabaseService] Sync technician to MongoDB failed:', e);
+    }
+  }
+
+  private async apiDeleteTechnician(id: string) {
+    try {
+      await fetch(`/api/technicians/${id}`, { method: 'DELETE' });
+    } catch (e) {
+      console.warn('[DatabaseService] Delete technician from MongoDB failed:', e);
+    }
+  }
+
+  private async apiSaveVendor(vendor: Vendor) {
+    try {
+      await fetch('/api/vendors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(vendor),
+      });
+    } catch (e) {
+      console.warn('[DatabaseService] Sync vendor to MongoDB failed:', e);
+    }
+  }
+
+  private async apiDeleteVendor(id: string) {
+    try {
+      await fetch(`/api/vendors/${id}`, { method: 'DELETE' });
+    } catch (e) {
+      console.warn('[DatabaseService] Delete vendor from MongoDB failed:', e);
+    }
+  }
+
   // --- Persistence Helpers with MongoDB Sync ---
   private saveCategories(changedCat?: Category, deletedId?: string) {
     localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(this.categories));
@@ -737,6 +1049,24 @@ class DatabaseService {
       this.apiSaveTransaction(changedTx);
     } else if (deletedId) {
       this.apiDeleteTransaction(deletedId);
+    }
+  }
+
+  private saveTechnicians(changedTech?: Technician, deletedId?: string) {
+    localStorage.setItem(STORAGE_KEYS.TECHNICIANS, JSON.stringify(this.technicians));
+    if (changedTech) {
+      this.apiSaveTechnician(changedTech);
+    } else if (deletedId) {
+      this.apiDeleteTechnician(deletedId);
+    }
+  }
+
+  private saveVendors(changedVen?: Vendor, deletedId?: string) {
+    localStorage.setItem(STORAGE_KEYS.VENDORS, JSON.stringify(this.vendors));
+    if (changedVen) {
+      this.apiSaveVendor(changedVen);
+    } else if (deletedId) {
+      this.apiDeleteVendor(deletedId);
     }
   }
 
@@ -903,6 +1233,184 @@ class DatabaseService {
     this.clients = this.clients.filter(c => c.clientId !== id);
     this.saveClients(undefined, id);
     return { success: true, message: 'Client deleted successfully.' };
+  }
+
+  // --- Technician Methods ---
+  public getTechnicians(): Technician[] {
+    return [...this.technicians];
+  }
+
+  public getTechnicianById(id: string): Technician | undefined {
+    return this.technicians.find(t => t.technicianId === id);
+  }
+
+  public getNextTechnicianId(): string {
+    const maxNum = this.technicians.reduce((max, tech) => {
+      const numPart = parseInt(tech.technicianId.replace('TECH-', ''), 10);
+      return !isNaN(numPart) && numPart > max ? numPart : max;
+    }, 0);
+    return `TECH-${String(maxNum + 1).padStart(4, '0')}`;
+  }
+
+  public saveTechnician(technicianData: Omit<Technician, 'createdAt' | 'updatedAt'>): { success: boolean; message: string; technician?: Technician } {
+    const isEdit = this.technicians.some(t => t.technicianId === technicianData.technicianId);
+    const trimmedName = technicianData.name.trim();
+
+    const duplicate = this.technicians.find(
+      t => t.phone.trim() === technicianData.phone.trim() && t.technicianId !== technicianData.technicianId
+    );
+
+    if (duplicate) {
+      return { success: false, message: `Phone number "${technicianData.phone}" is already associated with ${duplicate.name}.` };
+    }
+
+    const now = new Date().toISOString().split('T')[0];
+
+    if (isEdit) {
+      this.technicians = this.technicians.map(t => {
+        if (t.technicianId === technicianData.technicianId) {
+          return {
+            ...t,
+            ...technicianData,
+            name: trimmedName,
+            updatedAt: now,
+          };
+        }
+        return t;
+      });
+    } else {
+      const newTech: Technician = {
+        ...technicianData,
+        name: trimmedName,
+        createdAt: now,
+        updatedAt: now,
+      };
+      this.technicians.unshift(newTech);
+    }
+
+    const savedTech = this.getTechnicianById(technicianData.technicianId);
+    this.saveTechnicians(savedTech);
+    return { 
+      success: true, 
+      message: `Technician "${trimmedName}" ${isEdit ? 'updated' : 'created'} successfully.`,
+      technician: savedTech
+    };
+  }
+
+  public deleteTechnician(id: string): { success: boolean; message: string } {
+    const tech = this.getTechnicianById(id);
+    const nameToCheck = tech ? tech.name.toLowerCase() : '';
+
+    const isAssigned = this.transactions.some(t => 
+      t.serviceReport && (
+        t.serviceReport.assignedTechnician.toLowerCase().includes(nameToCheck) ||
+        t.serviceReport.technicianName.toLowerCase().includes(nameToCheck)
+      )
+    );
+
+    if (isAssigned && nameToCheck) {
+      return { 
+        success: false, 
+        message: `Cannot delete technician "${tech?.name}" because they are assigned to existing service reports. Change status to Inactive instead.` 
+      };
+    }
+
+    this.technicians = this.technicians.filter(t => t.technicianId !== id);
+    this.saveTechnicians(undefined, id);
+    return { success: true, message: 'Technician removed successfully.' };
+  }
+
+  public toggleTechnicianStatus(id: string): Technician | undefined {
+    const tech = this.technicians.find(t => t.technicianId === id);
+    if (tech) {
+      tech.status = tech.status === 'Active' ? 'Inactive' : 'Active';
+      tech.updatedAt = new Date().toISOString().split('T')[0];
+      this.saveTechnicians(tech);
+    }
+    return tech;
+  }
+
+  // --- Vendor Methods ---
+  public getVendors(): Vendor[] {
+    return [...this.vendors];
+  }
+
+  public getVendorById(id: string): Vendor | undefined {
+    return this.vendors.find(v => v.vendorId === id);
+  }
+
+  public getNextVendorId(): string {
+    const maxNum = this.vendors.reduce((max, ven) => {
+      const numPart = parseInt(ven.vendorId.replace('VEN-', ''), 10);
+      return !isNaN(numPart) && numPart > max ? numPart : max;
+    }, 0);
+    return `VEN-${String(maxNum + 1).padStart(4, '0')}`;
+  }
+
+  public saveVendor(vendorData: Omit<Vendor, 'createdAt' | 'updatedAt'>): { success: boolean; message: string; vendor?: Vendor } {
+    const isEdit = this.vendors.some(v => v.vendorId === vendorData.vendorId);
+    const trimmedGstin = vendorData.gstin.trim().toUpperCase();
+    const trimmedPan = vendorData.pan.trim().toUpperCase();
+
+    if (trimmedGstin) {
+      const duplicateGstin = this.vendors.find(
+        v => v.gstin.toUpperCase() === trimmedGstin && v.vendorId !== vendorData.vendorId
+      );
+
+      if (duplicateGstin) {
+        return { success: false, message: `GSTIN "${trimmedGstin}" is already registered to vendor "${duplicateGstin.vendorName}".` };
+      }
+    }
+
+    const now = new Date().toISOString().split('T')[0];
+
+    if (isEdit) {
+      this.vendors = this.vendors.map(v => {
+        if (v.vendorId === vendorData.vendorId) {
+          return {
+            ...v,
+            ...vendorData,
+            gstin: trimmedGstin,
+            pan: trimmedPan,
+            updatedAt: now,
+          };
+        }
+        return v;
+      });
+    } else {
+      const newVendor: Vendor = {
+        ...vendorData,
+        gstin: trimmedGstin,
+        pan: trimmedPan,
+        createdAt: now,
+        updatedAt: now,
+      };
+      this.vendors.unshift(newVendor);
+    }
+
+    const savedVendor = this.getVendorById(vendorData.vendorId);
+    this.saveVendors(savedVendor);
+    return { 
+      success: true, 
+      message: `Vendor "${vendorData.vendorName}" ${isEdit ? 'updated' : 'created'} successfully.`,
+      vendor: savedVendor
+    };
+  }
+
+  public deleteVendor(id: string): { success: boolean; message: string } {
+    this.vendors = this.vendors.filter(v => v.vendorId !== id);
+    this.saveVendors(undefined, id);
+    return { success: true, message: 'Vendor removed successfully.' };
+  }
+
+  public toggleVendorStatus(id: string): Vendor | undefined {
+    const ven = this.vendors.find(v => v.vendorId === id);
+    if (ven) {
+      ven.status = ven.status === 'Active' ? 'Inactive' : 'Active';
+      ven.updatedAt = new Date().toISOString().split('T')[0];
+      this.saveVendors(ven);
+    }
+    return ven;
   }
 
   // =========================================================================
@@ -1260,6 +1768,10 @@ class DatabaseService {
       totalCollectedValue,
       totalClients: this.clients.length,
       totalCategories: this.categories.length,
+      totalTechnicians: this.technicians.length,
+      totalVendors: this.vendors.length,
+      activeTechnicians: this.technicians.filter(t => t.status === 'Active').length,
+      activeVendors: this.vendors.filter(v => v.status === 'Active').length,
     };
   }
 }

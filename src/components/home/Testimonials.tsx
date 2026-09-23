@@ -5,8 +5,6 @@ interface Testimonial {
   id: number;
   text: string;
   name: string;
-  role: string;
-  company: string;
   rating: number;
 }
 
@@ -14,34 +12,26 @@ export const Testimonials: React.FC = () => {
   const testimonials: Testimonial[] = [
     {
       id: 1,
-      text: "Taaskmate made managing our property maintenance incredibly simple. Their team was professional, responsive and completed everything on time with zero operational friction.",
-      name: "Rahul M.",
-      role: "Property Manager",
-      company: "Prestige Cyber Park, Bengaluru",
+      text: "Booking through Taaskmate was an absolute breeze. The technician arrived right on schedule, diagnosed the issue within minutes, and left the work area completely clean.",
+      name: "Vikramaditya S.",
       rating: 5,
     },
     {
       id: 2,
-      text: "I had a great experience with Taaskmate AC & Electrical Services. They were professional, efficient, and affordable. I would definitely recommend them to anyone managing large residential communities.",
-      name: "Jay Raj",
-      role: "RWA Secretary",
-      company: "Greenwoods Gated Community",
+      text: "Very impressed with the prompt response and transparent pricing. Unlike typical service providers, there were no surprises or hidden charges. Highly recommended!",
+      name: "Pooja Reddy",
       rating: 5,
     },
     {
       id: 3,
-      text: "I was so impressed with the deep sanitization and mechanized floor scrubbing that Taaskmate did for our healthcare facility. They went above and beyond, and our clinic looks pristine!",
-      name: "Sharada K.",
-      role: "Healthcare Facility Manager",
-      company: "Apex Wellness Clinics",
+      text: "The quality of service and attention to detail was exceptional. Their skilled professionals handled the entire requirement with utmost care and safety.",
+      name: "Manish Choudhary",
       rating: 5,
     },
     {
       id: 4,
-      text: "During our corporate office relocation, we required swift electrical rewiring and interior carpentry. Taaskmate handled everything seamlessly under a tight 48-hour deadline.",
-      name: "Venkat S.",
-      role: "Facilities Director",
-      company: "NovaTech Solutions",
+      text: "Dependable, polite, and well-trained technicians. Having a single trusted partner for all our property maintenance needs gives complete peace of mind.",
+      name: "Kavita Nair",
       rating: 5,
     },
   ];
@@ -115,8 +105,7 @@ export const Testimonials: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-6 border-t border-gray-100 gap-4">
               <div>
                 <h4 className="text-lg font-bold text-brand-navy">{current.name}</h4>
-                <p className="text-sm font-semibold text-brand-green">{current.role}</p>
-                <p className="text-xs text-gray-500">{current.company}</p>
+                <p className="text-xs font-semibold text-brand-green mt-0.5">Verified Customer</p>
               </div>
 
               {/* Carousel Controls */}

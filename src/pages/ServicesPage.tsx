@@ -9,7 +9,6 @@ interface ServicesPageProps {
 }
 
 export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'core' | 'facility' | 'specialized'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
 
@@ -29,11 +28,10 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
   }, [location]);
 
   const filteredServices = servicesList.filter((service) => {
-    const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory;
     const matchesSearch = service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       service.shortDesc.toLowerCase().includes(searchQuery.toLowerCase()) ||
       service.highlights.some(h => h.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
+    return matchesSearch;
   });
 
   return (
@@ -48,9 +46,6 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
           />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/20 text-brand-green text-xs font-bold uppercase tracking-wider mb-4 border border-brand-green/30">
-            End-to-End Solutions
-          </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4">
             Our Complete Service Catalog
           </h1>
@@ -63,52 +58,15 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
       {/* Filter and Search Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-7 relative z-20">
         <div className="bg-white rounded-2xl p-4 shadow-xl border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
-            <button
-              onClick={() => setSelectedCategory('all')}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
-                selectedCategory === 'all'
-                  ? 'bg-brand-green text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              All Services ({servicesList.length})
-            </button>
-            <button
-              onClick={() => setSelectedCategory('core')}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
-                selectedCategory === 'core'
-                  ? 'bg-brand-green text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Core Maintenance
-            </button>
-            <button
-              onClick={() => setSelectedCategory('facility')}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
-                selectedCategory === 'facility'
-                  ? 'bg-brand-green text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Facility Operations
-            </button>
-            <button
-              onClick={() => setSelectedCategory('specialized')}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
-                selectedCategory === 'specialized'
-                  ? 'bg-brand-green text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Specialized Projects
-            </button>
+          {/* Header Title / Tag */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-extrabold text-brand-navy px-3 py-1.5 bg-brand-green/10 text-brand-green rounded-xl">
+              All Services ({filteredServices.length})
+            </span>
           </div>
 
           {/* Search Input */}
-          <div className="relative w-full md:w-72">
+          <div className="relative w-full md:w-80">
             <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -129,11 +87,10 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
             <button
               onClick={() => {
                 setSearchQuery('');
-                setSelectedCategory('all');
               }}
               className="mt-3 text-sm font-bold text-brand-green hover:underline cursor-pointer"
             >
-              Reset Filters
+              Reset Search
             </button>
           </div>
         ) : (
@@ -165,7 +122,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
                   {/* Highlights List */}
                   <div className="space-y-2 pt-2 border-t border-gray-100 mb-6">
                     <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                      Key Capabilities:
+                      Key Services:
                     </div>
                     {service.highlights.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-2 text-xs text-gray-700">
@@ -177,19 +134,31 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
                 </div>
 
                 <div className="pt-4 border-t border-gray-100 flex items-center gap-3">
-                  <button
-                    onClick={() => onOpenQuote(service.name)}
-                    className="flex-1 py-2.5 px-4 bg-brand-green hover:bg-brand-green-hover text-white text-xs font-bold rounded-lg shadow-sm transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <span>Book Service</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => onOpenQuote(`Custom AMC - ${service.name}`)}
-                    className="py-2.5 px-3 bg-gray-100 hover:bg-gray-200 text-brand-navy text-xs font-bold rounded-lg transition-colors cursor-pointer"
-                  >
-                    AMC Quote
-                  </button>
+                  {['cleaning', 'appliances', 'pest-control'].includes(service.id) ? (
+                    <>
+                      <button
+                        onClick={() => onOpenQuote(service.name)}
+                        className="flex-1 py-2.5 px-4 bg-brand-green hover:bg-brand-green-hover text-white text-xs font-bold rounded-lg shadow-sm transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <span>Book Service</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => onOpenQuote(`AMC Quote - ${service.name}`)}
+                        className="py-2.5 px-3 bg-gray-100 hover:bg-gray-200 text-brand-navy text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                      >
+                        AMC Quote
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => onOpenQuote(service.name)}
+                      className="w-full py-2.5 px-4 bg-brand-green hover:bg-brand-green-hover text-white text-xs font-bold rounded-lg shadow-sm transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Book Service</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

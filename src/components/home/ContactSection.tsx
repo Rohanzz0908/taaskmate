@@ -52,10 +52,10 @@ export const ContactSection: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-brand-navy">Call Directly</h4>
-                  <p className="text-xs text-gray-500 mt-0.5">Toll-free / WhatsApp available 24/7</p>
-                  <a href="tel:+918045678900" className="text-sm font-bold text-brand-green hover:underline mt-1 inline-block">
-                    +91 80 4567 8900
-                  </a>
+                  <p className="text-xs text-gray-500 mt-0.5">Customer Support Desk</p>
+                  <span className="text-sm font-bold text-brand-green mt-1 inline-block">
+                    Updating Shortly
+                  </span>
                 </div>
               </div>
 
@@ -65,10 +65,10 @@ export const ContactSection: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-brand-navy">Corporate Desk</h4>
-                  <p className="text-xs text-gray-500 mt-0.5">For AMC tenders and commercial vendor queries</p>
-                  <a href="mailto:support@taaskmate.com" className="text-sm font-bold text-brand-green hover:underline mt-1 inline-block">
-                    support@taaskmate.com
-                  </a>
+                  <p className="text-xs text-gray-500 mt-0.5">Inquiries & Quotations</p>
+                  <span className="text-sm font-bold text-brand-green mt-1 inline-block">
+                    Updating Shortly
+                  </span>
                 </div>
               </div>
 

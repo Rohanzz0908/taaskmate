@@ -7,7 +7,9 @@ import {
   connectDB, 
   getCategoriesCollection, 
   getClientsCollection, 
-  getTransactionsCollection 
+  getTransactionsCollection,
+  getTechniciansCollection,
+  getVendorsCollection
 } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -292,12 +294,245 @@ const INITIAL_TRANSACTIONS = [
   }
 ];
 
-// --- SEED DATABASE IF EMPTY ---
+const INITIAL_TECHNICIANS = [
+  {
+    technicianId: 'TECH-0001',
+    name: 'Ramesh Gowda',
+    specialization: 'HVAC & MEP',
+    phone: '+91 98451 22334',
+    email: 'ramesh.gowda@taaskmate.com',
+    experienceYears: 9,
+    employmentType: 'Full-Time',
+    idProofType: 'Aadhaar',
+    idProofNumber: 'XXXX-XXXX-4821',
+    emergencyContact: {
+      name: 'Sunita Gowda',
+      phone: '+91 98451 99887',
+      relation: 'Spouse'
+    },
+    skills: ['Chiller Descaling', 'Condenser Overhaul', 'R-410A Refrigeration', 'AHU Balancing'],
+    rating: 5,
+    address: 'Indiranagar, Bengaluru, Karnataka 560038',
+    status: 'Active',
+    createdAt: '2026-08-01',
+    updatedAt: '2026-09-01'
+  },
+  {
+    technicianId: 'TECH-0002',
+    name: 'Anand Prakash',
+    specialization: 'Plumbing & Fire Safety',
+    phone: '+91 99160 55443',
+    email: 'anand.prakash@taaskmate.com',
+    experienceYears: 7,
+    employmentType: 'Full-Time',
+    idProofType: 'Aadhaar',
+    idProofNumber: 'XXXX-XXXX-7712',
+    emergencyContact: {
+      name: 'Prakash K',
+      phone: '+91 99160 11223',
+      relation: 'Father'
+    },
+    skills: ['Fire Hydrant Inspection', 'CO2 Nitrogen Refill', 'Sprinkler Testing', 'CPVC Line Pressure Test'],
+    rating: 5,
+    address: 'BTM Layout 2nd Stage, Bengaluru, Karnataka 560076',
+    status: 'Active',
+    createdAt: '2026-08-05',
+    updatedAt: '2026-09-03'
+  },
+  {
+    technicianId: 'TECH-0003',
+    name: 'Mohammed Farooq',
+    specialization: 'Electrical Switchgear',
+    phone: '+91 97402 88990',
+    email: 'm.farooq@taaskmate.com',
+    experienceYears: 11,
+    employmentType: 'Full-Time',
+    idProofType: 'PAN',
+    idProofNumber: 'ABCPE1234F',
+    emergencyContact: {
+      name: 'Amina Farooq',
+      phone: '+91 97402 44556',
+      relation: 'Spouse'
+    },
+    skills: ['LT/HT Panel Retrofitting', 'Schneider MCB Banks', 'Megger Insulation Testing', '3-Phase Busbar Balancing'],
+    rating: 4,
+    address: 'Shivajinagar, Bengaluru, Karnataka 560051',
+    status: 'Active',
+    createdAt: '2026-08-10',
+    updatedAt: '2026-09-02'
+  },
+  {
+    technicianId: 'TECH-0004',
+    name: 'Karthik Raja',
+    specialization: 'Carpentry & Hardware',
+    phone: '+91 98860 33445',
+    email: 'karthik.raja@taaskmate.com',
+    experienceYears: 5,
+    employmentType: 'Contractor',
+    idProofType: 'Aadhaar',
+    idProofNumber: 'XXXX-XXXX-3390',
+    emergencyContact: {
+      name: 'Raja Sundaram',
+      phone: '+91 98860 88776',
+      relation: 'Brother'
+    },
+    skills: ['Hydraulic Door Closers', 'Telescopic Channels', 'Acoustic Partitioning', 'Modular Furniture Repair'],
+    rating: 4,
+    address: 'Whitefield Main Road, Bengaluru, Karnataka 560066',
+    status: 'Active',
+    createdAt: '2026-08-15',
+    updatedAt: '2026-09-04'
+  },
+  {
+    technicianId: 'TECH-0005',
+    name: 'Sunil Mahajan',
+    specialization: 'Janitorial & Sanitization',
+    phone: '+91 96200 44112',
+    email: 'sunil.m@taaskmate.com',
+    experienceYears: 4,
+    employmentType: 'Full-Time',
+    idProofType: 'Voter ID',
+    idProofNumber: 'KA/02/123/456789',
+    emergencyContact: {
+      name: 'Rekha Mahajan',
+      phone: '+91 96200 77889',
+      relation: 'Spouse'
+    },
+    skills: ['Industrial Scrubbing', 'High-Rise Façade Cleaning', 'Cleanroom Disinfection', 'Waste Management Protocol'],
+    rating: 5,
+    address: 'Koramangala 4th Block, Bengaluru, Karnataka 560034',
+    status: 'On Leave',
+    createdAt: '2026-08-20',
+    updatedAt: '2026-09-05'
+  }
+];
+
+const INITIAL_VENDORS = [
+  {
+    vendorId: 'VEN-0001',
+    vendorName: 'Schneider Electric Industrial Spares Depot',
+    tradeCategory: 'Electrical & Lighting',
+    contactPerson: 'Vikas Agarwal (Key Account Mgr)',
+    phone: '+91 80 4112 8800',
+    email: 'orders.blr@schneider-distributor.in',
+    address: 'Plot 42, Peenya Industrial Area, 2nd Phase, Bengaluru, Karnataka 560058',
+    gstin: '29AABCS1234F1Z1',
+    pan: 'AABCS1234F',
+    bankDetails: {
+      bankName: 'HDFC Bank Ltd',
+      accountName: 'Schneider Electric Industrial Spares Depot',
+      accountNumber: '50200044556677',
+      ifsc: 'HDFC0000123',
+      branch: 'Peenya Industrial Area, Bengaluru'
+    },
+    paymentTerms: 'Net 30',
+    tier: 'Preferred Partner',
+    status: 'Active',
+    createdAt: '2026-08-01',
+    updatedAt: '2026-09-01'
+  },
+  {
+    vendorId: 'VEN-0002',
+    vendorName: 'Astral Pipes & Sanitary Solutions Pvt Ltd',
+    tradeCategory: 'Plumbing & Pumps',
+    contactPerson: 'Maheshwari R (Institutional Sales)',
+    phone: '+91 80 2221 4455',
+    email: 'bangalore.sales@astralpipesdepot.com',
+    address: '15/2, Lalbagh Fort Road, Doddamavalli, Bengaluru, Karnataka 560004',
+    gstin: '29AABCA9876K1Z4',
+    pan: 'AABCA9876K',
+    bankDetails: {
+      bankName: 'State Bank of India',
+      accountName: 'Astral Pipes & Sanitary Solutions',
+      accountNumber: '31098877665',
+      ifsc: 'SBIN0001244',
+      branch: 'Lalbagh Road, Bengaluru'
+    },
+    paymentTerms: 'Net 15',
+    tier: 'Preferred Partner',
+    status: 'Active',
+    createdAt: '2026-08-04',
+    updatedAt: '2026-09-02'
+  },
+  {
+    vendorId: 'VEN-0003',
+    vendorName: 'Daikin Central Chiller & HVAC Components',
+    tradeCategory: 'HVAC & Refrigeration',
+    contactPerson: 'Chetan Deshmukh (Regional Spares Head)',
+    phone: '+91 80 6677 3300',
+    email: 'spares.south@daikinservice-hub.in',
+    address: 'Survey 108, Bommasandra Industrial Area, Hosur Road, Bengaluru, Karnataka 560099',
+    gstin: '29AABCD5544E1Z7',
+    pan: 'AABCD5544E',
+    bankDetails: {
+      bankName: 'ICICI Bank Ltd',
+      accountName: 'Daikin Central Chiller Components',
+      accountNumber: '000205012345',
+      ifsc: 'ICIC0000002',
+      branch: 'Hosur Road, Bengaluru'
+    },
+    paymentTerms: '50% Advance',
+    tier: 'Preferred Partner',
+    status: 'Active',
+    createdAt: '2026-08-10',
+    updatedAt: '2026-09-03'
+  },
+  {
+    vendorId: 'VEN-0004',
+    vendorName: 'Ceasefire Extinguishers & Fire Safety Systems',
+    tradeCategory: 'Safety & Fire Fighting',
+    contactPerson: 'Deepak Bhatt (Safety Compliance Mgr)',
+    phone: '+91 80 2558 9911',
+    email: 'commercial.blr@ceasefiresafety.in',
+    address: '74, Richmond Road, Shanthala Nagar, Bengaluru, Karnataka 560025',
+    gstin: '29AAACC7788M1Z2',
+    pan: 'AAACC7788M',
+    bankDetails: {
+      bankName: 'Axis Bank Ltd',
+      accountName: 'Ceasefire Safety Systems Depot',
+      accountNumber: '918020033445566',
+      ifsc: 'UTIB0000115',
+      branch: 'Richmond Town, Bengaluru'
+    },
+    paymentTerms: 'Immediate / Net 0',
+    tier: 'Standard Supplier',
+    status: 'Active',
+    createdAt: '2026-08-15',
+    updatedAt: '2026-09-04'
+  },
+  {
+    vendorId: 'VEN-0005',
+    vendorName: 'Diversey Hygiene & Janitorial Solutions',
+    tradeCategory: 'Chemicals & Janitorial',
+    contactPerson: 'Sunayana Hegde (Client Relations)',
+    phone: '+91 80 4321 6789',
+    email: 'orders.karnataka@diversey-supplies.com',
+    address: 'Sy No 56, Electronic City Phase 2, Bengaluru, Karnataka 560100',
+    gstin: '29AABCD1122P1Z9',
+    pan: 'AABCD1122P',
+    bankDetails: {
+      bankName: 'Kotak Mahindra Bank',
+      accountName: 'Diversey Hygiene Facility Supplies',
+      accountNumber: '7711223344',
+      ifsc: 'KKBK0008012',
+      branch: 'Electronic City, Bengaluru'
+    },
+    paymentTerms: 'Net 30',
+    tier: 'Standard Supplier',
+    status: 'Active',
+    createdAt: '2026-08-20',
+    updatedAt: '2026-09-05'
+  }
+];
+
+// Helper to seed initial data if collections are completely empty
 async function seedDatabaseIfEmpty() {
   try {
     const catCol = getCategoriesCollection();
     const cliCol = getClientsCollection();
     const txCol = getTransactionsCollection();
+    const techCol = getTechniciansCollection();
+    const venCol = getVendorsCollection();
 
     const catCount = await catCol.countDocuments();
     if (catCount === 0) {
@@ -315,6 +550,18 @@ async function seedDatabaseIfEmpty() {
     if (txCount === 0) {
       console.log('[MongoDB] Seeding default master transactions...');
       await txCol.insertMany(INITIAL_TRANSACTIONS);
+    }
+
+    const techCount = await techCol.countDocuments();
+    if (techCount === 0) {
+      console.log('[MongoDB] Seeding default technicians...');
+      await techCol.insertMany(INITIAL_TECHNICIANS);
+    }
+
+    const venCount = await venCol.countDocuments();
+    if (venCount === 0) {
+      console.log('[MongoDB] Seeding default vendors...');
+      await venCol.insertMany(INITIAL_VENDORS);
     }
   } catch (err) {
     console.error('[MongoDB] Seeding error:', err.message);
@@ -339,12 +586,14 @@ app.get('/api/health', async (req, res) => {
 // 2. Full Bootstrap Data (All in one call)
 app.get('/api/bootstrap', async (req, res) => {
   try {
-    const [categories, clients, transactions] = await Promise.all([
+    const [categories, clients, transactions, technicians, vendors] = await Promise.all([
       getCategoriesCollection().find({}).toArray(),
       getClientsCollection().find({}).toArray(),
-      getTransactionsCollection().find({}).toArray()
+      getTransactionsCollection().find({}).toArray(),
+      getTechniciansCollection().find({}).toArray(),
+      getVendorsCollection().find({}).toArray()
     ]);
-    res.json({ categories, clients, transactions });
+    res.json({ categories, clients, transactions, technicians, vendors });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -453,6 +702,72 @@ app.post('/api/transactions', async (req, res) => {
 app.delete('/api/transactions/:id', async (req, res) => {
   try {
     await getTransactionsCollection().deleteOne({ transactionId: req.params.id });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 6. Technicians CRUD
+app.get('/api/technicians', async (req, res) => {
+  try {
+    const technicians = await getTechniciansCollection().find({}).toArray();
+    res.json(technicians);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/technicians', async (req, res) => {
+  try {
+    const technician = req.body;
+    await getTechniciansCollection().updateOne(
+      { technicianId: technician.technicianId },
+      { $set: technician },
+      { upsert: true }
+    );
+    res.json({ success: true, technician });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/technicians/:id', async (req, res) => {
+  try {
+    await getTechniciansCollection().deleteOne({ technicianId: req.params.id });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 7. Vendors CRUD
+app.get('/api/vendors', async (req, res) => {
+  try {
+    const vendors = await getVendorsCollection().find({}).toArray();
+    res.json(vendors);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/vendors', async (req, res) => {
+  try {
+    const vendor = req.body;
+    await getVendorsCollection().updateOne(
+      { vendorId: vendor.vendorId },
+      { $set: vendor },
+      { upsert: true }
+    );
+    res.json({ success: true, vendor });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/vendors/:id', async (req, res) => {
+  try {
+    await getVendorsCollection().deleteOne({ vendorId: req.params.id });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

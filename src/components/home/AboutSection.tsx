@@ -56,10 +56,10 @@ export const AboutSection: React.FC = () => {
               </Link>
 
               <Link
-                to="/property-management"
+                to="/services"
                 className="inline-flex items-center gap-2 px-5 py-3 text-brand-navy hover:text-brand-green text-sm font-bold rounded-xl border border-gray-200 hover:border-brand-green transition-colors"
               >
-                <span>Explore Property AMC</span>
+                <span>Explore All Services</span>
               </Link>
             </div>
           </div>
@@ -75,13 +75,13 @@ export const AboutSection: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
             </div>
 
-            {/* Floating Experience Badge */}
+            {/* Floating Quality Badge */}
             <div className="absolute -bottom-6 -left-4 sm:bottom-8 sm:-left-8 bg-white p-5 rounded-2xl shadow-xl border border-gray-100 max-w-xs flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-brand-green text-white flex items-center justify-center shrink-0 shadow-md">
                 <Award className="w-6 h-6" />
               </div>
               <div>
-                <div className="text-xl font-extrabold text-brand-navy">10+ Years</div>
+                <div className="text-xl font-extrabold text-brand-navy">100% Quality</div>
                 <div className="text-xs text-gray-500 font-medium">Delivering Benchmark Facility Standards</div>
               </div>
             </div>
@@ -89,7 +89,7 @@ export const AboutSection: React.FC = () => {
             {/* Floating Technicians Metric */}
             <div className="hidden sm:flex absolute -top-4 -right-4 bg-brand-navy text-white p-4 rounded-xl shadow-lg border border-brand-navy-light items-center gap-3">
               <div className="w-2.5 h-2.5 rounded-full bg-brand-green animate-pulse"></div>
-              <div className="text-xs font-semibold">2,500+ Certified Technicians On-Duty</div>
+              <div className="text-xs font-semibold">Certified & Background-Verified Experts</div>
             </div>
           </div>
         </div>

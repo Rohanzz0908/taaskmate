@@ -106,15 +106,7 @@ export const Footer: React.FC = () => {
                 <Link to="/services" className="hover:text-brand-green transition-colors">All Services Catalog</Link>
               </li>
               <li>
-                <Link to="/property-management" className="hover:text-brand-green transition-colors">Property Management</Link>
-              </li>
-              <li>
                 <Link to="/interior-design" className="hover:text-brand-green transition-colors">Interior Design</Link>
-              </li>
-              <li>
-                <Link to="/careers" className="hover:text-brand-green transition-colors flex items-center gap-2">
-                  Careers <span className="text-[10px] bg-brand-green text-brand-navy font-bold px-1.5 py-0.5 rounded">Hiring</span>
-                </Link>
               </li>
               <li>
                 <Link to="/partner-with-us" className="hover:text-brand-green transition-colors">Partner With Us</Link>
@@ -142,22 +134,22 @@ export const Footer: React.FC = () => {
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-brand-green shrink-0 mt-0.5" />
                 <span className="text-gray-400">
-                  Taaskmate Facility Towers, #42, Outer Ring Road, Bellandur, Bengaluru, Karnataka 560103
+                  Hyderabad, Telangana (Office address updating shortly)
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-brand-green shrink-0" />
-                <a href="tel:+918045678900" className="hover:text-brand-green text-gray-300 font-medium">
-                  +91 80 4567 8900 / +91 99000 12345
-                </a>
+                <span className="text-gray-300 font-medium">
+                  Support Helpline: Updating Shortly
+                </span>
               </div>
 
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-brand-green shrink-0" />
-                <a href="mailto:support@taaskmate.com" className="hover:text-brand-green text-gray-300">
-                  support@taaskmate.com
-                </a>
+                <span className="text-gray-300">
+                  Email: Updating Shortly
+                </span>
               </div>
 
               <div className="flex items-center gap-3">
