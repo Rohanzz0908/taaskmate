@@ -14,12 +14,12 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onOpenQuote }
     <div className="group relative bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between">
       {/* Top Icon and category */}
       <div>
-        <div className="w-12 h-12 rounded-xl bg-brand-green/10 text-brand-green group-hover:bg-brand-green group-hover:text-white flex items-center justify-center transition-all duration-300 mb-4 shadow-sm">
+        <div className="w-12 h-12 rounded-xl bg-brand-red/10 text-brand-red group-hover:bg-brand-red group-hover:text-white flex items-center justify-center transition-all duration-300 mb-4 shadow-sm">
           <ServiceIcon name={service.icon} size={22} />
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-bold text-brand-navy group-hover:text-brand-green transition-colors mb-2">
+        <h3 className="text-lg font-bold text-brand-navy group-hover:text-brand-red transition-colors mb-2">
           {service.name}
         </h3>
 
@@ -33,7 +33,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onOpenQuote }
       <div className="pt-3 border-t border-gray-100 flex items-center justify-between mt-auto">
         <Link
           to={`/services#${service.slug}`}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-green hover:text-brand-green-hover transition-colors group/link"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-red hover:text-brand-red-hover transition-colors group/link"
         >
           <span>Learn More</span>
           <ArrowRight className="w-3.5 h-3.5 transform group-hover/link:translate-x-1 transition-transform" />
@@ -41,7 +41,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onOpenQuote }
 
         <button
           onClick={() => onOpenQuote(service.name)}
-          className="text-xs font-semibold text-brand-navy hover:text-brand-green hover:underline cursor-pointer"
+          className="text-xs font-semibold text-brand-navy hover:text-brand-red hover:underline cursor-pointer"
         >
           Scheduled Consultation
         </button>

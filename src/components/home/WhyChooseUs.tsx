@@ -45,7 +45,7 @@ export const WhyChooseUs: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/60 via-transparent to-transparent"></div>
               
               <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-white/90 backdrop-blur-md border border-white/40 shadow-lg">
-                <div className="text-xs uppercase font-bold tracking-wider text-brand-green mb-1">Guaranteed Quality</div>
+                <div className="text-xs uppercase font-bold tracking-wider text-brand-red mb-1">Guaranteed Quality</div>
                 <div className="text-sm font-extrabold text-brand-navy">High First-Visit Resolution Rate with Certified Experts</div>
               </div>
             </div>
@@ -54,7 +54,7 @@ export const WhyChooseUs: React.FC = () => {
           {/* Right Column: Numbered Points */}
           <div className="lg:col-span-7 space-y-6 order-1 lg:order-2">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-brand-green">
+              <span className="text-xs font-bold uppercase tracking-widest text-brand-red">
                 Why Choose Us?
               </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy tracking-tight mt-2 mb-4">
@@ -67,10 +67,10 @@ export const WhyChooseUs: React.FC = () => {
               {points.map((pt) => (
                 <div
                   key={pt.num}
-                  className="flex items-start gap-4 p-3.5 rounded-xl bg-white/60 hover:bg-white border border-transparent hover:border-gray-200/80 transition-all duration-200 shadow-none hover:shadow-sm"
+                  className="flex items-start gap-4 p-3.5 rounded-xl bg-white/60 hover:bg-brand-red-light border border-transparent hover:border-brand-red-soft transition-all duration-200 shadow-none hover:shadow-sm"
                 >
-                  {/* Green Circular Number Icon */}
-                  <div className="w-10 h-10 rounded-full bg-brand-green text-white flex items-center justify-center font-extrabold text-base shrink-0 shadow-md">
+                  {/* Red Circular Number Icon */}
+                  <div className="w-10 h-10 rounded-full bg-brand-red text-white flex items-center justify-center font-extrabold text-base shrink-0 shadow-md">
                     {pt.num}
                   </div>
                   <div>

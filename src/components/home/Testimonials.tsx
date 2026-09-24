@@ -70,7 +70,7 @@ export const Testimonials: React.FC = () => {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/20 border border-brand-green/40 text-brand-green text-xs font-bold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-red/20 border border-brand-red/40 text-brand-red text-xs font-bold uppercase tracking-wider mb-3">
             Client Success Stories
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
@@ -85,7 +85,7 @@ export const Testimonials: React.FC = () => {
         <div className="max-w-3xl mx-auto relative">
           <div className="bg-white rounded-2xl p-8 sm:p-12 shadow-2xl border border-gray-100 relative">
             {/* Top Quote Icon */}
-            <div className="w-12 h-12 rounded-xl bg-brand-green/10 text-brand-green flex items-center justify-center mb-6">
+            <div className="w-12 h-12 rounded-xl bg-brand-red/10 text-brand-red flex items-center justify-center mb-6">
               <Quote className="w-6 h-6" />
             </div>
 
@@ -105,21 +105,21 @@ export const Testimonials: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-6 border-t border-gray-100 gap-4">
               <div>
                 <h4 className="text-lg font-bold text-brand-navy">{current.name}</h4>
-                <p className="text-xs font-semibold text-brand-green mt-0.5">Verified Customer</p>
+                <p className="text-xs font-semibold text-brand-red mt-0.5">Verified Customer</p>
               </div>
 
               {/* Carousel Controls */}
               <div className="flex items-center gap-3">
                 <button
                   onClick={handlePrev}
-                  className="w-10 h-10 rounded-full border border-gray-300 hover:border-brand-green hover:bg-brand-green hover:text-white text-gray-700 flex items-center justify-center transition-all cursor-pointer"
+                  className="w-10 h-10 rounded-full border border-gray-300 hover:border-brand-red hover:bg-brand-red hover:text-white text-gray-700 flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Previous testimonial"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={handleNext}
-                  className="w-10 h-10 rounded-full border border-gray-300 hover:border-brand-green hover:bg-brand-green hover:text-white text-gray-700 flex items-center justify-center transition-all cursor-pointer"
+                  className="w-10 h-10 rounded-full border border-gray-300 hover:border-brand-red hover:bg-brand-red hover:text-white text-gray-700 flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Next testimonial"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -135,7 +135,7 @@ export const Testimonials: React.FC = () => {
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
                 className={`h-2.5 rounded-full transition-all duration-300 ${
-                  currentIndex === idx ? 'w-8 bg-brand-green' : 'w-2.5 bg-white/40 hover:bg-white/70'
+                  currentIndex === idx ? 'w-8 bg-brand-red' : 'w-2.5 bg-white/40 hover:bg-white/70'
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />

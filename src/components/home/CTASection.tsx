@@ -8,7 +8,7 @@ interface CTASectionProps {
 
 export const CTASection: React.FC<CTASectionProps> = ({ onOpenQuote }) => {
   return (
-    <section className="py-16 sm:py-20 bg-brand-green text-white relative overflow-hidden">
+    <section className="py-16 sm:py-20 bg-brand-red text-white relative overflow-hidden">
       {/* Decorative background shapes */}
       <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-white/10 pointer-events-none blur-xl"></div>
       <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-black/10 pointer-events-none blur-xl"></div>
@@ -23,7 +23,7 @@ export const CTASection: React.FC<CTASectionProps> = ({ onOpenQuote }) => {
               Need a Service? <br className="hidden sm:inline" />
               We’ve Got It Covered.
             </h2>
-            <p className="text-base sm:text-lg text-emerald-50 mt-4 leading-relaxed font-medium">
+            <p className="text-base sm:text-lg text-red-100/90 mt-4 leading-relaxed font-medium">
               From a quick repair to complete property maintenance, Taaskmate is ready to help.
             </p>
           </div>
@@ -34,7 +34,7 @@ export const CTASection: React.FC<CTASectionProps> = ({ onOpenQuote }) => {
               className="w-full sm:w-auto px-8 py-4 bg-brand-navy hover:bg-brand-navy-light text-white font-bold text-base rounded-xl shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
             >
               <span>Request a Service</span>
-              <ArrowRight className="w-5 h-5 text-brand-green" />
+              <ArrowRight className="w-5 h-5 text-brand-red" />
             </button>
 
             <Link

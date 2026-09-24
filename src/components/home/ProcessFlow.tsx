@@ -33,7 +33,7 @@ export const ProcessFlow: React.FC = () => {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-red/10 text-brand-red text-xs font-bold uppercase tracking-wider mb-3">
             Streamlined Workflow
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy tracking-tight mb-4">
@@ -46,9 +46,9 @@ export const ProcessFlow: React.FC = () => {
 
         {/* Process Steps */}
         <div className="relative">
-          {/* Horizontal Green Connecting Line (Desktop Only) */}
-          <div className="hidden lg:block absolute top-12 left-[12%] right-[12%] h-1 bg-brand-green/30 z-0">
-            <div className="h-full bg-brand-green w-full rounded-full"></div>
+          {/* Horizontal Red Connecting Line (Desktop Only) */}
+          <div className="hidden lg:block absolute top-12 left-[12%] right-[12%] h-1 bg-brand-red/30 z-0">
+            <div className="h-full bg-brand-red w-full rounded-full"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6 relative z-10">
@@ -60,19 +60,19 @@ export const ProcessFlow: React.FC = () => {
                   className="flex flex-col items-center text-center group"
                 >
                   {/* Step Badge */}
-                  <span className="text-xs font-extrabold tracking-widest text-brand-green mb-3 uppercase bg-brand-green-light px-2.5 py-1 rounded-full">
+                  <span className="text-xs font-extrabold tracking-widest text-brand-red mb-3 uppercase bg-brand-red-soft px-2.5 py-1 rounded-full">
                     {item.step}
                   </span>
 
-                  {/* Large Green Circular Icon */}
-                  <div className="w-24 h-24 rounded-full bg-brand-green text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 ring-8 ring-white mb-5">
+                  {/* Large Red Circular Icon */}
+                  <div className="w-24 h-24 rounded-full bg-brand-red text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 ring-8 ring-white mb-5">
                     <Icon className="w-10 h-10" />
                   </div>
 
-                  {/* Title & Description */}
-                  <h3 className="text-lg font-bold text-brand-navy mb-2">
+                  {/* Comment preserved */}
+                  <div className="text-base font-bold text-brand-navy group-hover:text-brand-red transition-colors mb-2">
                     {item.title}
-                  </h3>
+                  </div>
                   <p className="text-sm text-gray-600 max-w-[220px] leading-relaxed">
                     {item.desc}
                   </p>

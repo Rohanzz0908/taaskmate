@@ -19,7 +19,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuote }) => {
         {/* Rich Multi-stop Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/90 to-brand-navy/60"></div>
         {/* Subtle radial glow */}
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-brand-green/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-brand-red/15 rounded-full blur-3xl pointer-events-none"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24">
@@ -28,7 +28,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuote }) => {
           {/* Headline */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.15] mb-6">
             Reliable Services. <br />
-            <span className="text-brand-green">Smarter Spaces.</span>
+            <span className="text-brand-red">Smarter Spaces.</span>
           </h1>
 
           {/* Supporting Text */}
@@ -40,7 +40,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuote }) => {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-12">
             <button
               onClick={onOpenQuote}
-              className="px-7 py-3.5 bg-brand-green hover:bg-brand-green-hover text-white font-bold text-base rounded-xl shadow-lg hover:shadow-brand-green/25 hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
+              className="px-7 py-3.5 bg-brand-red hover:bg-brand-red-hover text-white font-bold text-base rounded-xl shadow-lg hover:shadow-brand-red/25 hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
             >
               <span>Get a Quote</span>
               <ArrowRight className="w-5 h-5" />
@@ -57,7 +57,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuote }) => {
           {/* Trust Highlights Grid */}
           <div className="pt-6 border-t border-white/10 grid grid-cols-2 sm:grid-cols-3 gap-4 text-white">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-brand-green">
+              <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-brand-red">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
@@ -67,8 +67,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuote }) => {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-brand-green">
-                <Star className="w-5 h-5 fill-brand-green text-brand-green" />
+              <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-brand-red">
+                <Star className="w-5 h-5 fill-brand-red text-brand-red" />
               </div>
               <div>
                 <div className="text-sm font-bold">4.9 / 5 Rating</div>
@@ -77,7 +77,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuote }) => {
             </div>
 
             <div className="flex items-center gap-3 col-span-2 sm:col-span-1">
-              <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-brand-green">
+              <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-brand-red">
                 <Clock className="w-5 h-5" />
               </div>
               <div>

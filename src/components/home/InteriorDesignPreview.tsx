@@ -29,7 +29,7 @@ export const InteriorDesignPreview: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
               
               <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/50 text-brand-navy shadow-lg">
-                <span className="text-xs font-bold text-brand-green uppercase tracking-wider block">Award-Winning Craft</span>
+                <span className="text-xs font-bold text-brand-red uppercase tracking-wider block">Award-Winning Craft</span>
                 <span className="text-sm font-extrabold">350+ Homes & Offices Designed</span>
               </div>
             </div>
@@ -37,7 +37,7 @@ export const InteriorDesignPreview: React.FC = () => {
 
           {/* Right Column: Narrative & Services Pills */}
           <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-green">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-red">
               <span>Bespoke Design & Build</span>
             </div>
 
@@ -54,9 +54,9 @@ export const InteriorDesignPreview: React.FC = () => {
               {services.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-gray-200/80 shadow-sm hover:border-brand-green transition-all"
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-gray-200/80 shadow-sm hover:border-brand-red transition-all"
                 >
-                  <span className="w-2 h-2 rounded-full bg-brand-green"></span>
+                  <span className="w-2 h-2 rounded-full bg-brand-red"></span>
                   <span className="text-sm font-bold text-gray-800">{item}</span>
                 </div>
               ))}
@@ -65,7 +65,7 @@ export const InteriorDesignPreview: React.FC = () => {
             <div className="pt-4 flex items-center gap-4">
               <Link
                 to="/interior-design"
-                className="inline-flex items-center gap-2 px-6 py-3.5 bg-brand-green hover:bg-brand-green-hover text-white font-bold text-sm rounded-xl shadow-md transition-all duration-200 group"
+                className="inline-flex items-center gap-2 px-6 py-3.5 bg-brand-red hover:bg-brand-red-hover text-white font-bold text-sm rounded-xl shadow-md transition-all duration-200 group"
               >
                 <span>Explore Interior Portfolios</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

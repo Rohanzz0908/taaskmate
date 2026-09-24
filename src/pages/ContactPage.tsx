@@ -85,7 +85,7 @@ export const ContactPage: React.FC = () => {
 
               {submitted ? (
                 <div className="text-center py-12 space-y-4 animate-fadeIn">
-                  <div className="w-16 h-16 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center mx-auto">
+                  <div className="w-16 h-16 rounded-full bg-brand-red/10 text-brand-red flex items-center justify-center mx-auto">
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
                   <h3 className="text-2xl font-bold text-brand-navy">Inquiry Dispatched!</h3>
@@ -94,7 +94,7 @@ export const ContactPage: React.FC = () => {
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}
-                    className="px-6 py-2.5 bg-brand-green text-white font-bold rounded-lg text-sm mt-4 cursor-pointer"
+                    className="px-6 py-2.5 bg-brand-red text-white font-bold rounded-lg text-sm mt-4 cursor-pointer"
                   >
                     Submit Another Inquiry
                   </button>
@@ -110,7 +110,7 @@ export const ContactPage: React.FC = () => {
                         placeholder="Rajesh Kumar"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red"
                       />
                     </div>
 
@@ -122,7 +122,7 @@ export const ContactPage: React.FC = () => {
                         placeholder="+91 98765 43210"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red"
                       />
                     </div>
                   </div>
@@ -136,7 +136,7 @@ export const ContactPage: React.FC = () => {
                         placeholder="rajesh@example.com"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red"
                       />
                     </div>
 
@@ -145,7 +145,7 @@ export const ContactPage: React.FC = () => {
                       <select
                         value={formData.city}
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green bg-white"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red bg-white"
                       >
                         <option>Hyderabad</option>
                       </select>
@@ -158,7 +158,7 @@ export const ContactPage: React.FC = () => {
                       <select
                         value={formData.service}
                         onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green bg-white font-medium text-brand-navy"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red bg-white font-medium text-brand-navy"
                       >
                         {servicesList.map((s) => (
                           <option key={s.id} value={s.name}>{s.name}</option>
@@ -171,7 +171,7 @@ export const ContactPage: React.FC = () => {
                       <select
                         value={formData.propertyType}
                         onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green bg-white"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red bg-white"
                       >
                         <option>Corporate Office</option>
                         <option>Residential Society</option>
@@ -189,13 +189,13 @@ export const ContactPage: React.FC = () => {
                       placeholder="Brief details about the task, timeline, square footage..."
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green resize-none"
+                      className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red resize-none"
                     ></textarea>
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-3.5 bg-brand-green hover:bg-brand-green-hover text-white font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3.5 bg-brand-red hover:bg-brand-red-hover text-white font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                     <span>Submit Inquiry</span>
@@ -208,7 +208,7 @@ export const ContactPage: React.FC = () => {
           {/* Right Column: Office Hubs */}
           <div className="lg:col-span-5 space-y-6">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-brand-green">
+              <span className="text-xs font-bold uppercase tracking-widest text-brand-red">
                 Our Presence
               </span>
               <h2 className="text-2xl font-bold text-brand-navy mt-1 mb-4">
@@ -220,12 +220,12 @@ export const ContactPage: React.FC = () => {
               {offices.map((office, idx) => (
                 <div key={idx} className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-2">
                   <div className="flex items-center gap-2 text-brand-navy font-bold text-base">
-                    <Building2 className="w-4 h-4 text-brand-green" />
+                    <Building2 className="w-4 h-4 text-brand-red" />
                     <span>{office.city}</span>
                   </div>
                   <p className="text-xs text-gray-600 leading-relaxed pl-6">{office.address}</p>
                   <div className="flex items-center gap-4 text-xs font-semibold pl-6 pt-1">
-                    <a href={`tel:${office.phone.replace(/\s+/g, '')}`} className="text-brand-green hover:underline">{office.phone}</a>
+                    <a href={`tel:${office.phone.replace(/\s+/g, '')}`} className="text-brand-red hover:underline">{office.phone}</a>
                     <span className="text-gray-300">|</span>
                     <a href={`mailto:${office.email}`} className="text-gray-600 hover:text-brand-navy">{office.email}</a>
                   </div>
@@ -240,7 +240,7 @@ export const ContactPage: React.FC = () => {
       <section className="py-16 bg-white border-t border-gray-200/60">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest text-brand-green">
+            <span className="text-xs font-bold uppercase tracking-widest text-brand-red">
               Got Questions?
             </span>
             <h2 className="text-3xl font-extrabold text-brand-navy tracking-tight mt-1">
@@ -259,7 +259,7 @@ export const ContactPage: React.FC = () => {
                     className="w-full p-4 text-left flex items-center justify-between bg-white hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     <span className="text-sm sm:text-base font-bold text-brand-navy pr-4">{faq.q}</span>
-                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180 text-brand-green' : ''}`} />
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180 text-brand-red' : ''}`} />
                   </button>
                   {isOpen && (
                     <div className="p-4 pt-1 bg-gray-50 text-xs sm:text-sm text-gray-600 leading-relaxed border-t border-gray-100">

@@ -378,10 +378,10 @@ export const QuotationViewPage: React.FC = () => {
                   </td>
                   <td className="py-2.5 px-3 border-r border-black">
                     <div className="font-semibold text-slate-900">
-                      Service:
+                      {item.itemType || 'Service'}:
                     </div>
-                    <div className="text-slate-800 pl-1 mt-0.5 leading-relaxed">
-                      * {item.materialName}
+                    <div className="text-slate-800 pl-1 mt-0.5 leading-relaxed whitespace-pre-wrap">
+                      {item.description || item.materialName}
                     </div>
                     {item.purpose && (
                       <div className="text-slate-700 pl-1 mt-0.5 leading-relaxed">

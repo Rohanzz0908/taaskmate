@@ -32,7 +32,7 @@ export const ContactSection: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
           {/* Left Column: Contact Info & Support */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-green">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-red">
               <span>Connect With Taaskmate</span>
             </div>
 
@@ -47,31 +47,31 @@ export const ContactSection: React.FC = () => {
             {/* Micro Details Cards */}
             <div className="space-y-4 pt-2">
               <div className="flex items-start gap-3.5 p-4 rounded-xl bg-white border border-gray-200/80 shadow-sm">
-                <div className="w-10 h-10 rounded-lg bg-brand-green/10 text-brand-green flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-brand-red/10 text-brand-red flex items-center justify-center shrink-0">
                   <Phone className="w-5 h-5" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-brand-navy">Call Directly</h4>
-                  <a href="tel:+918142517143" className="text-sm font-bold text-brand-green hover:underline mt-1 inline-block">
+                  <a href="tel:+918142517143" className="text-sm font-bold text-brand-red hover:underline mt-1 inline-block">
                     +91 81425 17143
                   </a>
                 </div>
               </div>
 
               <div className="flex items-start gap-3.5 p-4 rounded-xl bg-white border border-gray-200/80 shadow-sm">
-                <div className="w-10 h-10 rounded-lg bg-brand-green/10 text-brand-green flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-brand-red/10 text-brand-red flex items-center justify-center shrink-0">
                   <Mail className="w-5 h-5" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-brand-navy">Corporate Desk</h4>
-                  <a href="mailto:sudhir@taaskmate.in" className="text-sm font-bold text-brand-green hover:underline mt-1 inline-block">
+                  <a href="mailto:sudhir@taaskmate.in" className="text-sm font-bold text-brand-red hover:underline mt-1 inline-block">
                     sudhir@taaskmate.in
                   </a>
                 </div>
               </div>
 
               <div className="flex items-start gap-3.5 p-4 rounded-xl bg-white border border-gray-200/80 shadow-sm">
-                <div className="w-10 h-10 rounded-lg bg-brand-green/10 text-brand-green flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-brand-red/10 text-brand-red flex items-center justify-center shrink-0">
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
@@ -87,7 +87,7 @@ export const ContactSection: React.FC = () => {
             <div className="bg-white rounded-2xl p-6 sm:p-10 shadow-xl border border-gray-100">
               {submitted ? (
                 <div className="text-center py-12 space-y-4 animate-fadeIn">
-                  <div className="w-16 h-16 bg-brand-green/10 text-brand-green rounded-full flex items-center justify-center mx-auto">
+                  <div className="w-16 h-16 bg-brand-red/10 text-brand-red rounded-full flex items-center justify-center mx-auto">
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
                   <h3 className="text-2xl font-bold text-brand-navy">Request Dispatched Successfully!</h3>
@@ -108,7 +108,7 @@ export const ContactSection: React.FC = () => {
                           message: '',
                         });
                       }}
-                      className="px-6 py-2.5 bg-brand-green hover:bg-brand-green-hover text-white text-sm font-semibold rounded-lg shadow-sm transition-all"
+                      className="px-6 py-2.5 bg-brand-red hover:bg-brand-red-hover text-white text-sm font-semibold rounded-lg shadow-sm transition-all"
                     >
                       Send Another Request
                     </button>
@@ -132,7 +132,7 @@ export const ContactSection: React.FC = () => {
                         placeholder="e.g. Aditi Roy"
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
                       />
                     </div>
 
@@ -147,7 +147,7 @@ export const ContactSection: React.FC = () => {
                         placeholder="+91 98765 43210"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
                       />
                     </div>
                   </div>
@@ -164,7 +164,7 @@ export const ContactSection: React.FC = () => {
                         placeholder="aditi@company.in"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
                       />
                     </div>
 
@@ -176,7 +176,7 @@ export const ContactSection: React.FC = () => {
                       <select
                         value={formData.propertyType}
                         onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 bg-white"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 bg-white"
                       >
                         <option>Corporate / Commercial Office</option>
                         <option>Residential Apartment / Villa</option>
@@ -197,7 +197,7 @@ export const ContactSection: React.FC = () => {
                       <select
                         value={formData.serviceRequired}
                         onChange={(e) => setFormData({ ...formData, serviceRequired: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 bg-white font-medium text-brand-navy"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 bg-white font-medium text-brand-navy"
                       >
                         {servicesList.map((item) => (
                           <option key={item.id} value={item.name}>
@@ -218,7 +218,7 @@ export const ContactSection: React.FC = () => {
                         placeholder="e.g. Whitefield, Bengaluru"
                         value={formData.location}
                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
                       />
                     </div>
                   </div>
@@ -233,7 +233,7 @@ export const ContactSection: React.FC = () => {
                       placeholder="Describe the issue, square footage, urgency, or preferred inspection time..."
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 resize-none"
+                      className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 resize-none"
                     ></textarea>
                   </div>
 
@@ -251,7 +251,7 @@ export const ContactSection: React.FC = () => {
                         </>
                       ) : (
                         <>
-                          <Send className="w-4 h-4 text-brand-green" />
+                          <Send className="w-4 h-4 text-brand-red" />
                           <span>Submit Request</span>
                         </>
                       )}

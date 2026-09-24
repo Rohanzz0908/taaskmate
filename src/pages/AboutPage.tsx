@@ -59,7 +59,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onOpenQuote }) => {
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-6 space-y-5">
-            <span className="text-xs font-bold uppercase tracking-widest text-brand-green">
+            <span className="text-xs font-bold uppercase tracking-widest text-brand-red">
               Our Vision & Mission
             </span>
             <h2 className="text-3xl font-extrabold text-brand-navy tracking-tight">
@@ -84,7 +84,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onOpenQuote }) => {
               </div>
               <div className="w-px h-12 bg-gray-300"></div>
               <div>
-                <div className="text-3xl font-extrabold text-brand-green">Guaranteed</div>
+                <div className="text-3xl font-extrabold text-brand-red">Guaranteed</div>
                 <div className="text-xs text-gray-500 font-semibold mt-1">Service Quality</div>
               </div>
             </div>
@@ -104,7 +104,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onOpenQuote }) => {
       <section className="py-20 bg-white border-t border-gray-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-brand-green">
+            <span className="text-xs font-bold uppercase tracking-widest text-brand-red">
               Our Core Principles
             </span>
             <h2 className="text-3xl font-extrabold text-brand-navy tracking-tight mt-1">
@@ -117,7 +117,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onOpenQuote }) => {
               const Icon = v.icon;
               return (
                 <div key={i} className="p-6 rounded-2xl bg-[#F7F8F9] border border-gray-200/80">
-                  <div className="w-12 h-12 rounded-xl bg-brand-green/10 text-brand-green flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-brand-red/10 text-brand-red flex items-center justify-center mb-4">
                     <Icon className="w-6 h-6" />
                   </div>
                   <h3 className="text-lg font-bold text-brand-navy mb-2">{v.title}</h3>
@@ -137,7 +137,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onOpenQuote }) => {
           <p className="text-gray-300 text-base mb-8">Let’s discuss your property management requirements or schedule an on-site safety audit.</p>
           <button
             onClick={onOpenQuote}
-            className="px-8 py-3.5 bg-brand-green hover:bg-brand-green-hover text-white font-bold text-sm rounded-xl shadow-lg transition-all cursor-pointer"
+            className="px-8 py-3.5 bg-brand-red hover:bg-brand-red-hover text-white font-bold text-sm rounded-xl shadow-lg transition-all cursor-pointer"
           >
             Get a Free Quote
           </button>

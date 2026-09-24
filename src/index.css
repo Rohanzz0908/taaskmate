@@ -29,7 +29,7 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00C878;
+  background: #9E1B32;
 }
 
 .text-gradient {
@@ -38,8 +38,108 @@
   -webkit-text-fill-color: transparent;
 }
 
-.text-gradient-green {
-  background: linear-gradient(135deg, #00C878 0%, #00995c 100%);
+.text-gradient-red {
+  background: linear-gradient(135deg, #9E1B32 0%, #B3263F 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* Explicit brand-red utilities for instant dev-server & browser application */
+:root {
+  --brand-red: #9E1B32;
+  --brand-red-hover: #7F1428;
+  --brand-red-medium: #B3263F;
+  --brand-red-soft: #F8E9ED;
+  --brand-red-light: #FCF5F6;
+}
+
+.bg-brand-red {
+  background-color: #9E1B32 !important;
+}
+.hover\:bg-brand-red-hover:hover {
+  background-color: #7F1428 !important;
+}
+.text-brand-red {
+  color: #9E1B32 !important;
+}
+.hover\:text-brand-red:hover {
+  color: #9E1B32 !important;
+}
+.hover\:text-brand-red-hover:hover {
+  color: #7F1428 !important;
+}
+.border-brand-red {
+  border-color: #9E1B32 !important;
+}
+.hover\:border-brand-red:hover {
+  border-color: #9E1B32 !important;
+}
+.bg-brand-red-soft {
+  background-color: #F8E9ED !important;
+}
+.bg-brand-red-light {
+  background-color: #FCF5F6 !important;
+}
+.hover\:bg-brand-red-light:hover {
+  background-color: #FCF5F6 !important;
+}
+.border-brand-red-soft {
+  border-color: #F8E9ED !important;
+}
+.hover\:border-brand-red-soft:hover {
+  border-color: #F8E9ED !important;
+}
+.text-brand-red-medium {
+  color: #B3263F !important;
+}
+.bg-brand-red\/10 {
+  background-color: rgba(158, 27, 50, 0.1) !important;
+}
+.bg-brand-red\/15 {
+  background-color: rgba(158, 27, 50, 0.15) !important;
+}
+.bg-brand-red\/20 {
+  background-color: rgba(158, 27, 50, 0.2) !important;
+}
+.bg-brand-red\/30 {
+  background-color: rgba(158, 27, 50, 0.3) !important;
+}
+.border-brand-red\/20 {
+  border-color: rgba(158, 27, 50, 0.2) !important;
+}
+.border-brand-red\/30 {
+  border-color: rgba(158, 27, 50, 0.3) !important;
+}
+.border-brand-red\/40 {
+  border-color: rgba(158, 27, 50, 0.4) !important;
+}
+.fill-brand-red {
+  fill: #9E1B32 !important;
+}
+.ring-brand-red {
+  --tw-ring-color: #9E1B32 !important;
+}
+.focus\:border-brand-red:focus {
+  border-color: #9E1B32 !important;
+}
+.focus\:ring-brand-red\/20:focus {
+  --tw-ring-color: rgba(158, 27, 50, 0.2) !important;
+}
+.selection\:bg-brand-red ::selection {
+  background-color: #9E1B32 !important;
+  color: #ffffff !important;
+}
+.selection\:bg-brand-red::selection {
+  background-color: #9E1B32 !important;
+  color: #ffffff !important;
+}
+
+/* Remove number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
 }

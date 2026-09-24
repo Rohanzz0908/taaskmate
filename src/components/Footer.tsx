@@ -22,7 +22,7 @@ export const Footer: React.FC = () => {
               Taaskmate is India's leading on-demand facility management and property services company, providing integrated engineering, maintenance, housekeeping, and turnkey interior solutions for modern spaces.
             </p>
             <div className="flex items-center gap-3 pt-2">
-              <span className="inline-flex items-center gap-1.5 text-xs text-brand-green bg-brand-green/10 px-2.5 py-1 rounded-md border border-brand-green/20">
+              <span className="inline-flex items-center gap-1.5 text-xs text-brand-red bg-brand-red/10 px-2.5 py-1 rounded-md border border-brand-red/20">
                 <ShieldCheck className="w-3.5 h-3.5" /> ISO 9001:2015
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs text-gray-300 bg-white/5 px-2.5 py-1 rounded-md border border-white/10">
@@ -34,55 +34,55 @@ export const Footer: React.FC = () => {
           {/* Column 2: Our Services */}
           <div>
             <h4 className="text-white font-bold text-base tracking-wide uppercase mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-brand-green"></span>
+              <span className="w-2 h-2 rounded-full bg-brand-red"></span>
               Our Services
             </h4>
             <ul className="space-y-2.5 text-sm">
               <li>
-                <Link to="/services#plumbing" className="hover:text-brand-green transition-colors flex items-center gap-1.5 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-green"></span>
+                <Link to="/services#plumbing" className="hover:text-brand-red transition-colors flex items-center gap-1.5 group">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-red"></span>
                   Plumbing & Sanitation
                 </Link>
               </li>
               <li>
-                <Link to="/services#electrical" className="hover:text-brand-green transition-colors flex items-center gap-1.5 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-green"></span>
+                <Link to="/services#electrical" className="hover:text-brand-red transition-colors flex items-center gap-1.5 group">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-red"></span>
                   Electrical & Power Systems
                 </Link>
               </li>
               <li>
-                <Link to="/services#carpentry" className="hover:text-brand-green transition-colors flex items-center gap-1.5 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-green"></span>
+                <Link to="/services#carpentry" className="hover:text-brand-red transition-colors flex items-center gap-1.5 group">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-red"></span>
                   Carpentry & Fit-outs
                 </Link>
               </li>
               <li>
-                <Link to="/services#cleaning" className="hover:text-brand-green transition-colors flex items-center gap-1.5 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-green"></span>
+                <Link to="/services#cleaning" className="hover:text-brand-red transition-colors flex items-center gap-1.5 group">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-red"></span>
                   Deep Cleaning & Housekeeping
                 </Link>
               </li>
               <li>
-                <Link to="/services#painting" className="hover:text-brand-green transition-colors flex items-center gap-1.5 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-green"></span>
+                <Link to="/services#painting" className="hover:text-brand-red transition-colors flex items-center gap-1.5 group">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-red"></span>
                   Painting & Waterproofing
                 </Link>
               </li>
               <li>
-                <Link to="/services#pest-control" className="hover:text-brand-green transition-colors flex items-center gap-1.5 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-green"></span>
+                <Link to="/services#pest-control" className="hover:text-brand-red transition-colors flex items-center gap-1.5 group">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-red"></span>
                   Pest Control & Disinfection
                 </Link>
               </li>
               <li>
-                <Link to="/services#amc" className="hover:text-brand-green transition-colors flex items-center gap-1.5 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-green"></span>
+                <Link to="/services#amc" className="hover:text-brand-red transition-colors flex items-center gap-1.5 group">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-red"></span>
                   AMC Facility Contracts
                 </Link>
               </li>
               <li>
-                <Link to="/services#renovation" className="hover:text-brand-green transition-colors flex items-center gap-1.5 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-green"></span>
+                <Link to="/services#renovation" className="hover:text-brand-red transition-colors flex items-center gap-1.5 group">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-brand-red"></span>
                   Renovation & Remodeling
                 </Link>
               </li>
@@ -92,31 +92,34 @@ export const Footer: React.FC = () => {
           {/* Column 3: Quick Links */}
           <div>
             <h4 className="text-white font-bold text-base tracking-wide uppercase mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-brand-green"></span>
+              <span className="w-2 h-2 rounded-full bg-brand-red"></span>
               Quick Links
             </h4>
             <ul className="space-y-2.5 text-sm">
               <li>
-                <Link to="/" className="hover:text-brand-green transition-colors">Home</Link>
+                <Link to="/" className="hover:text-brand-red transition-colors">Home</Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-brand-green transition-colors">About Us</Link>
+                <Link to="/about" className="hover:text-brand-red transition-colors">About Us</Link>
               </li>
               <li>
-                <Link to="/services" className="hover:text-brand-green transition-colors">All Services Catalog</Link>
+                <Link to="/services" className="hover:text-brand-red transition-colors">All Services Catalog</Link>
               </li>
               <li>
-                <Link to="/interior-design" className="hover:text-brand-green transition-colors">Interior Design</Link>
+                <Link to="/interior-design" className="hover:text-brand-red transition-colors">Interior Design</Link>
               </li>
               <li>
-                <Link to="/partner-with-us" className="hover:text-brand-green transition-colors">Partner With Us</Link>
+                <Link to="/partner-with-us" className="hover:text-brand-red transition-colors">Partner With Us</Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-brand-green transition-colors">Contact Us</Link>
+                <Link to="/careers" className="hover:text-brand-red transition-colors">Careers</Link>
               </li>
               <li>
-                <Link to="/login" className="text-gray-400 hover:text-brand-green transition-colors text-xs font-semibold flex items-center gap-1.5 pt-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-green"></span>
+                <Link to="/contact" className="hover:text-brand-red transition-colors">Contact Us</Link>
+              </li>
+              <li>
+                <Link to="/login" className="text-gray-400 hover:text-brand-red transition-colors text-xs font-semibold flex items-center gap-1.5 pt-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-red"></span>
                   Staff / ERP Portal
                 </Link>
               </li>
@@ -126,40 +129,40 @@ export const Footer: React.FC = () => {
           {/* Column 4: Contact Us */}
           <div className="space-y-4">
             <h4 className="text-white font-bold text-base tracking-wide uppercase mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-brand-green"></span>
+              <span className="w-2 h-2 rounded-full bg-brand-red"></span>
               Contact Us
             </h4>
 
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-brand-green shrink-0 mt-0.5" />
+                <MapPin className="w-5 h-5 text-brand-red shrink-0 mt-0.5" />
                 <span className="text-gray-400">
                   12-1-456/71/A, Sai Raghavendra Colony, Muttuguda, Hyderabad, Telangana 500068
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-brand-green shrink-0" />
+                <Phone className="w-5 h-5 text-brand-red shrink-0" />
                 <span className="text-gray-300 font-medium">
                   Support Helpline:{' '}
-                  <a href="tel:+918142517143" className="text-brand-green hover:underline">
+                  <a href="tel:+918142517143" className="text-brand-red hover:underline">
                     +91 81425 17143
                   </a>
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-brand-green shrink-0" />
+                <Mail className="w-5 h-5 text-brand-red shrink-0" />
                 <span className="text-gray-300">
                   Email:{' '}
-                  <a href="mailto:sudhir@taaskmate.in" className="text-brand-green hover:underline">
+                  <a href="mailto:sudhir@taaskmate.in" className="text-brand-red hover:underline">
                     sudhir@taaskmate.in
                   </a>
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-brand-green shrink-0" />
+                <Clock className="w-5 h-5 text-brand-red shrink-0" />
                 <span className="text-gray-400">24/7 Operations & Helpdesk Support</span>
               </div>
             </div>
@@ -173,7 +176,7 @@ export const Footer: React.FC = () => {
                   href="https://instagram.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-green hover:text-white flex items-center justify-center transition-all text-gray-400"
+                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-red hover:text-white flex items-center justify-center transition-all text-gray-400"
                   aria-label="Instagram"
                 >
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -186,7 +189,7 @@ export const Footer: React.FC = () => {
                   href="https://linkedin.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-green hover:text-white flex items-center justify-center transition-all text-gray-400"
+                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-red hover:text-white flex items-center justify-center transition-all text-gray-400"
                   aria-label="LinkedIn"
                 >
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -199,7 +202,7 @@ export const Footer: React.FC = () => {
                   href="https://facebook.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-green hover:text-white flex items-center justify-center transition-all text-gray-400"
+                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-red hover:text-white flex items-center justify-center transition-all text-gray-400"
                   aria-label="Facebook"
                 >
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -212,7 +215,7 @@ export const Footer: React.FC = () => {
                   href="https://youtube.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-green hover:text-white flex items-center justify-center transition-all text-gray-400"
+                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-brand-red hover:text-white flex items-center justify-center transition-all text-gray-400"
                   aria-label="YouTube"
                 >
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -228,10 +231,10 @@ export const Footer: React.FC = () => {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
           <p>© 2026 Taaskmate Services Private Limited. All Rights Reserved.</p>
           <div className="flex items-center gap-6">
-            <Link to="/contact" className="hover:text-brand-green transition-colors">Privacy Policy</Link>
-            <Link to="/contact" className="hover:text-brand-green transition-colors">Terms of Service</Link>
-            <Link to="/contact" className="hover:text-brand-green transition-colors">Security & SLA</Link>
-            <Link to="/partner-with-us" className="hover:text-brand-green transition-colors">Vendor Guidelines</Link>
+            <Link to="/contact" className="hover:text-brand-red transition-colors">Privacy Policy</Link>
+            <Link to="/contact" className="hover:text-brand-red transition-colors">Terms of Service</Link>
+            <Link to="/contact" className="hover:text-brand-red transition-colors">Security & SLA</Link>
+            <Link to="/partner-with-us" className="hover:text-brand-red transition-colors">Vendor Guidelines</Link>
           </div>
         </div>
       </div>

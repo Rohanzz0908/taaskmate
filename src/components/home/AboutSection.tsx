@@ -18,7 +18,7 @@ export const AboutSection: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Left Column: Content */}
           <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-green">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-red">
               <span>About Taaskmate</span>
             </div>
 
@@ -38,8 +38,8 @@ export const AboutSection: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 pb-4">
               {checklist.map((item, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-brand-green/15 text-brand-green flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-4 h-4 text-brand-green" />
+                  <div className="w-5 h-5 rounded-full bg-brand-red/15 text-brand-red flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-brand-red" />
                   </div>
                   <span className="text-sm font-semibold text-gray-800">{item}</span>
                 </div>
@@ -52,12 +52,12 @@ export const AboutSection: React.FC = () => {
                 className="inline-flex items-center gap-2 px-6 py-3 bg-brand-navy hover:bg-brand-navy-light text-white text-sm font-bold rounded-xl shadow-md transition-all duration-200"
               >
                 <span>Read Our Full Story</span>
-                <ArrowRight className="w-4 h-4 text-brand-green" />
+                <ArrowRight className="w-4 h-4 text-brand-red" />
               </Link>
 
               <Link
                 to="/services"
-                className="inline-flex items-center gap-2 px-5 py-3 text-brand-navy hover:text-brand-green text-sm font-bold rounded-xl border border-gray-200 hover:border-brand-green transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-3 text-brand-navy hover:text-brand-red text-sm font-bold rounded-xl border border-gray-200 hover:border-brand-red transition-colors"
               >
                 <span>Explore All Services</span>
               </Link>
@@ -77,7 +77,7 @@ export const AboutSection: React.FC = () => {
 
             {/* Floating Quality Badge */}
             <div className="absolute -bottom-6 -left-4 sm:bottom-8 sm:-left-8 bg-white p-5 rounded-2xl shadow-xl border border-gray-100 max-w-xs flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-brand-green text-white flex items-center justify-center shrink-0 shadow-md">
+              <div className="w-12 h-12 rounded-xl bg-brand-red text-white flex items-center justify-center shrink-0 shadow-md">
                 <Award className="w-6 h-6" />
               </div>
               <div>
@@ -88,7 +88,7 @@ export const AboutSection: React.FC = () => {
 
             {/* Floating Technicians Metric */}
             <div className="hidden sm:flex absolute -top-4 -right-4 bg-brand-navy text-white p-4 rounded-xl shadow-lg border border-brand-navy-light items-center gap-3">
-              <div className="w-2.5 h-2.5 rounded-full bg-brand-green animate-pulse"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-brand-red animate-pulse"></div>
               <div className="text-xs font-semibold">Certified & Background-Verified Experts</div>
             </div>
           </div>

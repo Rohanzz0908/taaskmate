@@ -12,6 +12,7 @@ import { InteriorDesignPage } from './pages/InteriorDesignPage';
 import { AboutPage } from './pages/AboutPage';
 import { PartnerPage } from './pages/PartnerPage';
 import { ContactPage } from './pages/ContactPage';
+import { CareersPage } from './pages/CareersPage';
 
 // Portal & ERP Modules
 import { AuthProvider } from './portal/context/AuthContext';
@@ -54,7 +55,7 @@ interface PublicLayoutProps {
 
 function PublicLayout({ onOpenQuote }: PublicLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F8F9] text-gray-800 font-sans selection:bg-brand-green selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#F7F8F9] text-gray-800 font-sans selection:bg-brand-red selection:text-white">
       <Navbar onOpenQuote={onOpenQuote} />
       <main className="flex-1">
         <Outlet />
@@ -135,6 +136,7 @@ export function App() {
             <Route path="/interior-design" element={<InteriorDesignPage onOpenQuote={handleOpenQuote} />} />
             <Route path="/about" element={<AboutPage onOpenQuote={handleOpenQuote} />} />
             <Route path="/partner-with-us" element={<PartnerPage />} />
+            <Route path="/careers" element={<CareersPage />} />
             <Route path="/contact" element={<ContactPage />} />
             {/* Fallback public route */}
             <Route path="*" element={<HomePage onOpenQuote={handleOpenQuote} />} />

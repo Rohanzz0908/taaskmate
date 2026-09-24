@@ -87,15 +87,22 @@ export interface ClientSnapshot {
 
 export interface QuotationItem {
   itemId: string;
-  categoryId: string;
-  materialName: string;
-  uom: UOMType;
+  categoryId?: string;
+  materialName?: string;
+  description?: string;
+  itemType?: 'Material' | 'Service';
+  uom: UOMType | string;
   quantity: number;
-  rate: number;
-  discount: number; // in currency amount
+  rate: number; // client rate
+  vendorCost?: number;
+  vendorAmount?: number;
+  profitPercent?: number;
+  discount?: number; // in currency amount
   taxPercent: number; // e.g. 18 for 18%
   taxAmount: number;
-  amount: number; // (quantity * rate) - discount + taxAmount
+  clientRate?: number;
+  clientAmount?: number;
+  amount: number; // net client total
   purpose?: string;
 }
 

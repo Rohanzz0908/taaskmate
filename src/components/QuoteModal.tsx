@@ -61,7 +61,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
         {/* Top Header Banner */}
         <div className="bg-brand-navy text-white px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-brand-green/20 border border-brand-green/40 flex items-center justify-center text-brand-green">
+            <div className="w-9 h-9 rounded-lg bg-brand-red/20 border border-brand-red/40 flex items-center justify-center text-brand-red">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
@@ -82,7 +82,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
         <div className="p-6 sm:p-8">
           {isSubmitted ? (
             <div className="text-center py-10 space-y-4">
-              <div className="w-16 h-16 bg-brand-green/10 text-brand-green rounded-full flex items-center justify-center mx-auto">
+              <div className="w-16 h-16 bg-brand-red/10 text-brand-red rounded-full flex items-center justify-center mx-auto">
                 <CheckCircle className="w-10 h-10" />
               </div>
               <h4 className="text-2xl font-bold text-brand-navy">Thank You, {fullName || 'Partner'}!</h4>
@@ -92,7 +92,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
               <div className="pt-4">
                 <button
                   onClick={handleReset}
-                  className="px-6 py-2.5 bg-brand-green hover:bg-brand-green-hover text-white font-semibold rounded-lg shadow-sm transition-all"
+                  className="px-6 py-2.5 bg-brand-red hover:bg-brand-red-hover text-white font-semibold rounded-lg shadow-sm transition-all"
                 >
                   Done
                 </button>
@@ -112,7 +112,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
                     placeholder="e.g. Rajesh Sharma"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
                   />
                 </div>
 
@@ -127,7 +127,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
                     placeholder="+91 98765 43210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
                   />
                 </div>
               </div>
@@ -144,7 +144,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
                     placeholder="name@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
                   />
                 </div>
 
@@ -156,7 +156,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
                   <select
                     value={propertyType}
                     onChange={(e) => setPropertyType(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 bg-white"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 bg-white"
                   >
                     <option>Residential Apartment / Villa</option>
                     <option>Gated Residential Society</option>
@@ -178,7 +178,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
                   <select
                     value={service}
                     onChange={(e) => setService(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 bg-white font-medium text-brand-navy"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 bg-white font-medium text-brand-navy"
                   >
                     {servicesList.map((s) => (
                       <option key={s.id} value={s.name}>
@@ -199,7 +199,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
                     placeholder="e.g. Indiranagar, Bengaluru"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
                   />
                 </div>
               </div>
@@ -214,20 +214,20 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
                   placeholder="Describe your requirement, square footage, urgency, or specific problems..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 resize-none"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 resize-none"
                 ></textarea>
               </div>
 
               {/* Trust Badges */}
               <div className="flex flex-wrap items-center justify-between text-xs text-gray-500 py-2 border-t border-b border-gray-100">
                 <span className="inline-flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-brand-green" /> 100% Verified Technicians
+                  <Shield className="w-3.5 h-3.5 text-brand-red" /> 100% Verified Technicians
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-brand-green" /> Fast 45-Min Turnaround
+                  <Clock className="w-3.5 h-3.5 text-brand-red" /> Fast 45-Min Turnaround
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-brand-green" /> Transparent Pricing
+                  <CheckCircle className="w-3.5 h-3.5 text-brand-red" /> Transparent Pricing
                 </span>
               </div>
 
@@ -236,7 +236,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-brand-green hover:bg-brand-green-hover text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-75 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-brand-red hover:bg-brand-red-hover text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-75 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>

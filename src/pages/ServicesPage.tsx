@@ -60,7 +60,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
         <div className="bg-white rounded-2xl p-4 shadow-xl border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Header Title / Tag */}
           <div className="flex items-center gap-2">
-            <span className="text-sm font-extrabold text-brand-navy px-3 py-1.5 bg-brand-green/10 text-brand-green rounded-xl">
+            <span className="text-sm font-extrabold text-brand-navy px-3 py-1.5 bg-brand-red/10 text-brand-red rounded-xl">
               All Services ({filteredServices.length})
             </span>
           </div>
@@ -73,7 +73,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
               placeholder="Search any service or task..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-brand-green focus:bg-white"
+              className="w-full pl-9 pr-4 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-brand-red focus:bg-white"
             />
           </div>
         </div>
@@ -88,7 +88,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
               onClick={() => {
                 setSearchQuery('');
               }}
-              className="mt-3 text-sm font-bold text-brand-green hover:underline cursor-pointer"
+              className="mt-3 text-sm font-bold text-brand-red hover:underline cursor-pointer"
             >
               Reset Search
             </button>
@@ -103,11 +103,11 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
               >
                 <div>
                   <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-brand-green/10 text-brand-green flex items-center justify-center shadow-sm">
+                    <div className="w-12 h-12 rounded-xl bg-brand-red/10 text-brand-red flex items-center justify-center shadow-sm">
                       <ServiceIcon name={service.icon} size={24} />
                     </div>
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
-                      <Clock className="w-3 h-3 text-brand-green" /> {service.turnaroundTime}
+                      <Clock className="w-3 h-3 text-brand-red" /> {service.turnaroundTime}
                     </span>
                   </div>
 
@@ -126,7 +126,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
                     </div>
                     {service.highlights.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-2 text-xs text-gray-700">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-brand-green shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-brand-red shrink-0" />
                         <span>{item}</span>
                       </div>
                     ))}
@@ -138,7 +138,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
                     <>
                       <button
                         onClick={() => onOpenQuote(service.name)}
-                        className="flex-1 py-2.5 px-4 bg-brand-green hover:bg-brand-green-hover text-white text-xs font-bold rounded-lg shadow-sm transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="flex-1 py-2.5 px-4 bg-brand-red hover:bg-brand-red-hover text-white text-xs font-bold rounded-lg shadow-sm transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <span>Book Service</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -153,7 +153,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
                   ) : (
                     <button
                       onClick={() => onOpenQuote(service.name)}
-                      className="w-full py-2.5 px-4 bg-brand-green hover:bg-brand-green-hover text-white text-xs font-bold rounded-lg shadow-sm transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full py-2.5 px-4 bg-brand-red hover:bg-brand-red-hover text-white text-xs font-bold rounded-lg shadow-sm transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <span>Book Service</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -170,7 +170,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onOpenQuote }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="bg-white rounded-2xl p-8 shadow-md border border-gray-200/80 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-brand-green/15 text-brand-green flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-brand-red/15 text-brand-red flex items-center justify-center shrink-0">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>

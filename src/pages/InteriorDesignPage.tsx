@@ -48,7 +48,7 @@ export const InteriorDesignPage: React.FC<InteriorDesignPageProps> = ({ onOpenQu
           <div className="mt-8 flex justify-center gap-4">
             <button
               onClick={() => onOpenQuote('Interior Design Consultation')}
-              className="px-6 py-3.5 bg-brand-green hover:bg-brand-green-hover text-white font-bold text-sm rounded-xl shadow-lg transition-all cursor-pointer flex items-center gap-2"
+              className="px-6 py-3.5 bg-brand-red hover:bg-brand-red-hover text-white font-bold text-sm rounded-xl shadow-lg transition-all cursor-pointer flex items-center gap-2"
             >
               <span>Book Design Consultation</span>
               <ArrowRight className="w-4 h-4" />
@@ -60,7 +60,7 @@ export const InteriorDesignPage: React.FC<InteriorDesignPageProps> = ({ onOpenQu
       {/* Services Grid */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs font-bold uppercase tracking-widest text-brand-green">
+          <span className="text-xs font-bold uppercase tracking-widest text-brand-red">
             Design Capabilities
           </span>
           <h2 className="text-3xl font-extrabold text-brand-navy tracking-tight mt-1 mb-3">
@@ -75,9 +75,9 @@ export const InteriorDesignPage: React.FC<InteriorDesignPageProps> = ({ onOpenQu
           {services.map((item, idx) => (
             <div
               key={idx}
-              className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm hover:border-brand-green hover:shadow-md transition-all group"
+              className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm hover:border-brand-red hover:shadow-md transition-all group"
             >
-              <div className="w-10 h-10 rounded-xl bg-brand-green/10 text-brand-green group-hover:bg-brand-green group-hover:text-white flex items-center justify-center mb-4 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-brand-red/10 text-brand-red group-hover:bg-brand-red group-hover:text-white flex items-center justify-center mb-4 transition-colors">
                 <Sparkles className="w-5 h-5" />
               </div>
               <h3 className="text-lg font-bold text-brand-navy mb-2">{item.name}</h3>
@@ -90,7 +90,7 @@ export const InteriorDesignPage: React.FC<InteriorDesignPageProps> = ({ onOpenQu
       {/* Realtime Showcase Callout */}
       <section className="pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-2xl p-8 sm:p-12 border border-gray-200/80 shadow-md text-center max-w-3xl mx-auto">
-          <div className="w-14 h-14 rounded-2xl bg-brand-green/10 text-brand-green flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-brand-red/10 text-brand-red flex items-center justify-center mx-auto mb-4">
             <Palette className="w-7 h-7" />
           </div>
           <h3 className="text-2xl font-bold text-brand-navy mb-3">

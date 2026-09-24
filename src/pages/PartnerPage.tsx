@@ -65,7 +65,7 @@ export const PartnerPage: React.FC = () => {
       {/* Partner Categories */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs font-bold uppercase tracking-widest text-brand-green">
+          <span className="text-xs font-bold uppercase tracking-widest text-brand-red">
             Ecosystem Network
           </span>
           <h2 className="text-3xl font-extrabold text-brand-navy tracking-tight mt-1">
@@ -81,7 +81,7 @@ export const PartnerPage: React.FC = () => {
                 key={idx}
                 className="bg-white p-8 rounded-2xl border border-gray-200/80 shadow-sm hover:shadow-md transition-all flex items-start gap-5"
               >
-                <div className="w-14 h-14 rounded-2xl bg-brand-green/10 text-brand-green flex items-center justify-center shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-brand-red/10 text-brand-red flex items-center justify-center shrink-0">
                   <Icon className="w-7 h-7" />
                 </div>
                 <div>
@@ -99,7 +99,7 @@ export const PartnerPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="p-6">
-              <div className="w-12 h-12 bg-brand-green/10 text-brand-green rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">
+              <div className="w-12 h-12 bg-brand-red/10 text-brand-red rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">
                 1
               </div>
               <h4 className="text-lg font-bold text-brand-navy mb-2">Steady Enterprise Volume</h4>
@@ -107,7 +107,7 @@ export const PartnerPage: React.FC = () => {
             </div>
 
             <div className="p-6">
-              <div className="w-12 h-12 bg-brand-green/10 text-brand-green rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">
+              <div className="w-12 h-12 bg-brand-red/10 text-brand-red rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">
                 2
               </div>
               <h4 className="text-lg font-bold text-brand-navy mb-2">Guaranteed On-Time Payouts</h4>
@@ -115,7 +115,7 @@ export const PartnerPage: React.FC = () => {
             </div>
 
             <div className="p-6">
-              <div className="w-12 h-12 bg-brand-green/10 text-brand-green rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">
+              <div className="w-12 h-12 bg-brand-red/10 text-brand-red rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">
                 3
               </div>
               <h4 className="text-lg font-bold text-brand-navy mb-2">Smart Tech App & Training</h4>
@@ -129,7 +129,7 @@ export const PartnerPage: React.FC = () => {
       <section className="py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-2xl p-8 sm:p-12 shadow-xl border border-gray-200">
           <div className="text-center mb-10">
-            <span className="text-xs font-bold uppercase tracking-widest text-brand-green">
+            <span className="text-xs font-bold uppercase tracking-widest text-brand-red">
               Onboarding Form
             </span>
             <h2 className="text-3xl font-extrabold text-brand-navy tracking-tight mt-1">
@@ -142,7 +142,7 @@ export const PartnerPage: React.FC = () => {
 
           {submitted ? (
             <div className="text-center py-10 space-y-4 animate-fadeIn">
-              <div className="w-16 h-16 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center mx-auto">
+              <div className="w-16 h-16 rounded-full bg-brand-red/10 text-brand-red flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
               <h3 className="text-2xl font-bold text-brand-navy">Registration Submitted!</h3>
@@ -151,7 +151,7 @@ export const PartnerPage: React.FC = () => {
               </p>
               <button
                 onClick={() => setSubmitted(false)}
-                className="px-6 py-2.5 bg-brand-green text-white font-bold rounded-lg text-sm mt-4 cursor-pointer"
+                className="px-6 py-2.5 bg-brand-red text-white font-bold rounded-lg text-sm mt-4 cursor-pointer"
               >
                 Register Another Business
               </button>
@@ -166,7 +166,7 @@ export const PartnerPage: React.FC = () => {
                   <select
                     value={partnerType}
                     onChange={(e) => setPartnerType(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green bg-white font-medium text-brand-navy"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red bg-white font-medium text-brand-navy"
                   >
                     <option>Technician / Service Professional</option>
                     <option>Civil / Specialized Contractor</option>
@@ -185,7 +185,7 @@ export const PartnerPage: React.FC = () => {
                     placeholder="e.g. Precision ElectroMech Pvt Ltd"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red"
                   />
                 </div>
               </div>
@@ -201,7 +201,7 @@ export const PartnerPage: React.FC = () => {
                     placeholder="e.g. Suresh Patel"
                     value={contactPerson}
                     onChange={(e) => setContactPerson(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red"
                   />
                 </div>
 
@@ -215,7 +215,7 @@ export const PartnerPage: React.FC = () => {
                     placeholder="+91 98765 43210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red"
                   />
                 </div>
               </div>
@@ -231,7 +231,7 @@ export const PartnerPage: React.FC = () => {
                     placeholder="suresh@precision.in"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red"
                   />
                 </div>
 
@@ -245,7 +245,7 @@ export const PartnerPage: React.FC = () => {
                     placeholder="e.g. Bengaluru / Karnataka"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-green"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-brand-red"
                   />
                 </div>
               </div>
@@ -253,7 +253,7 @@ export const PartnerPage: React.FC = () => {
               <div className="pt-4">
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-brand-green hover:bg-brand-green-hover text-white font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3.5 bg-brand-red hover:bg-brand-red-hover text-white font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                   <span>Submit Partner Application</span>
