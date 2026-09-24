@@ -57,12 +57,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuote }) => {
             <span className="inline-flex items-center gap-2 text-gray-300">
               <span className="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
               <span className="text-gray-400">Support Desk:</span>
-              <span className="text-white font-medium">Updating Shortly</span>
+              <a href="tel:+918142517143" className="text-white font-medium hover:text-brand-green transition-colors">
+                +91 81425 17143
+              </a>
             </span>
             <span className="text-gray-600">|</span>
             <span className="inline-flex items-center gap-1.5">
               <span className="text-gray-400">Email:</span>
-              <span className="text-white font-medium">Updating Shortly</span>
+              <a href="mailto:sudhir@taaskmate.in" className="text-white font-medium hover:text-brand-green transition-colors">
+                sudhir@taaskmate.in
+              </a>
             </span>
           </div>
 

@@ -134,21 +134,27 @@ export const Footer: React.FC = () => {
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-brand-green shrink-0 mt-0.5" />
                 <span className="text-gray-400">
-                  Hyderabad, Telangana (Office address updating shortly)
+                  12-1-456/71/A, Sai Raghavendra Colony, Muttuguda, Hyderabad, Telangana 500068
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-brand-green shrink-0" />
                 <span className="text-gray-300 font-medium">
-                  Support Helpline: Updating Shortly
+                  Support Helpline:{' '}
+                  <a href="tel:+918142517143" className="text-brand-green hover:underline">
+                    +91 81425 17143
+                  </a>
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-brand-green shrink-0" />
                 <span className="text-gray-300">
-                  Email: Updating Shortly
+                  Email:{' '}
+                  <a href="mailto:sudhir@taaskmate.in" className="text-brand-green hover:underline">
+                    sudhir@taaskmate.in
+                  </a>
                 </span>
               </div>
 

@@ -30,9 +30,9 @@ export const ContactPage: React.FC = () => {
   const offices = [
     {
       city: 'Hyderabad (Headquarters)',
-      address: 'Office address updating shortly (Hyderabad, Telangana)',
-      phone: 'Updating Shortly',
-      email: 'Updating Shortly'
+      address: '12-1-456/71/A, Sai Raghavendra Colony, Muttuguda, Hyderabad, Telangana 500068',
+      phone: '+91 81425 17143',
+      email: 'sudhir@taaskmate.in'
     }
   ];
 
@@ -225,7 +225,7 @@ export const ContactPage: React.FC = () => {
                   </div>
                   <p className="text-xs text-gray-600 leading-relaxed pl-6">{office.address}</p>
                   <div className="flex items-center gap-4 text-xs font-semibold pl-6 pt-1">
-                    <a href={`tel:${office.phone}`} className="text-brand-green hover:underline">{office.phone}</a>
+                    <a href={`tel:${office.phone.replace(/\s+/g, '')}`} className="text-brand-green hover:underline">{office.phone}</a>
                     <span className="text-gray-300">|</span>
                     <a href={`mailto:${office.email}`} className="text-gray-600 hover:text-brand-navy">{office.email}</a>
                   </div>

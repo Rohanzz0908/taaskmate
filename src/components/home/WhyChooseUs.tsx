@@ -1,31 +1,32 @@
 import React from 'react';
+import whyChooseUsImg from '../../assets/why_choose_us.jpg';
 
 export const WhyChooseUs: React.FC = () => {
   const points = [
     {
       num: '1',
-      title: 'Tailored Solutions',
-      desc: 'Service solutions designed around your specific needs.',
+      title: 'Bespoke Solutions',
+      desc: 'Service solutions tailored to your specific requirements and operational needs.',
     },
     {
       num: '2',
-      title: 'Reliable Service',
-      desc: 'Prompt, professional, and dependable service you can trust.',
+      title: 'Dependable Delivery',
+      desc: 'Prompt, professional, and consistent service you can rely on.',
     },
     {
       num: '3',
-      title: 'Skilled Technicians',
-      desc: 'Experienced professionals trained to handle your equipment with care.',
+      title: 'Proven Expertise',
+      desc: 'Skilled and experienced professionals committed to quality workmanship.',
     },
     {
       num: '4',
-      title: 'Smart Technology',
-      desc: 'Modern technology and efficient processes for better service and results.',
+      title: 'Smarter Approach',
+      desc: 'Modern tools and efficient processes for seamless and effective service delivery.',
     },
     {
       num: '5',
-      title: 'Customer Focused',
-      desc: 'Your safety, satisfaction, and convenience are always our priority.',
+      title: 'Client-Centric Service',
+      desc: 'We put your requirements, convenience, safety, and satisfaction at the heart of every service.',
     },
   ];
 
@@ -37,7 +38,7 @@ export const WhyChooseUs: React.FC = () => {
           <div className="lg:col-span-5 relative order-2 lg:order-1">
             <div className="relative rounded-2xl overflow-hidden shadow-xl border border-gray-200">
               <img
-                src="https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1000&q=80"
+                src={whyChooseUsImg}
                 alt="Taaskmate engineers monitoring smart facility operations"
                 className="w-full h-[450px] sm:h-[500px] object-cover"
               />
@@ -57,7 +58,7 @@ export const WhyChooseUs: React.FC = () => {
                 Why Choose Us?
               </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy tracking-tight mt-2 mb-4">
-                Your Trusted Service Partner
+                Your Trusted Partner for Better Facility Management
               </h2>
             </div>
 

@@ -269,7 +269,7 @@ export const QuotationViewPage: React.FC = () => {
 
                 {/* Row 2: Address */}
                 <div className="py-1 px-3 text-center border-b border-black text-[11px] text-slate-800 font-medium">
-                  GAR 71, 4th Floor, Brookefield, Outer Ring Road, Bengaluru, Karnataka - 560103
+                  12-1-456/71/A, Sai Raghavendra Colony, Muttuguda, Hyderabad, Telangana - 500068 | Contact: +91 81425 17143 | Email: sudhir@taaskmate.in
                 </div>
 
                 {/* Row 3: GSTIN */}

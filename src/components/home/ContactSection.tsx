@@ -52,10 +52,9 @@ export const ContactSection: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-brand-navy">Call Directly</h4>
-                  <p className="text-xs text-gray-500 mt-0.5">Customer Support Desk</p>
-                  <span className="text-sm font-bold text-brand-green mt-1 inline-block">
-                    Updating Shortly
-                  </span>
+                  <a href="tel:+918142517143" className="text-sm font-bold text-brand-green hover:underline mt-1 inline-block">
+                    +91 81425 17143
+                  </a>
                 </div>
               </div>
 
@@ -65,10 +64,9 @@ export const ContactSection: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-brand-navy">Corporate Desk</h4>
-                  <p className="text-xs text-gray-500 mt-0.5">Inquiries & Quotations</p>
-                  <span className="text-sm font-bold text-brand-green mt-1 inline-block">
-                    Updating Shortly
-                  </span>
+                  <a href="mailto:sudhir@taaskmate.in" className="text-sm font-bold text-brand-green hover:underline mt-1 inline-block">
+                    sudhir@taaskmate.in
+                  </a>
                 </div>
               </div>
 
