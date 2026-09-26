@@ -171,7 +171,7 @@ export const TransactionDetailPage: React.FC = () => {
           </button>
           <div className="flex items-center gap-3">
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-              <span>Transaction</span>
+              <span>Quotation Hub</span>
               <span className="font-mono bg-slate-100 text-slate-800 px-3 py-1 rounded-lg border border-slate-200 text-lg">
                 {transaction.transactionId}
               </span>
@@ -179,11 +179,11 @@ export const TransactionDetailPage: React.FC = () => {
             {getStatusBadge(transaction.overallStatus)}
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Single Master Transaction ID linking Quotation, Service Execution Report, and Final Commercial Tax Invoice.
+            Quotation ID (<span className="font-mono font-bold text-slate-700">{transaction.transactionId}</span>) is shared with the Service Report. Commercial Invoices receive a dedicated Invoice ID upon generation.
           </p>
         </div>
 
-        {/* Quick Lifecycle Action Buttons */}
+        {/* Quick Action Buttons */}
         <div className="flex items-center gap-2">
           {!serviceReport && quotation && (
             <Link
@@ -232,7 +232,7 @@ export const TransactionDetailPage: React.FC = () => {
             {invoice ? formatINR(invoice.grandTotal) : '—'}
           </div>
           <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
-            <Receipt className="w-3 h-3" /> {invoice ? `GST: ${invoice.gstMode === 'IGST' ? 'IGST 18%' : 'CGST+SGST 18%'}` : 'Not invoiced'}
+            <Receipt className="w-3 h-3" /> {invoice ? (invoice.invoiceId ? `ID: ${invoice.invoiceId}` : 'Invoice Generated') : 'Not invoiced'}
           </div>
         </div>
 
@@ -249,9 +249,9 @@ export const TransactionDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Visual Service Lifecycle Stepper */}
+      {/* Visual Service Progression Stepper */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">Service Lifecycle Progression</h2>
+        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">Service Progression</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
           {/* Step 1: Quotation */}
@@ -285,6 +285,22 @@ export const TransactionDetailPage: React.FC = () => {
                   <span>Amount:</span>
                   <span className="font-bold text-slate-900 font-mono">{formatINR(quotation.grandTotal)}</span>
                 </div>
+                {(quotation.assignedTechnicianName || transaction.assignedTechnicianName) && (
+                  <div className="flex justify-between text-slate-600">
+                    <span>Technician:</span>
+                    <span className="font-semibold text-blue-700 truncate max-w-[140px]">
+                      {quotation.assignedTechnicianName || transaction.assignedTechnicianName}
+                    </span>
+                  </div>
+                )}
+                {(quotation.assignedVendorName || transaction.assignedVendorName) && (
+                  <div className="flex justify-between text-slate-600">
+                    <span>Vendor:</span>
+                    <span className="font-semibold text-purple-700 truncate max-w-[140px]">
+                      {quotation.assignedVendorName || transaction.assignedVendorName}
+                    </span>
+                  </div>
+                )}
                 
                 <div className="mt-4 pt-2 flex items-center gap-2">
                   <Link
@@ -401,6 +417,14 @@ export const TransactionDetailPage: React.FC = () => {
             
             {invoice ? (
               <div className="mt-4 pt-3 border-t border-slate-200 space-y-1.5 text-xs">
+                {invoice.invoiceId && (
+                  <div className="flex justify-between text-slate-600">
+                    <span>Invoice ID:</span>
+                    <span className="font-mono font-bold text-purple-700 bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200">
+                      {invoice.invoiceId}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between text-slate-600">
                   <span>Invoice Date:</span>
                   <span className="font-medium text-slate-800">{invoice.invoiceDate}</span>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   FolderKanban, 
@@ -39,6 +39,11 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({
   const [isMastersOpen, setIsMastersOpen] = useState(true);
   const { logout, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isQuotationsActive = location.pathname.startsWith('/portal/quotation');
+  const isTransactionsActive = location.pathname.startsWith('/portal/service-report') || location.pathname.startsWith('/portal/transaction');
+  const isInvoicesActive = location.pathname.startsWith('/portal/invoice');
 
   const handleLogout = () => {
     logout();
@@ -151,45 +156,35 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({
           )}
         </div>
 
-        {/* Transactions Section */}
+        {/* Operations & Logs Section */}
         <div className="space-y-1">
           {!isCollapsed && (
             <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-              Transactions
+              Transactions & Logs
             </div>
           )}
-          <NavLink to="/portal/quotation" className={navItemClass}>
-            <FileText className="w-4 h-4 shrink-0" />
-            {!isCollapsed && <span>Create Quotation</span>}
+          <NavLink 
+            to="/portal/quotations" 
+            className={({ isActive }) => navItemClass({ isActive: isActive || isQuotationsActive })}
+          >
+            <FileSpreadsheet className="w-4 h-4 shrink-0" />
+            {!isCollapsed && <span>Quotations</span>}
           </NavLink>
-          <NavLink to="/portal/service-report" className={navItemClass}>
-            <Wrench className="w-4 h-4 shrink-0" />
-            {!isCollapsed && <span>Service Report</span>}
-          </NavLink>
-          <NavLink to="/portal/invoice" className={navItemClass}>
-            <Receipt className="w-4 h-4 shrink-0" />
-            {!isCollapsed && <span>Issue Invoice</span>}
-          </NavLink>
-        </div>
 
-        {/* Reports Section */}
-        <div className="space-y-1">
-          {!isCollapsed && (
-            <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-              Reports & Logs
-            </div>
-          )}
-          <NavLink to="/portal/quotations" className={navItemClass}>
-            <BarChart3 className="w-4 h-4 shrink-0" />
-            {!isCollapsed && <span>Quotation Logs</span>}
-          </NavLink>
-          <NavLink to="/portal/service-reports" className={navItemClass}>
+          <NavLink 
+            to="/portal/service-reports" 
+            className={({ isActive }) => navItemClass({ isActive: isActive || isTransactionsActive })}
+          >
             <Wrench className="w-4 h-4 shrink-0" />
-            {!isCollapsed && <span>Service Reports</span>}
+            {!isCollapsed && <span>Transactions</span>}
           </NavLink>
-          <NavLink to="/portal/invoices" className={navItemClass}>
+
+          <NavLink 
+            to="/portal/invoices" 
+            className={({ isActive }) => navItemClass({ isActive: isActive || isInvoicesActive })}
+          >
             <Receipt className="w-4 h-4 shrink-0" />
-            {!isCollapsed && <span>Tax Invoices</span>}
+            {!isCollapsed && <span>Invoices</span>}
           </NavLink>
         </div>
       </div>

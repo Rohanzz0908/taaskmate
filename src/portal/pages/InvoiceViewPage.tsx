@@ -178,7 +178,7 @@ export const InvoiceViewPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-slate-900 text-sm font-mono">
-                Invoice: {transaction.transactionId}
+                Invoice: {invoice.invoiceId || transaction.transactionId}
               </span>
               <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
                 invoice.payment.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
@@ -279,7 +279,7 @@ export const InvoiceViewPage: React.FC = () => {
                 </td>
                 <td className="w-36 py-1.5 px-2 font-bold border-r border-black align-top">Invoice Number</td>
                 <td className="py-1.5 px-2 font-mono font-bold align-top text-slate-900">
-                  {transaction.transactionId}
+                  {invoice.invoiceId || '—'}
                 </td>
               </tr>
 

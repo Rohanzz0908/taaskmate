@@ -92,7 +92,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onOpenQuote }) => {
 
           <div className="lg:col-span-6 relative">
             <img
-              src="https://images.unsplash.com/photo-1541888946425-d0fbb186156a?auto=format&fit=crop&w=1000&q=80"
+              src="/about-mission.jpg"
               alt="Taaskmate engineers collaborating on site"
               className="rounded-2xl shadow-xl w-full h-[400px] object-cover"
             />

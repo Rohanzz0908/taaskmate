@@ -106,10 +106,10 @@ export interface QuotationItem {
   purpose?: string;
 }
 
-// 1. QUOTATION (Uses Master Transaction ID: TM-YYYY-XXXX)
+// 1. QUOTATION (Uses Quotation ID: TM260001)
 export interface Quotation {
-  transactionId: string; // e.g. TM-2026-0001 (Master ID)
-  quotationId?: string; // alias for backward-compatibility
+  transactionId: string; // e.g. TM260001
+  quotationId: string; // Quotation ID, e.g. TM260001
   quotationDate: string; // YYYY-MM-DD
   validUntil: string;
   clientId: string;
@@ -122,13 +122,18 @@ export interface Quotation {
   status: QuotationStatus;
   notes?: string;
   paymentTerms?: string;
+  assignedTechnicianId?: string;
+  assignedTechnicianName?: string;
+  assignedVendorId?: string;
+  assignedVendorName?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-// 2. SERVICE REPORT (Uses the SAME Master Transaction ID: TM-YYYY-XXXX)
+// 2. SERVICE REPORT (Uses the SAME Quotation ID: TM260001)
 export interface ServiceReport {
-  transactionId: string; // e.g. TM-2026-0001 (Master ID)
+  transactionId: string; // Same Quotation ID, e.g. TM260001
+  quotationId?: string; // alias
   serviceDate: string; // YYYY-MM-DD
   assignedTechnician: string;
   serviceType: string;
@@ -149,7 +154,7 @@ export interface ServiceReport {
   updatedAt: string;
 }
 
-// 3. INVOICE (Uses the SAME Master Transaction ID: TM-YYYY-XXXX)
+// 3. INVOICE (Uses separate Invoice ID: TMI2600001, generated only upon issue)
 export interface InvoicePayment {
   status: 'Pending' | 'Partial' | 'Paid';
   date?: string;
@@ -168,7 +173,9 @@ export interface InvoiceBankDetails {
 }
 
 export interface Invoice {
-  transactionId: string; // e.g. TM-2026-0001 (Master ID)
+  invoiceId?: string; // Sequential ID, e.g. TMI2600001 (generated ONLY when invoice is issued)
+  transactionId: string; // Linked Quotation ID, e.g. TM260001
+  quotationId?: string; // Linked Quotation ID
   invoiceDate: string; // YYYY-MM-DD
   dueDate: string; // YYYY-MM-DD
   clientId: string;
@@ -199,6 +206,10 @@ export interface MasterTransaction {
   quotation?: Quotation;
   serviceReport?: ServiceReport;
   invoice?: Invoice;
+  assignedTechnicianId?: string;
+  assignedTechnicianName?: string;
+  assignedVendorId?: string;
+  assignedVendorName?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -247,18 +258,21 @@ export interface EmergencyContact {
 export interface Technician {
   technicianId: string; // e.g. TECH-0001
   name: string;
-  specialization: TechnicianSpecialization;
+  specialization: string;
   phone: string;
   email: string;
-  experienceYears: number;
-  employmentType: EmploymentType;
-  idProofType: IdProofType;
-  idProofNumber: string;
-  emergencyContact: EmergencyContact;
-  skills: string[];
-  rating: number; // 1 to 5
   address: string;
+  locality?: string;
+  city?: string;
+  state?: string;
+  experienceYears: number;
   status: TechnicianStatus;
+  employmentType?: EmploymentType;
+  idProofType?: IdProofType;
+  idProofNumber?: string;
+  emergencyContact?: EmergencyContact;
+  skills?: string[];
+  rating?: number; // 1 to 5
   createdAt: string;
   updatedAt: string;
 }

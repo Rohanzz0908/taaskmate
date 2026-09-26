@@ -170,6 +170,18 @@ const SEED_CLIENTS: Client[] = [
     createdAt: '2026-08-24',
     updatedAt: '2026-08-24',
   },
+  {
+    clientId: 'CLI-0006',
+    clientName: 'Max Division - Landmark Group',
+    address: 'Hyderabad, Telangana',
+    email: 'vikram.chinthapalli@landmarkgroup.in',
+    phone: '+91 40 4567 8900',
+    gstin: 'NA',
+    contactPerson: 'Vikram Chinthapalli',
+    status: 'Active',
+    createdAt: '2026-09-20',
+    updatedAt: '2026-09-20',
+  },
 ];
 
 // Initial Technicians Seed Data
@@ -407,9 +419,9 @@ const SEED_VENDORS: Vendor[] = [
 
 // Seed Master Transactions (All sharing ONE Master Transaction ID per lifecycle)
 const SEED_TRANSACTIONS: MasterTransaction[] = [
-  // TM-2026-0001: Full lifecycle (Quotation Approved -> Service Completed -> Invoice Issued & Partially Paid)
+  // TM260002: Full lifecycle (Quotation Approved -> Service Completed -> Invoice Issued & Partially Paid)
   {
-    transactionId: 'TM-2026-0001',
+    transactionId: 'TM260002',
     clientId: 'CLI-0001',
     clientSnapshot: {
       clientId: 'CLI-0001',
@@ -422,8 +434,8 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
     },
     overallStatus: 'Partially Paid',
     quotation: {
-      transactionId: 'TM-2026-0001',
-      quotationId: 'TM-2026-0001',
+      transactionId: 'TM260002',
+      quotationId: 'TM260002',
       quotationDate: '2026-09-01',
       validUntil: '2026-09-30',
       clientId: 'CLI-0001',
@@ -475,7 +487,7 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
       updatedAt: '2026-09-02T14:15:00Z',
     },
     serviceReport: {
-      transactionId: 'TM-2026-0001',
+      transactionId: 'TM260002',
       serviceDate: '2026-09-03',
       assignedTechnician: 'Ramesh Gowda (Sr. HVAC & MEP Engineer)',
       serviceType: 'HVAC Overhaul & Electrical Panel Servicing',
@@ -528,7 +540,9 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
       updatedAt: '2026-09-03T18:30:00Z',
     },
     invoice: {
-      transactionId: 'TM-2026-0001',
+      transactionId: 'TM260002',
+      quotationId: 'TM260002',
+      invoiceId: 'TMI2600001',
       invoiceDate: '2026-09-04',
       dueDate: '2026-09-19',
       clientId: 'CLI-0001',
@@ -595,9 +609,9 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
     updatedAt: '2026-09-05T14:30:00Z',
   },
 
-  // TM-2026-0002: Quotation Approved -> Service In Progress
+  // TM260003: Quotation Approved -> Service In Progress
   {
-    transactionId: 'TM-2026-0002',
+    transactionId: 'TM260003',
     clientId: 'CLI-0002',
     clientSnapshot: {
       clientId: 'CLI-0002',
@@ -610,8 +624,8 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
     },
     overallStatus: 'Service In Progress',
     quotation: {
-      transactionId: 'TM-2026-0002',
-      quotationId: 'TM-2026-0002',
+      transactionId: 'TM260003',
+      quotationId: 'TM260003',
       quotationDate: '2026-09-04',
       validUntil: '2026-10-04',
       clientId: 'CLI-0002',
@@ -663,7 +677,7 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
       updatedAt: '2026-09-04T16:00:00Z',
     },
     serviceReport: {
-      transactionId: 'TM-2026-0002',
+      transactionId: 'TM260003',
       serviceDate: '2026-09-06',
       assignedTechnician: 'Vijay Kumar (Lead Plumber & Sanitization Tech)',
       serviceType: 'Sensor Flush Valves Retrofit & Sanitizer Supply',
@@ -695,9 +709,9 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
     updatedAt: '2026-09-06T15:00:00Z',
   },
 
-  // TM-2026-0003: Quotation Sent -> Service Scheduled
+  // TM260004: Quotation Sent -> Service Scheduled
   {
-    transactionId: 'TM-2026-0003',
+    transactionId: 'TM260004',
     clientId: 'CLI-0004',
     clientSnapshot: {
       clientId: 'CLI-0004',
@@ -710,8 +724,8 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
     },
     overallStatus: 'Service Scheduled',
     quotation: {
-      transactionId: 'TM-2026-0003',
-      quotationId: 'TM-2026-0003',
+      transactionId: 'TM260004',
+      quotationId: 'TM260004',
       quotationDate: '2026-09-05',
       validUntil: '2026-09-25',
       clientId: 'CLI-0004',
@@ -750,7 +764,7 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
       updatedAt: '2026-09-05T15:20:00Z',
     },
     serviceReport: {
-      transactionId: 'TM-2026-0003',
+      transactionId: 'TM260004',
       serviceDate: '2026-09-10',
       assignedTechnician: 'Anand Prakash (Certified Fire Safety Specialist)',
       serviceType: 'Annual Fire Extinguisher Refill & Hydrant Testing',
@@ -767,9 +781,9 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
     updatedAt: '2026-09-06T10:00:00Z',
   },
 
-  // TM-2026-0004: Quotation Created (Draft)
+  // TM260005: Quotation Created (Draft)
   {
-    transactionId: 'TM-2026-0004',
+    transactionId: 'TM260005',
     clientId: 'CLI-0003',
     clientSnapshot: {
       clientId: 'CLI-0003',
@@ -782,8 +796,8 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
     },
     overallStatus: 'Quotation Created',
     quotation: {
-      transactionId: 'TM-2026-0004',
-      quotationId: 'TM-2026-0004',
+      transactionId: 'TM260005',
+      quotationId: 'TM260005',
       quotationDate: '2026-09-07',
       validUntil: '2026-10-07',
       clientId: 'CLI-0003',
@@ -823,6 +837,85 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
     },
     createdAt: '2026-09-07T11:00:00Z',
     updatedAt: '2026-09-07T11:00:00Z',
+  },
+  // TM260001: Reference Quotation (Max Division - Landmark Group)
+  {
+    transactionId: 'TM260001',
+    clientId: 'CLI-0006',
+    clientSnapshot: {
+      clientId: 'CLI-0006',
+      clientName: 'Max Division - Landmark Group',
+      address: 'Hyderabad, Telangana',
+      email: 'vikram.chinthapalli@landmarkgroup.in',
+      phone: '+91 40 4567 8900',
+      gstin: 'NA',
+      contactPerson: 'Vikram Chinthapalli',
+    },
+    overallStatus: 'Quotation Sent',
+    quotation: {
+      transactionId: 'TM260001',
+      quotationId: 'TM260001',
+      quotationDate: '2026-09-26',
+      validUntil: '2026-10-03',
+      clientId: 'CLI-0006',
+      clientSnapshot: {
+        clientId: 'CLI-0006',
+        clientName: 'Max Division - Landmark Group',
+        address: 'Hyderabad, Telangana',
+        email: 'vikram.chinthapalli@landmarkgroup.in',
+        phone: '+91 40 4567 8900',
+        gstin: 'NA',
+        contactPerson: 'Vikram Chinthapalli',
+      },
+      items: [
+        {
+          itemId: 'item-1',
+          materialName: 'Supply and fixing Pop false ceiling sheets: -',
+          description: 'Supply and fixing Pop false ceiling sheets: -\n• Removing of damaged pop sheet in ceiling of size (2x2)\n• According to the existing false ceiling lights wholes are made on the sheet and installed to the ceiling',
+          uom: 'Sq. ft',
+          quantity: 133,
+          rate: 90.00,
+          discount: 0,
+          taxPercent: 18,
+          taxAmount: 2154.60,
+          amount: 14124.60,
+        },
+        {
+          itemId: 'item-2',
+          materialName: 'Painting of false ceiling sheets: -',
+          description: 'Painting of false ceiling sheets: -\n• Post installation of sheets painting is done over those sheets (painting system – 2coats of lappam + One coat of Primer and 2coats of Asian paints tractor emulsion applied over it',
+          uom: 'LS',
+          quantity: 1,
+          rate: 10500.00,
+          discount: 0,
+          taxPercent: 18,
+          taxAmount: 1890.00,
+          amount: 12390.00,
+        },
+        {
+          itemId: 'item-3',
+          materialName: 'Supply of Anti Skid Tape (width 50mm & length 18 mtr)',
+          description: 'Supply of Anti Skid Tape (width 50mm & length 18 mtr)',
+          uom: 'Bundles',
+          quantity: 5,
+          rate: 1116.00,
+          discount: 0,
+          taxPercent: 18,
+          taxAmount: 1004.40,
+          amount: 6584.40,
+        }
+      ],
+      subtotal: 28050,
+      totalDiscount: 0,
+      totalTax: 5049,
+      grandTotal: 33099,
+      status: 'Sent',
+      paymentTerms: 'Payment Terms will be Net 7 days after Invoice date',
+      createdAt: '2026-09-26T10:00:00Z',
+      updatedAt: '2026-09-26T10:00:00Z',
+    },
+    createdAt: '2026-09-26T10:00:00Z',
+    updatedAt: '2026-09-26T10:00:00Z',
   }
 ];
 
@@ -851,6 +944,14 @@ class DatabaseService {
       const storedClients = localStorage.getItem(STORAGE_KEYS.CLIENTS);
       if (storedClients) {
         this.clients = JSON.parse(storedClients);
+        // Ensure Landmark client is present
+        if (!this.clients.some(c => c.clientName.includes('Landmark Group'))) {
+          const landmark = SEED_CLIENTS.find(c => c.clientName.includes('Landmark Group'));
+          if (landmark) {
+            this.clients.push(landmark);
+            this.saveClients();
+          }
+        }
       } else {
         this.clients = SEED_CLIENTS;
         this.saveClients();
@@ -858,7 +959,53 @@ class DatabaseService {
 
       const storedTransactions = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
       if (storedTransactions) {
-        this.transactions = JSON.parse(storedTransactions);
+        try {
+          let loaded = JSON.parse(storedTransactions) as MasterTransaction[];
+          let dirty = false;
+          loaded = loaded.map(t => {
+            const updated = { ...t };
+            if (updated.transactionId.startsWith('TM-2026-')) {
+              dirty = true;
+              const numPart = updated.transactionId.replace('TM-2026-', '');
+              updated.transactionId = `TM26${numPart}`;
+              if (updated.quotation) {
+                updated.quotation.transactionId = updated.transactionId;
+                updated.quotation.quotationId = updated.transactionId;
+              }
+              if (updated.serviceReport) {
+                updated.serviceReport.transactionId = updated.transactionId;
+                updated.serviceReport.quotationId = updated.transactionId;
+              }
+              if (updated.invoice) {
+                updated.invoice.transactionId = updated.transactionId;
+                updated.invoice.quotationId = updated.transactionId;
+              }
+            }
+            // Only assign an invoiceId if an invoice already exists and was missing invoiceId
+            if (updated.invoice && !updated.invoice.invoiceId) {
+              dirty = true;
+              updated.invoice.invoiceId = 'TMI2600001';
+            }
+            return updated;
+          });
+
+          // Ensure TM260001 is present
+          if (!loaded.some(t => t.transactionId === 'TM260001')) {
+            const tm260001 = SEED_TRANSACTIONS.find(t => t.transactionId === 'TM260001');
+            if (tm260001) {
+              loaded.unshift(tm260001);
+              dirty = true;
+            }
+          }
+
+          this.transactions = loaded;
+          if (dirty) {
+            this.saveTransactions();
+          }
+        } catch (e) {
+          this.transactions = SEED_TRANSACTIONS;
+          this.saveTransactions();
+        }
       } else {
         this.transactions = SEED_TRANSACTIONS;
         this.saveTransactions();
@@ -1414,26 +1561,67 @@ class DatabaseService {
   }
 
   // =========================================================================
-  // MASTER TRANSACTION ID GENERATOR & LIFECYCLE MANAGEMENT
-  // Format: TM-YYYY-XXXX (Generated ONCE upon Quotation, never changes)
+  // ID GENERATORS & TRANSACTION MANAGEMENT
+  // Quotation & Service Report share the SAME Quotation ID: TM260001 sequence
+  // Commercial Invoice uses its own Invoice ID: TMI2600001 sequence (generated ONLY when invoice is created)
   // =========================================================================
 
-  public getNextTransactionId(): string {
+  public getNextQuotationId(): string {
     const currentYear = new Date().getFullYear();
-    const prefix = `TM-${currentYear}-`;
-    const maxNum = this.transactions.reduce((max, t) => {
-      if (t.transactionId.startsWith(prefix)) {
-        const numPart = parseInt(t.transactionId.replace(prefix, ''), 10);
-        return !isNaN(numPart) && numPart > max ? numPart : max;
+    const yearSuffix = String(currentYear).slice(-2); // e.g. "26"
+    const prefix = `TM${yearSuffix}`;
+    let maxNum = 0;
+
+    this.transactions.forEach(t => {
+      const qid = t.quotation?.quotationId || t.transactionId || '';
+      // Match TM26XXXX
+      const m1 = qid.match(new RegExp(`^TM${yearSuffix}(\\d+)`));
+      if (m1) {
+        const num = parseInt(m1[1], 10);
+        if (!isNaN(num) && num > maxNum) maxNum = num;
+      } else {
+        // Fallback for legacy format TM-YYYY-XXXX
+        const m2 = qid.match(/^TM-\d{4}-(\d+)/);
+        if (m2) {
+          const num = parseInt(m2[1], 10);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        }
       }
-      return max;
-    }, 0);
+    });
+
     return `${prefix}${String(maxNum + 1).padStart(4, '0')}`;
   }
 
-  // Backward compatibility alias: Quotation generation assigns the Master Transaction ID
-  public getNextQuotationId(): string {
-    return this.getNextTransactionId();
+  public getNextTransactionId(): string {
+    return this.getNextQuotationId();
+  }
+
+  public getNextInvoiceId(): string {
+    const currentYear = new Date().getFullYear();
+    const yearSuffix = String(currentYear).slice(-2); // e.g. "26"
+    const prefix = `TMI${yearSuffix}`;
+    let maxNum = 0;
+
+    this.transactions.forEach(t => {
+      const invId = t.invoice?.invoiceId || '';
+      if (invId) {
+        // Match TMI26XXXXX (5 digits)
+        const m1 = invId.match(new RegExp(`^TMI${yearSuffix}(\\d+)`));
+        if (m1) {
+          const num = parseInt(m1[1], 10);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        } else {
+          // Fallback legacy
+          const m2 = invId.match(/^TMI-\d{4}-(\d+)/);
+          if (m2) {
+            const num = parseInt(m2[1], 10);
+            if (!isNaN(num) && num > maxNum) maxNum = num;
+          }
+        }
+      }
+    });
+
+    return `${prefix}${String(maxNum + 1).padStart(5, '0')}`;
   }
 
   public getTransactions(): MasterTransaction[] {
@@ -1505,6 +1693,10 @@ class DatabaseService {
         clientId: quotationData.clientId,
         clientSnapshot: quotationData.clientSnapshot,
         quotation: updatedQuote,
+        assignedTechnicianId: quotationData.assignedTechnicianId ?? existing.assignedTechnicianId,
+        assignedTechnicianName: quotationData.assignedTechnicianName ?? existing.assignedTechnicianName,
+        assignedVendorId: quotationData.assignedVendorId ?? existing.assignedVendorId,
+        assignedVendorName: quotationData.assignedVendorName ?? existing.assignedVendorName,
         updatedAt: now,
       };
 
@@ -1519,6 +1711,10 @@ class DatabaseService {
         overallStatus: quotationData.status === 'Approved' ? 'Quotation Approved' :
                        quotationData.status === 'Sent' ? 'Quotation Sent' : 'Quotation Created',
         quotation: normalizedQuotation,
+        assignedTechnicianId: quotationData.assignedTechnicianId,
+        assignedTechnicianName: quotationData.assignedTechnicianName,
+        assignedVendorId: quotationData.assignedVendorId,
+        assignedVendorName: quotationData.assignedVendorName,
         createdAt: now,
         updatedAt: now,
       };
@@ -1603,10 +1799,15 @@ class DatabaseService {
     const now = new Date().toISOString();
     const existing = this.transactions[existingIndex];
 
+    // Only generate an invoice ID if it hasn't been generated yet
+    const invId = invoiceData.invoiceId || existing.invoice?.invoiceId || this.getNextInvoiceId();
+
     const updatedInvoice: Invoice = {
       ...existing.invoice,
       ...invoiceData,
+      invoiceId: invId,
       transactionId: tid,
+      quotationId: tid,
       createdAt: existing.invoice?.createdAt || now,
       updatedAt: now,
     };
@@ -1623,7 +1824,7 @@ class DatabaseService {
 
     return {
       success: true,
-      message: `Invoice for ${tid} issued successfully.`,
+      message: `Invoice ${invId} for Quotation ${tid} issued successfully.`,
       transaction: updatedTransaction,
       invoice: updatedInvoice,
     };
@@ -1683,7 +1884,7 @@ class DatabaseService {
   }
 
   public getInvoiceById(id: string): Invoice | undefined {
-    return this.transactions.find(t => t.transactionId === id)?.invoice;
+    return this.transactions.find(t => t.invoice?.invoiceId === id || t.transactionId === id)?.invoice;
   }
 
   // Filter transactions eligible for Service Report (has Quotation)

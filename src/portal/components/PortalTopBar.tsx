@@ -7,9 +7,10 @@ import {
   Bell, 
   LogOut, 
   User, 
-  ChevronDown,
-  ExternalLink,
-  ChevronRight
+  ChevronDown, 
+  ExternalLink, 
+  ChevronRight,
+  Plus
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -25,6 +26,7 @@ export const PortalTopBar: React.FC<PortalTopBarProps> = ({
   onOpenMobile
 }) => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -35,10 +37,18 @@ export const PortalTopBar: React.FC<PortalTopBarProps> = ({
     if (path === '/portal') return { section: 'Overview', title: 'Dashboard', subtitle: 'Real-time operational summary & business metrics' };
     if (path === '/portal/category-master') return { section: 'Masters', title: 'Category Master', subtitle: 'Manage procurement categories, UOM standards, and item classifications' };
     if (path === '/portal/client-master') return { section: 'Masters', title: 'Client Master', subtitle: 'Customer and enterprise directory with GSTIN compliance' };
-    if (path === '/portal/quotation') return { section: 'Transactions', title: 'Create Quotation', subtitle: 'Commercial proposals with dynamic line item calculations' };
-    if (path.startsWith('/portal/quotation/edit/')) return { section: 'Transactions', title: 'Edit Quotation', subtitle: 'Modify existing commercial estimate' };
-    if (path === '/portal/quotations') return { section: 'Reports', title: 'Quotation Reports', subtitle: 'Commercial proposals directory, status tracking, and audit logs' };
-    if (path.startsWith('/portal/quotation/')) return { section: 'Reports', title: 'Quotation Preview', subtitle: 'Print-ready executive commercial proposal' };
+    if (path === '/portal/technician-master') return { section: 'Masters', title: 'Technician Master', subtitle: 'Service engineer roster and capabilities' };
+    if (path === '/portal/vendor-master') return { section: 'Masters', title: 'Vendor Master', subtitle: 'Approved supplier directory and procurement' };
+    if (path === '/portal/quotations') return { section: 'Quotations', title: 'Quotation Logs', subtitle: 'Commercial proposals directory, status tracking, and audit logs' };
+    if (path === '/portal/quotation') return { section: 'Quotations', title: 'Create Quotation', subtitle: 'Commercial proposals with dynamic line item calculations' };
+    if (path.startsWith('/portal/quotation/edit/')) return { section: 'Quotations', title: 'Edit Quotation', subtitle: 'Modify existing commercial estimate' };
+    if (path.startsWith('/portal/quotation/')) return { section: 'Quotations', title: 'Quotation Preview', subtitle: 'Print-ready executive commercial proposal' };
+    if (path === '/portal/service-reports') return { section: 'Transactions', title: 'Transactions & Service Reports', subtitle: 'Field execution logs, technician assignments, and sign-offs' };
+    if (path === '/portal/service-report') return { section: 'Transactions', title: 'Create Service Report', subtitle: 'Field service execution report and technician verification' };
+    if (path.startsWith('/portal/transaction/')) return { section: 'Transactions', title: 'Service Report View', subtitle: 'Execution verification and service sign-off' };
+    if (path === '/portal/invoices') return { section: 'Invoices', title: 'Tax Invoices Directory', subtitle: 'Commercial invoices with real-time settlement tracking' };
+    if (path === '/portal/invoice') return { section: 'Invoices', title: 'Create Invoice', subtitle: 'Generate GST-compliant tax invoice' };
+    if (path.startsWith('/portal/invoice/')) return { section: 'Invoices', title: 'Invoice Details', subtitle: 'Tax invoice view and payment tracking' };
     return { section: 'Portal', title: 'Management Console', subtitle: 'Taaskmate Enterprise Operations' };
   };
 
@@ -80,8 +90,84 @@ export const PortalTopBar: React.FC<PortalTopBarProps> = ({
         </div>
       </div>
 
-      {/* Right: Notifications & User Profile */}
-      <div className="flex items-center gap-3">
+      {/* Right: Quick Action Buttons, Notifications & User Profile */}
+      <div className="flex items-center gap-2.5 sm:gap-3">
+        {/* Desktop Quick Action Buttons */}
+        <div className="hidden lg:flex items-center gap-2">
+          <Link
+            to="/portal/quotation"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/80 text-xs font-semibold transition-colors shadow-2xs"
+            title="Create new Quotation"
+          >
+            <Plus className="w-3.5 h-3.5 text-[#00C878]" />
+            <span>Create Quotation</span>
+          </Link>
+
+          <Link
+            to="/portal/service-report"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/80 text-xs font-semibold transition-colors shadow-2xs"
+            title="Create new Service Report"
+          >
+            <Plus className="w-3.5 h-3.5 text-blue-600" />
+            <span>Create Service Report</span>
+          </Link>
+
+          <Link
+            to="/portal/invoice"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200/80 text-xs font-semibold transition-colors shadow-2xs"
+            title="Create new Invoice"
+          >
+            <Plus className="w-3.5 h-3.5 text-purple-600" />
+            <span>Create Invoice</span>
+          </Link>
+        </div>
+
+        {/* Tablet & Mobile Quick Create Dropdown */}
+        <div className="relative lg:hidden">
+          <button
+            onClick={() => setCreateMenuOpen(!createMenuOpen)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00C878] hover:bg-[#00B069] text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Create</span>
+            <ChevronDown className="w-3 h-3" />
+          </button>
+
+          {createMenuOpen && (
+            <div 
+              className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 z-50 animate-fadeIn"
+              onMouseLeave={() => setCreateMenuOpen(false)}
+            >
+              <Link
+                to="/portal/quotation"
+                onClick={() => setCreateMenuOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#00C878]" />
+                <span>Create Quotation</span>
+              </Link>
+              <Link
+                to="/portal/service-report"
+                onClick={() => setCreateMenuOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5 text-blue-600" />
+                <span>Create Service Report</span>
+              </Link>
+              <Link
+                to="/portal/invoice"
+                onClick={() => setCreateMenuOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5 text-purple-600" />
+                <span>Create Invoice</span>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        <div className="h-4 w-px bg-slate-200"></div>
+
         {/* Notifications */}
         <button
           className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors relative cursor-pointer"

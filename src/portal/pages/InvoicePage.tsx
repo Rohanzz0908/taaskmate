@@ -329,7 +329,7 @@ export const InvoicePage: React.FC = () => {
             <span>{isEditMode ? 'Edit Commercial Tax Invoice' : 'Generate Commercial Tax Invoice'}</span>
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Issued under Master Transaction ID. Computes CGST/SGST vs IGST, captures bank details, and tracks payment settlement.
+            Generates sequential Invoice ID (e.g. TMI2600001) linked to the Quotation ID. Computes GST and tracks payment settlement.
           </p>
         </div>
 
@@ -339,7 +339,7 @@ export const InvoicePage: React.FC = () => {
               to={`/portal/transaction/${selectedTid}`}
               className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
             >
-              View Transaction Hub
+              View Quotation Hub
             </Link>
           )}
           <button
@@ -351,29 +351,37 @@ export const InvoicePage: React.FC = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
-        {/* Step 1: Master Transaction Association */}
+      <form onSubmit={handleSave} noValidate className="space-y-6">
+        {/* Step 1: Quotation Association & Invoice ID */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              1. Master Transaction Association
+              1. Quotation Association & Invoice Details
             </h2>
-            <span className="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
-              MANDATORY TRANSACTION LINK
-            </span>
+            <div className="flex items-center gap-2">
+              {selectedTransaction?.invoice?.invoiceId ? (
+                <span className="text-[11px] font-mono font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded border border-purple-200">
+                  Invoice ID: {selectedTransaction.invoice.invoiceId}
+                </span>
+              ) : (
+                <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  Invoice ID: Auto-Generated (e.g. TMI2600001)
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Select Master Transaction ID <span className="text-rose-500">*</span>
+                Select Quotation ID <span className="text-rose-500">*</span>
               </label>
               <select
                 value={selectedTid}
                 onChange={(e) => handleSelectTransaction(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white cursor-pointer"
               >
-                <option value="">-- Select Master Transaction ID --</option>
+                <option value="">-- Select Quotation ID --</option>
                 {eligibleTransactions.map(t => (
                   <option key={t.transactionId} value={t.transactionId}>
                     {t.transactionId} — {t.clientSnapshot.clientName} ({t.overallStatus})
@@ -520,7 +528,8 @@ export const InvoicePage: React.FC = () => {
                     <td className="py-2 px-2 text-center">
                       <input
                         type="number"
-                        min="1"
+                        min="0"
+                        step="any"
                         value={row.quantity}
                         onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
                         className="w-14 px-1.5 py-1.5 border border-slate-200 rounded text-xs text-center font-mono focus:ring-1 focus:ring-purple-500 outline-none"
@@ -541,6 +550,7 @@ export const InvoicePage: React.FC = () => {
                       <input
                         type="number"
                         min="0"
+                        step="any"
                         value={row.rate}
                         onChange={(e) => handleItemChange(index, 'rate', parseFloat(e.target.value) || 0)}
                         className="w-24 px-2 py-1.5 border border-slate-200 rounded text-xs text-right font-mono focus:ring-1 focus:ring-purple-500 outline-none"
@@ -550,6 +560,7 @@ export const InvoicePage: React.FC = () => {
                       <input
                         type="number"
                         min="0"
+                        step="any"
                         value={row.discount || 0}
                         onChange={(e) => handleItemChange(index, 'discount', parseFloat(e.target.value) || 0)}
                         className="w-20 px-2 py-1.5 border border-slate-200 rounded text-xs text-right font-mono focus:ring-1 focus:ring-purple-500 outline-none"
@@ -681,6 +692,7 @@ export const InvoicePage: React.FC = () => {
               <input
                 type="number"
                 min="0"
+                step="any"
                 max={calculations.grandTotal}
                 value={amountPaid || ''}
                 onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}

@@ -66,6 +66,7 @@ export const DashboardPage: React.FC = () => {
     const query = searchQuery.trim().toUpperCase();
     const match = transactions.find(
       t => t.transactionId.toUpperCase() === query || 
+           (t.invoice?.invoiceId && t.invoice.invoiceId.toUpperCase() === query) ||
            t.clientSnapshot.clientName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -73,7 +74,7 @@ export const DashboardPage: React.FC = () => {
       setSearchError('');
       navigate(`/portal/transaction/${match.transactionId}`);
     } else {
-      setSearchError(`No transaction matching "${searchQuery}" found.`);
+      setSearchError(`No quotation or invoice matching "${searchQuery}" found.`);
       setTimeout(() => setSearchError(''), 4000);
     }
   };
@@ -108,13 +109,13 @@ export const DashboardPage: React.FC = () => {
           <div className="space-y-1.5 max-w-xl">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[#00C878] text-[11px] font-semibold">
               <Sparkles className="w-3 h-3" />
-              <span>Unified Master Transaction Architecture</span>
+              <span>Job & Quotation Management</span>
             </div>
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white">
               Welcome back, {user?.name || 'Test Admin'}
             </h1>
             <p className="text-slate-400 text-xs leading-relaxed">
-              One Master Transaction ID (<span className="font-mono text-[#00C878]">TM-YYYY-XXXX</span>) tracks the complete lifecycle from Quotation → Service Report → Commercial Tax Invoice.
+              Quotation ID (<span className="font-mono text-[#00C878]">TM260001</span>) is shared with the Service Report. Invoices receive a dedicated Invoice ID (<span className="font-mono text-purple-400">TMI2600001</span>) upon generation.
             </p>
           </div>
 
@@ -153,7 +154,7 @@ export const DashboardPage: React.FC = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Lookup Master Transaction ID (e.g. TM-2026-0001) or Client Name..."
+                placeholder="Lookup Quotation ID (e.g. TM260001), Invoice ID (e.g. TMI2600001), or Client Name..."
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs font-mono text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00C878] focus:border-transparent transition-all"
               />
             </div>
@@ -161,7 +162,7 @@ export const DashboardPage: React.FC = () => {
               type="submit"
               className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs font-semibold shrink-0 transition-colors cursor-pointer"
             >
-              Jump to Transaction
+              Jump to Hub
             </button>
           </form>
           {searchError && (
@@ -312,10 +313,10 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div>
               <h2 className="font-bold text-slate-900 text-sm">
-                Active Master Transactions & Service Lifecycles
+                Active Quotations & Jobs Directory
               </h2>
               <p className="text-[11px] text-slate-400">
-                Single ID connecting Quotation → Service Report → Invoice progression.
+                Shared Quotation ID for Quotation & Service Report. Dedicated Invoice ID for generated invoices.
               </p>
             </div>
           </div>
@@ -324,7 +325,7 @@ export const DashboardPage: React.FC = () => {
             to="/portal/quotation"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#00C878] hover:bg-[#00B069] text-white rounded-lg text-xs font-semibold shadow-xs transition-all self-start sm:self-auto"
           >
-            <Plus className="w-3.5 h-3.5" /> New Transaction
+            <Plus className="w-3.5 h-3.5" /> New Quotation
           </Link>
         </div>
 
@@ -332,7 +333,7 @@ export const DashboardPage: React.FC = () => {
           <table className="w-full text-left text-xs border-collapse">
             <thead className="bg-slate-50/80 border-b border-slate-200 text-[11px] uppercase font-semibold text-slate-500 tracking-wider">
               <tr>
-                <th className="py-3 px-4">Master ID</th>
+                <th className="py-3 px-4">Quotation ID</th>
                 <th className="py-3 px-4">Client / Facility</th>
                 <th className="py-3 px-3 text-center">1. Quotation</th>
                 <th className="py-3 px-3 text-center">2. Service Report</th>
@@ -423,14 +424,14 @@ export const DashboardPage: React.FC = () => {
                         }`}
                       >
                         <Receipt className="w-2.5 h-2.5" />
-                        <span>{t.invoice.payment.status}</span>
+                        <span className="font-mono">{t.invoice.invoiceId || t.invoice.payment.status}</span>
                       </Link>
                     ) : (
                       <Link
                         to={`/portal/invoice?tid=${t.transactionId}`}
                         className="text-[10px] text-slate-400 hover:text-purple-600 hover:underline"
                       >
-                        + Create
+                        + Generate
                       </Link>
                     )}
                   </td>
@@ -459,45 +460,6 @@ export const DashboardPage: React.FC = () => {
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      {/* Quick Operations & Architecture Banner */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-emerald-50 text-[#00C878] flex items-center justify-center shrink-0 border border-emerald-100">
-            <FileText className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="font-bold text-xs text-slate-900">Step 1: Quotation</div>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Generates Master Transaction ID (`TM-YYYY-XXXX`) once upon creation.
-            </p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
-            <Wrench className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="font-bold text-xs text-slate-900">Step 2: Service Report</div>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Carries the same Master ID. Field verification, spares used, and customer sign-off.
-            </p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
-            <Receipt className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="font-bold text-xs text-slate-900">Step 3: Commercial Invoice</div>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Uses identical Master ID. Auto-populates line items, CGST/SGST taxes, and payments.
-            </p>
-          </div>
         </div>
       </div>
     </div>

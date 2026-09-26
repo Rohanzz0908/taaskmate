@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Quotation, QuotationStatus } from '../types';
 import { db, formatINR } from '../services/db';
+import { downloadQuotationXLSX } from '../utils/quotationExport';
 
 export const QuotationListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -405,9 +406,16 @@ export const QuotationListPage: React.FC = () => {
                         <button
                           onClick={() => navigate(`/portal/quotation/${quote.quotationId}`)}
                           className="p-1 rounded text-slate-400 hover:text-[#00C878] hover:bg-emerald-50 transition-colors cursor-pointer"
-                          title="View & Preview Print"
+                          title="View & Download PDF"
                         >
                           <Eye className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => downloadQuotationXLSX(quote)}
+                          className="p-1 rounded text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                          title="Download Excel (.xlsx)"
+                        >
+                          <FileSpreadsheet className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => navigate(`/portal/quotation/${quote.quotationId}?print=true`)}
@@ -426,7 +434,7 @@ export const QuotationListPage: React.FC = () => {
                         <button
                           onClick={() => navigate(`/portal/transaction/${quote.quotationId}`)}
                           className="px-2 py-1 text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded transition-colors"
-                          title="View Master Transaction Lifecycle"
+                          title="View Quotation Hub"
                         >
                           Hub
                         </button>

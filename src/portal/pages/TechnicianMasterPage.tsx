@@ -46,50 +46,44 @@ export const TechnicianMasterPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
 
-  // Add / Edit Form State
+  // Available Skills / Categories from Category Master and Specializations
+  const categoryOptions = useMemo(() => {
+    const dbCats = db.getCategories()
+      .filter(c => c.status === 'Active')
+      .map(c => c.categoryName);
+    const combined = Array.from(new Set([...TECHNICIAN_SPECIALIZATIONS, ...dbCats]));
+    return combined;
+  }, []);
+
+  // Add / Edit Form State - strictly containing only the 10 requested fields
   const [showFormModal, setShowFormModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<{
     technicianId: string;
     name: string;
-    specialization: TechnicianSpecialization;
     phone: string;
     email: string;
-    experienceYears: number;
-    employmentType: EmploymentType;
-    idProofType: IdProofType;
-    idProofNumber: string;
-    emergencyContact: {
-      name: string;
-      phone: string;
-      relation: string;
-    };
-    skills: string[];
-    rating: number;
     address: string;
+    locality: string;
+    city: string;
+    state: string;
+    specialization: string;
+    experienceYears: number;
     status: TechnicianStatus;
   }>({
     technicianId: '',
     name: '',
-    specialization: 'HVAC & MEP',
     phone: '',
     email: '',
-    experienceYears: 3,
-    employmentType: 'Full-Time',
-    idProofType: 'Aadhaar',
-    idProofNumber: '',
-    emergencyContact: {
-      name: '',
-      phone: '',
-      relation: 'Spouse'
-    },
-    skills: [],
-    rating: 5,
     address: '',
+    locality: '',
+    city: 'Hyderabad',
+    state: 'Telangana',
+    specialization: 'HVAC & MEP',
+    experienceYears: 2,
     status: 'Active',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [skillInput, setSkillInput] = useState('');
 
   // View Details State
   const [technicianToView, setTechnicianToView] = useState<Technician | null>(null);
@@ -153,24 +147,16 @@ export const TechnicianMasterPage: React.FC = () => {
     setFormData({
       technicianId: db.getNextTechnicianId(),
       name: '',
-      specialization: 'HVAC & MEP',
       phone: '',
       email: '',
-      experienceYears: 3,
-      employmentType: 'Full-Time',
-      idProofType: 'Aadhaar',
-      idProofNumber: '',
-      emergencyContact: {
-        name: '',
-        phone: '',
-        relation: 'Spouse'
-      },
-      skills: ['General Maintenance'],
-      rating: 5,
       address: '',
+      locality: '',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      specialization: categoryOptions[0] || 'HVAC & MEP',
+      experienceYears: 2,
       status: 'Active',
     });
-    setSkillInput('');
     setFormErrors({});
     setShowFormModal(true);
   };
@@ -180,38 +166,18 @@ export const TechnicianMasterPage: React.FC = () => {
     setFormData({
       technicianId: tech.technicianId,
       name: tech.name,
-      specialization: tech.specialization,
       phone: tech.phone,
-      email: tech.email,
-      experienceYears: tech.experienceYears,
-      employmentType: tech.employmentType,
-      idProofType: tech.idProofType,
-      idProofNumber: tech.idProofNumber,
-      emergencyContact: { ...tech.emergencyContact },
-      skills: [...(tech.skills || [])],
-      rating: tech.rating,
-      address: tech.address,
-      status: tech.status,
+      email: tech.email || '',
+      address: tech.address || '',
+      locality: tech.locality || '',
+      city: tech.city || 'Hyderabad',
+      state: tech.state || 'Telangana',
+      specialization: tech.specialization || categoryOptions[0] || 'HVAC & MEP',
+      experienceYears: tech.experienceYears ?? 0,
+      status: tech.status || 'Active',
     });
-    setSkillInput('');
     setFormErrors({});
     setShowFormModal(true);
-  };
-
-  const handleAddSkill = () => {
-    const trimmed = skillInput.trim();
-    if (!trimmed) return;
-    if (!formData.skills.includes(trimmed)) {
-      setFormData(prev => ({ ...prev, skills: [...prev.skills, trimmed] }));
-    }
-    setSkillInput('');
-  };
-
-  const handleRemoveSkill = (skillToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      skills: prev.skills.filter(s => s !== skillToRemove)
-    }));
   };
 
   const validateForm = (): boolean => {
@@ -219,13 +185,13 @@ export const TechnicianMasterPage: React.FC = () => {
 
     if (!formData.name.trim()) {
       errors.name = 'Technician name is required.';
-    } else if (formData.name.trim().length < 3) {
-      errors.name = 'Name must be at least 3 characters.';
+    } else if (formData.name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters.';
     }
 
     if (!formData.phone.trim()) {
-      errors.phone = 'Mobile number is required.';
-    } else if (formData.phone.trim().length < 10) {
+      errors.phone = 'Phone number (phno) is required.';
+    } else if (formData.phone.replace(/[^0-9]/g, '').length < 10) {
       errors.phone = 'Please enter a valid 10-digit mobile number.';
     }
 
@@ -234,15 +200,27 @@ export const TechnicianMasterPage: React.FC = () => {
     }
 
     if (!formData.address.trim()) {
-      errors.address = 'Base city / location address is required.';
+      errors.address = 'Address is required.';
     }
 
-    if (!formData.idProofNumber.trim()) {
-      errors.idProofNumber = 'Government ID reference number is required.';
+    if (!formData.locality.trim()) {
+      errors.locality = 'Locality / Area is required.';
     }
 
-    if (formData.emergencyContact.phone.trim() && formData.emergencyContact.phone.trim().length < 8) {
-      errors.emergencyPhone = 'Please enter a valid emergency contact phone.';
+    if (!formData.city.trim()) {
+      errors.city = 'City is required.';
+    }
+
+    if (!formData.state.trim()) {
+      errors.state = 'State is required.';
+    }
+
+    if (!formData.specialization.trim()) {
+      errors.specialization = 'Please select a skill / category.';
+    }
+
+    if (formData.experienceYears < 0) {
+      errors.experienceYears = 'Experience must be 0 or more years.';
     }
 
     setFormErrors(errors);
@@ -253,7 +231,14 @@ export const TechnicianMasterPage: React.FC = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const res = db.saveTechnician(formData);
+    const payload = {
+      ...formData,
+      // Provide backwards-compatible defaults if needed by any consumer
+      employmentType: 'Full-Time' as const,
+      rating: 5,
+    };
+
+    const res = db.saveTechnician(payload as any);
     if (res.success) {
       showToast('success', res.message);
       setShowFormModal(false);
@@ -368,7 +353,7 @@ export const TechnicianMasterPage: React.FC = () => {
   }, [filteredTechnicians, currentPage, pageSize]);
 
   // Specialization Badge Color
-  const getSpecializationBadge = (spec: TechnicianSpecialization) => {
+  const getSpecializationBadge = (spec: string) => {
     switch (spec) {
       case 'HVAC & MEP':
         return 'bg-sky-50 text-sky-700 border-sky-200';
@@ -383,7 +368,7 @@ export const TechnicianMasterPage: React.FC = () => {
       case 'Civil & Painting':
         return 'bg-purple-50 text-purple-700 border-purple-200';
       default:
-        return 'bg-slate-100 text-slate-700 border-slate-200';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
     }
   };
 
@@ -501,11 +486,11 @@ export const TechnicianMasterPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Section 1: Basic Profile */}
+              {/* Section 1: Technician Details */}
               <div className="space-y-4">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                   <HardHat className="w-3.5 h-3.5 text-slate-400" />
-                  <span>1. Profile & Professional Specialization</span>
+                  <span>1. Technician Details</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -522,10 +507,10 @@ export const TechnicianMasterPage: React.FC = () => {
                     />
                   </div>
 
-                  {/* Name */}
+                  {/* Technician Name */}
                   <div className="sm:col-span-3">
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Full Name <span className="text-rose-500">*</span>
+                      Technician Name <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -542,73 +527,15 @@ export const TechnicianMasterPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {/* Specialization */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Primary Discipline <span className="text-rose-500">*</span>
-                    </label>
-                    <select
-                      value={formData.specialization}
-                      onChange={(e) => setFormData(prev => ({ ...prev, specialization: e.target.value as any }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                    >
-                      {TECHNICIAN_SPECIALIZATIONS.map(spec => (
-                        <option key={spec} value={spec}>{spec}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Experience */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Experience (Years)
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={50}
-                      value={formData.experienceYears}
-                      onChange={(e) => setFormData(prev => ({ ...prev, experienceYears: parseInt(e.target.value, 10) || 0 }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                    />
-                  </div>
-
-                  {/* Rating */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Skill Rating
-                    </label>
-                    <select
-                      value={formData.rating}
-                      onChange={(e) => setFormData(prev => ({ ...prev, rating: parseInt(e.target.value, 10) || 5 }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                    >
-                      <option value={5}>5 Stars (Master Tech)</option>
-                      <option value={4}>4 Stars (Sr. Specialist)</option>
-                      <option value={3}>3 Stars (Competent)</option>
-                      <option value={2}>2 Stars (Apprentice)</option>
-                      <option value={1}>1 Star (Trainee)</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 2: Contact & Address */}
-              <div className="space-y-4 pt-1">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-slate-400" />
-                  <span>2. Contact & City Base</span>
-                </div>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Phone Number (phno) */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Mobile Number <span className="text-rose-500">*</span>
+                      Phone Number (phno) <span className="text-rose-500">*</span>
                     </label>
                     <input
-                      type="text"
-                      placeholder="e.g. +91 98451 22334"
+                      type="tel"
+                      placeholder="e.g. 9845122334"
                       value={formData.phone}
                       onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                       className={`w-full px-3.5 py-2.5 text-xs rounded-xl border ${
@@ -620,13 +547,14 @@ export const TechnicianMasterPage: React.FC = () => {
                     )}
                   </div>
 
+                  {/* Email */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Email Address
                     </label>
                     <input
                       type="email"
-                      placeholder="e.g. tech.name@taaskmate.com"
+                      placeholder="e.g. ramesh@taaskmate.in"
                       value={formData.email}
                       onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                       className={`w-full px-3.5 py-2.5 text-xs rounded-xl border ${
@@ -638,14 +566,23 @@ export const TechnicianMasterPage: React.FC = () => {
                     )}
                   </div>
                 </div>
+              </div>
 
+              {/* Section 2: Address & Location */}
+              <div className="space-y-4 pt-1">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  <span>2. Address & Location</span>
+                </div>
+
+                {/* Street Address */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Operating City / Residential Address <span className="text-rose-500">*</span>
+                    Address <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Indiranagar, Bengaluru, Karnataka 560038"
+                    placeholder="e.g. Flat 302, Sai Raghavendra Residency, Main Road"
                     value={formData.address}
                     onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                     className={`w-full px-3.5 py-2.5 text-xs rounded-xl border ${
@@ -656,190 +593,131 @@ export const TechnicianMasterPage: React.FC = () => {
                     <p className="text-[11px] text-rose-500 mt-1">{formErrors.address}</p>
                   )}
                 </div>
-              </div>
-
-              {/* Section 3: Employment & Government Verification */}
-              <div className="space-y-4 pt-1">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
-                  <span>3. Employment Contract & National ID</span>
-                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Locality */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Employment Type
-                    </label>
-                    <select
-                      value={formData.employmentType}
-                      onChange={(e) => setFormData(prev => ({ ...prev, employmentType: e.target.value as any }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                    >
-                      <option value="Full-Time">Full-Time Staff</option>
-                      <option value="Contractor">Contractor (Retainer)</option>
-                      <option value="On-Demand">On-Demand Freelancer</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      ID Proof Document
-                    </label>
-                    <select
-                      value={formData.idProofType}
-                      onChange={(e) => setFormData(prev => ({ ...prev, idProofType: e.target.value as any }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                    >
-                      <option value="Aadhaar">Aadhaar Card</option>
-                      <option value="PAN">PAN Card</option>
-                      <option value="Voter ID">Voter ID</option>
-                      <option value="Driving License">Driving License</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      ID Document Number <span className="text-rose-500">*</span>
+                      Locality <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. XXXX-XXXX-4821"
-                      value={formData.idProofNumber}
-                      onChange={(e) => setFormData(prev => ({ ...prev, idProofNumber: e.target.value }))}
+                      placeholder="e.g. Nagole / Indiranagar"
+                      value={formData.locality}
+                      onChange={(e) => setFormData(prev => ({ ...prev, locality: e.target.value }))}
                       className={`w-full px-3.5 py-2.5 text-xs rounded-xl border ${
-                        formErrors.idProofNumber ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
+                        formErrors.locality ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
                       } focus:outline-none focus:ring-2 focus:ring-[#00C878]`}
                     />
-                    {formErrors.idProofNumber && (
-                      <p className="text-[11px] text-rose-500 mt-1">{formErrors.idProofNumber}</p>
+                    {formErrors.locality && (
+                      <p className="text-[11px] text-rose-500 mt-1">{formErrors.locality}</p>
+                    )}
+                  </div>
+
+                  {/* City */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      City <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Hyderabad"
+                      value={formData.city}
+                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                      className={`w-full px-3.5 py-2.5 text-xs rounded-xl border ${
+                        formErrors.city ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
+                      } focus:outline-none focus:ring-2 focus:ring-[#00C878]`}
+                    />
+                    {formErrors.city && (
+                      <p className="text-[11px] text-rose-500 mt-1">{formErrors.city}</p>
+                    )}
+                  </div>
+
+                  {/* State */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      State <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Telangana"
+                      value={formData.state}
+                      onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                      className={`w-full px-3.5 py-2.5 text-xs rounded-xl border ${
+                        formErrors.state ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
+                      } focus:outline-none focus:ring-2 focus:ring-[#00C878]`}
+                    />
+                    {formErrors.state && (
+                      <p className="text-[11px] text-rose-500 mt-1">{formErrors.state}</p>
                     )}
                   </div>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Deployment Availability Status
-                  </label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                  >
-                    <option value="Active">Active (Ready for Jobs)</option>
-                    <option value="On Leave">On Leave / Scheduled Off</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
               </div>
 
-              {/* Section 4: Emergency Contact */}
+              {/* Section 3: Skills/Category, Experience & Status */}
               <div className="space-y-4 pt-1">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                  <UserCheck className="w-3.5 h-3.5 text-slate-400" />
-                  <span>4. Emergency Contact Person</span>
+                  <Wrench className="w-3.5 h-3.5 text-slate-400" />
+                  <span>3. Skills, Experience & Status</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Skills/Category Select */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Contact Name
+                      Skills / Category Select <span className="text-rose-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Sunita Gowda"
-                      value={formData.emergencyContact.name}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        emergencyContact: { ...prev.emergencyContact, name: e.target.value }
-                      }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                    />
+                    <select
+                      value={formData.specialization}
+                      onChange={(e) => setFormData(prev => ({ ...prev, specialization: e.target.value }))}
+                      className={`w-full px-3.5 py-2.5 text-xs rounded-xl border ${
+                        formErrors.specialization ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
+                      } bg-white focus:outline-none focus:ring-2 focus:ring-[#00C878]`}
+                    >
+                      {categoryOptions.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                    {formErrors.specialization && (
+                      <p className="text-[11px] text-rose-500 mt-1">{formErrors.specialization}</p>
+                    )}
                   </div>
 
+                  {/* Experience */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Relationship
+                      Experience (Years) <span className="text-rose-500">*</span>
                     </label>
                     <input
-                      type="text"
-                      placeholder="e.g. Spouse / Brother / Father"
-                      value={formData.emergencyContact.relation}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        emergencyContact: { ...prev.emergencyContact, relation: e.target.value }
-                      }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C878]"
+                      type="number"
+                      min={0}
+                      max={50}
+                      value={formData.experienceYears}
+                      onChange={(e) => setFormData(prev => ({ ...prev, experienceYears: parseInt(e.target.value, 10) || 0 }))}
+                      className={`w-full px-3.5 py-2.5 text-xs rounded-xl border ${
+                        formErrors.experienceYears ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
+                      } focus:outline-none focus:ring-2 focus:ring-[#00C878]`}
                     />
+                    {formErrors.experienceYears && (
+                      <p className="text-[11px] text-rose-500 mt-1">{formErrors.experienceYears}</p>
+                    )}
                   </div>
 
+                  {/* Status */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Emergency Phone
+                      Status <span className="text-rose-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. +91 98451 99887"
-                      value={formData.emergencyContact.phone}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        emergencyContact: { ...prev.emergencyContact, phone: e.target.value }
-                      }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                    />
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C878]"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="On Leave">On Leave</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
                   </div>
-                </div>
-              </div>
-
-              {/* Section 5: Skills Tagging */}
-              <div className="space-y-4 pt-1">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                  <Award className="w-3.5 h-3.5 text-slate-400" />
-                  <span>5. Skills & Specialized Equipment Tags</span>
-                </div>
-
-                <div className="flex gap-2.5">
-                  <input
-                    type="text"
-                    placeholder="Type skill tag (e.g. Chiller Descaling, Megger Test) & press Add"
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddSkill();
-                      }
-                    }}
-                    className="flex-1 px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddSkill}
-                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-colors cursor-pointer"
-                  >
-                    Add Skill
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-1.5 min-h-[40px] p-2.5 bg-slate-50 rounded-xl border border-slate-200/80">
-                  {formData.skills.length === 0 ? (
-                    <span className="text-xs text-slate-400 italic">No skills added yet.</span>
-                  ) : (
-                    formData.skills.map((skill, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-white text-slate-700 border border-slate-200 shadow-2xs"
-                      >
-                        <span>{skill}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveSkill(skill)}
-                          className="text-slate-400 hover:text-rose-500 ml-0.5 cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </span>
-                    ))
-                  )}
                 </div>
               </div>
 
@@ -923,9 +801,8 @@ export const TechnicianMasterPage: React.FC = () => {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getSpecializationBadge(technicianToView.specialization)}`}>
                       {technicianToView.specialization}
                     </span>
-                    <span className="flex items-center gap-1 text-xs font-semibold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      <span>{technicianToView.rating} Stars</span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      {technicianToView.experienceYears} Years Experience
                     </span>
                   </div>
                 </div>
@@ -934,9 +811,6 @@ export const TechnicianMasterPage: React.FC = () => {
               <div className="flex items-center gap-3">
                 <span className="text-xs text-slate-400 font-medium">Status:</span>
                 {getStatusBadge(technicianToView.status)}
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                  {technicianToView.employmentType}
-                </span>
               </div>
             </div>
 
@@ -966,108 +840,67 @@ export const TechnicianMasterPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Operating Base / Address */}
+              {/* Base Location & Address */}
               <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2">
                 <div className="flex items-center gap-2 text-slate-400">
                   <MapPin className="w-4 h-4 text-blue-600" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Base Location / Address</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Address & Location</span>
                 </div>
-                <div className="text-sm font-semibold text-slate-800 line-clamp-2">
-                  {technicianToView.address || 'Location not specified'}
+                <div className="space-y-1">
+                  <div className="text-sm font-semibold text-slate-800 line-clamp-2">
+                    {technicianToView.address || 'Address not specified'}
+                  </div>
+                  {(technicianToView.locality || technicianToView.city || technicianToView.state) && (
+                    <div className="text-xs text-slate-600 font-medium">
+                      {[technicianToView.locality, technicianToView.city, technicianToView.state].filter(Boolean).join(', ')}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Experience & Employment */}
+              {/* Experience & Skills */}
               <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2">
                 <div className="flex items-center gap-2 text-slate-400">
                   <Briefcase className="w-4 h-4 text-purple-600" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Experience & Engagement</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Skills & Experience</span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-lg font-bold text-slate-900">{technicianToView.experienceYears}</span>
                   <span className="text-xs text-slate-500 font-medium">Years Practical Experience</span>
                 </div>
-                <div className="text-xs text-slate-600 font-medium">
-                  {technicianToView.employmentType} Crew
+                <div className="text-xs text-slate-700 font-semibold">
+                  Discipline: <span className="text-emerald-700">{technicianToView.specialization}</span>
                 </div>
               </div>
 
-              {/* Government ID & Compliance */}
+              {/* Status & Availability */}
               <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2">
                 <div className="flex items-center gap-2 text-slate-400">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Identity Verification</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Deployment Status</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-700">{technicianToView.idProofType} Card</span>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    <CheckCircle2 className="w-3 h-3 text-[#00C878]" /> Verified
-                  </span>
+                <div>
+                  {getStatusBadge(technicianToView.status)}
                 </div>
-                <div className="font-mono text-xs font-bold text-slate-800 bg-white px-3 py-1.5 rounded-lg border border-slate-200">
-                  {technicianToView.idProofNumber}
+                <div className="text-[11px] text-slate-500">
+                  Ready for corporate & field site dispatch
                 </div>
               </div>
 
-              {/* Emergency Contact */}
-              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2">
-                <div className="flex items-center gap-2 text-slate-400">
-                  <UserCheck className="w-4 h-4 text-rose-500" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Emergency Contact</span>
-                </div>
-                <div className="text-sm font-semibold text-slate-800">
-                  {technicianToView.emergencyContact?.name || 'Not Listed'}
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500">{technicianToView.emergencyContact?.relation || 'Relation'}</span>
-                  {technicianToView.emergencyContact?.phone && (
-                    <a
-                      href={`tel:${technicianToView.emergencyContact.phone}`}
-                      className="font-semibold text-rose-600 hover:underline"
-                    >
-                      {technicianToView.emergencyContact.phone}
-                    </a>
-                  )}
-                </div>
-              </div>
-
-              {/* Registration Record */}
-              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2">
+              {/* System Records */}
+              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2 col-span-1 md:col-span-2 lg:col-span-2">
                 <div className="flex items-center gap-2 text-slate-400">
                   <Clock className="w-4 h-4 text-slate-500" />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">System Records</span>
                 </div>
-                <div className="text-xs text-slate-600">
-                  Registered Date: <span className="font-semibold text-slate-800">{new Date(technicianToView.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                <div className="flex items-center gap-6 text-xs text-slate-600">
+                  <div>
+                    Registered Date: <span className="font-semibold text-slate-800">{new Date(technicianToView.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                  </div>
+                  <div>
+                    Last Updated: <span className="font-mono text-[11px]">{new Date(technicianToView.updatedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                  </div>
                 </div>
-                <div className="text-xs text-slate-500">
-                  Last Updated: <span className="font-mono text-[11px]">{new Date(technicianToView.updatedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Skills & Specialization Tags */}
-            <div className="pt-4 border-t border-slate-100 space-y-3">
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-emerald-600" />
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                  Certified Skills & Field Proficiencies ({technicianToView.skills?.length || 0})
-                </h4>
-              </div>
-              <div className="flex flex-wrap gap-2 p-4 bg-slate-50/70 rounded-xl border border-slate-200/80">
-                {(!technicianToView.skills || technicianToView.skills.length === 0) ? (
-                  <span className="text-xs text-slate-400 italic">No specific skill tags entered.</span>
-                ) : (
-                  technicianToView.skills.map((skill, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-200 shadow-2xs"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#00C878]" />
-                      <span>{skill}</span>
-                    </span>
-                  ))
-                )}
               </div>
             </div>
           </div>
@@ -1237,10 +1070,10 @@ export const TechnicianMasterPage: React.FC = () => {
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold uppercase text-[10px] tracking-wider">
                   <tr>
                     <th className="py-3 px-4">Technician</th>
-                    <th className="py-3 px-4">Specialization</th>
-                    <th className="py-3 px-4">Contact Info</th>
-                    <th className="py-3 px-4">Experience & Skills</th>
-                    <th className="py-3 px-4">Employment</th>
+                    <th className="py-3 px-4">Skills / Category</th>
+                    <th className="py-3 px-4">Contact (phno / email)</th>
+                    <th className="py-3 px-4">Location</th>
+                    <th className="py-3 px-4">Experience</th>
                     <th className="py-3 px-4">Status</th>
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
@@ -1274,9 +1107,6 @@ export const TechnicianMasterPage: React.FC = () => {
                             <div>
                               <div className="font-semibold text-slate-900 flex items-center gap-1.5">
                                 <span>{tech.name}</span>
-                                <span className="flex items-center text-[10px] font-bold text-amber-500">
-                                  ★ {tech.rating || 5}
-                                </span>
                               </div>
                               <div className="flex items-center gap-1 mt-0.5">
                                 <span className="font-mono text-[11px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
@@ -1298,9 +1128,9 @@ export const TechnicianMasterPage: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* Specialization */}
+                        {/* Skills / Category */}
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold border ${getSpecializationBadge(tech.specialization)}`}>
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold border ${getSpecializationBadge(tech.specialization as any)}`}>
                             <Wrench className="w-3 h-3" />
                             {tech.specialization}
                           </span>
@@ -1316,7 +1146,7 @@ export const TechnicianMasterPage: React.FC = () => {
                               <Phone className="w-3 h-3 text-slate-400 shrink-0" />
                               <span>{tech.phone}</span>
                             </a>
-                            {tech.email && (
+                            {tech.email ? (
                               <a 
                                 href={`mailto:${tech.email}`}
                                 className="text-slate-500 hover:text-slate-700 flex items-center gap-1 text-[11px] truncate max-w-[160px]"
@@ -1324,42 +1154,34 @@ export const TechnicianMasterPage: React.FC = () => {
                                 <Mail className="w-3 h-3 text-slate-400 shrink-0" />
                                 <span className="truncate">{tech.email}</span>
                               </a>
+                            ) : (
+                              <span className="text-slate-400 text-[10px] italic">No email</span>
                             )}
                           </div>
                         </td>
 
-                        {/* Experience & Skills */}
+                        {/* Location */}
                         <td className="py-3.5 px-4">
-                          <div>
-                            <span className="font-semibold text-slate-800 text-[11px]">
-                              {tech.experienceYears} Years Exp
-                            </span>
-                            <div className="flex flex-wrap gap-1 mt-1 max-w-[200px]">
-                              {(tech.skills || []).slice(0, 2).map((skill, idx) => (
-                                <span key={idx} className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded border border-slate-200 truncate">
-                                  {skill}
-                                </span>
-                              ))}
-                              {(tech.skills || []).length > 2 && (
-                                <span className="text-[10px] text-slate-400">
-                                  +{tech.skills.length - 2} more
-                                </span>
-                              )}
+                          <div className="space-y-0.5 max-w-[190px]">
+                            <div className="flex items-center gap-1 text-slate-800 font-medium truncate">
+                              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                              <span className="truncate">
+                                {tech.locality ? `${tech.locality}, ${tech.city || ''}` : tech.address}
+                              </span>
                             </div>
+                            {tech.state && (
+                              <div className="text-[10px] text-slate-500 pl-4 truncate">
+                                {tech.state}
+                              </div>
+                            )}
                           </div>
                         </td>
 
-                        {/* Employment */}
+                        {/* Experience */}
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <div className="space-y-1">
-                            <span className="text-[11px] font-semibold text-slate-700 block">
-                              {tech.employmentType}
-                            </span>
-                            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
-                              <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
-                              {tech.idProofType} Verified
-                            </span>
-                          </div>
+                          <span className="font-semibold text-slate-800 text-[11px]">
+                            {tech.experienceYears} Years Exp
+                          </span>
                         </td>
 
                         {/* Status */}

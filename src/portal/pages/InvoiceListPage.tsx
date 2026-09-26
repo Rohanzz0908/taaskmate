@@ -25,6 +25,7 @@ export const InvoiceListPage: React.FC = () => {
     return transactions.filter(t => {
       const inv = t.invoice!;
       const matchesSearch = 
+        (inv.invoiceId && inv.invoiceId.toLowerCase().includes(searchTerm.toLowerCase())) ||
         t.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
         t.clientSnapshot.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (inv.payment.referenceNumber && inv.payment.referenceNumber.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -50,23 +51,31 @@ export const InvoiceListPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Receipt className="w-6 h-6 text-purple-600" />
-            <span>Commercial Tax Invoices</span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            GST compliant tax invoices issued under Master Transaction IDs with real-time settlement tracking.
-          </p>
+      {/* Header Banner */}
+      <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-200/50">
+            <Receipt className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-lg font-bold text-slate-900 tracking-tight">Tax Invoices</h1>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                {transactions.length} Total
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              GST compliant tax invoices (e.g. TMI2600001) linked to Quotations with real-time settlement tracking.
+            </p>
+          </div>
         </div>
 
         <Link
           to="/portal/invoice"
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-all self-start sm:self-auto cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00C878] hover:bg-[#00B069] text-white font-semibold text-xs shadow-xs transition-all self-start sm:self-auto cursor-pointer"
         >
-          <Plus className="w-4 h-4" /> Create Invoice
+          <Plus className="w-4 h-4" />
+          <span>Create Invoice</span>
         </Link>
       </div>
 
@@ -78,7 +87,7 @@ export const InvoiceListPage: React.FC = () => {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by Transaction ID (e.g. TM-2026-0001), Client, or Reference No..."
+            placeholder="Search by Invoice ID (e.g. TMI2600001), Quotation ID, Client, or Reference No..."
             className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-purple-500 outline-none"
           />
         </div>
@@ -104,7 +113,8 @@ export const InvoiceListPage: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
               <tr>
-                <th className="py-3 px-4">Master Transaction ID</th>
+                <th className="py-3 px-4">Invoice ID</th>
+                <th className="py-3 px-3">Quotation ID</th>
                 <th className="py-3 px-4">Client Name</th>
                 <th className="py-3 px-3">Invoice Date</th>
                 <th className="py-3 px-3">Due Date</th>
@@ -120,13 +130,24 @@ export const InvoiceListPage: React.FC = () => {
                   const inv = t.invoice!;
                   return (
                     <tr key={t.transactionId} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                      <td className="py-3 px-4 font-mono font-bold text-purple-700 whitespace-nowrap">
+                        <Link 
+                          to={`/portal/invoice/${t.transactionId}`}
+                          className="text-purple-700 hover:text-purple-900 flex items-center gap-1 group"
+                        >
+                          <span className="bg-purple-50 px-2 py-0.5 rounded border border-purple-200 font-mono font-bold">
+                            {inv.invoiceId || 'Issued'}
+                          </span>
+                          <ArrowUpRight className="w-3 h-3 text-purple-400 group-hover:text-purple-700 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </Link>
+                      </td>
+
+                      <td className="py-3 px-3 font-mono font-semibold text-slate-700 whitespace-nowrap">
                         <Link 
                           to={`/portal/transaction/${t.transactionId}`}
-                          className="text-slate-900 hover:text-purple-600 flex items-center gap-1 group"
+                          className="hover:text-purple-600 hover:underline"
                         >
-                          <span>{t.transactionId}</span>
-                          <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          {t.transactionId}
                         </Link>
                       </td>
 

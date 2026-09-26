@@ -121,8 +121,9 @@ export const ServiceReportPage: React.FC = () => {
         }
 
         setWorkDescription('Executed scheduled preventive & corrective maintenance according to quotation specification.');
-        setAssignedTechnician('Ramesh Gowda (Senior Facility Specialist)');
-        setTechnicianName('Ramesh Gowda');
+        const prefilledTech = found.quotation?.assignedTechnicianName || found.assignedTechnicianName || 'Ramesh Gowda';
+        setAssignedTechnician(prefilledTech);
+        setTechnicianName(prefilledTech);
         setTechnicianSignature('Ramesh Gowda [Signed & Verified]');
         setCustomerSignature(`${found.clientSnapshot.contactPerson || 'Client Rep'} [Signed]`);
         setStatus('Completed');
@@ -264,7 +265,7 @@ export const ServiceReportPage: React.FC = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
+      <form onSubmit={handleSave} noValidate className="space-y-6">
         {/* Step 1: Master Transaction Selector */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -279,14 +280,14 @@ export const ServiceReportPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Select Master Transaction ID <span className="text-rose-500">*</span>
+                Select Quotation ID <span className="text-rose-500">*</span>
               </label>
               <select
                 value={selectedTid}
                 onChange={(e) => handleSelectTransaction(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-[#00C878] focus:border-transparent outline-none bg-white cursor-pointer"
               >
-                <option value="">-- Select Master Transaction ID --</option>
+                <option value="">-- Select Quotation ID --</option>
                 {eligibleTransactions.map(t => (
                   <option key={t.transactionId} value={t.transactionId}>
                     {t.transactionId} — {t.clientSnapshot.clientName} ({t.overallStatus})
@@ -294,7 +295,7 @@ export const ServiceReportPage: React.FC = () => {
                 ))}
               </select>
               <p className="text-[10px] text-slate-400 mt-1">
-                Every service report must be linked to an existing Master Transaction ID (`TM-YYYY-XXXX`).
+                Service reports use the same Quotation ID (e.g. TM260001) as the approved quotation.
               </p>
             </div>
 
@@ -495,7 +496,8 @@ export const ServiceReportPage: React.FC = () => {
                     <td className="py-2 px-2 text-center">
                       <input
                         type="number"
-                        min="1"
+                        min="0"
+                        step="any"
                         value={row.quantity}
                         onChange={(e) => handleMaterialChange(index, 'quantity', parseFloat(e.target.value) || 0)}
                         className="w-16 px-2 py-1.5 border border-slate-200 rounded text-xs text-center font-mono focus:ring-1 focus:ring-[#00C878] outline-none"

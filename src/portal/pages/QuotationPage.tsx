@@ -11,7 +11,13 @@ import {
   AlertCircle, 
   CheckCircle2, 
   FileText, 
-  ShieldCheck
+  ShieldCheck,
+  HardHat,
+  Phone,
+  Mail,
+  Users,
+  X,
+  Wrench
 } from 'lucide-react';
 import { 
   Category, 
@@ -21,7 +27,9 @@ import {
   QuotationItem, 
   QuotationStatus, 
   UOM_OPTIONS, 
-  UOMType 
+  UOMType,
+  Technician,
+  Vendor
 } from '../types';
 import { db, formatINR } from '../services/db';
 
@@ -53,6 +61,8 @@ export const QuotationPage: React.FC = () => {
   // Master Data
   const [categories, setCategories] = useState<Category[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [technicians, setTechnicians] = useState<Technician[]>([]);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
 
   // Form State
   const [quotationId, setQuotationId] = useState('');
@@ -61,6 +71,8 @@ export const QuotationPage: React.FC = () => {
   const [status, setStatus] = useState<QuotationStatus>('Draft');
   const [selectedClientId, setSelectedClientId] = useState('');
   const [clientSnapshot, setClientSnapshot] = useState<ClientSnapshot | null>(null);
+  const [assignedTechnicianId, setAssignedTechnicianId] = useState('');
+  const [assignedVendorId, setAssignedVendorId] = useState('');
   const [items, setItems] = useState<QuotationFormItem[]>([]);
   const [notes, setNotes] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('');
@@ -79,8 +91,12 @@ export const QuotationPage: React.FC = () => {
   useEffect(() => {
     const cats = db.getCategories();
     const clis = db.getClients();
+    const techs = db.getTechnicians();
+    const vends = db.getVendors();
     setCategories(cats);
     setClients(clis);
+    setTechnicians(techs);
+    setVendors(vends);
 
     const today = new Date().toISOString().split('T')[0];
     const thirtyDaysLater = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -133,6 +149,8 @@ export const QuotationPage: React.FC = () => {
         }));
         setNotes(existingQuote.notes || '');
         setPaymentTerms(existingQuote.paymentTerms || '');
+        setAssignedTechnicianId(existingQuote.assignedTechnicianId || '');
+        setAssignedVendorId(existingQuote.assignedVendorId || '');
       } else {
         showToast('error', `Quotation ${id} not found.`);
         navigate('/portal/quotations');
@@ -380,6 +398,9 @@ export const QuotationPage: React.FC = () => {
   const handleSave = (andPrint: boolean = false) => {
     if (!validate() || !clientSnapshot) return;
 
+    const selectedTech = technicians.find(t => t.technicianId === assignedTechnicianId);
+    const selectedVend = vendors.find(v => v.vendorId === assignedVendorId);
+
     const payload: Omit<Quotation, 'createdAt' | 'updatedAt'> = {
       transactionId: quotationId,
       quotationId,
@@ -387,6 +408,10 @@ export const QuotationPage: React.FC = () => {
       validUntil,
       clientId: selectedClientId,
       clientSnapshot,
+      assignedTechnicianId: selectedTech ? selectedTech.technicianId : undefined,
+      assignedTechnicianName: selectedTech ? selectedTech.name : undefined,
+      assignedVendorId: selectedVend ? selectedVend.vendorId : undefined,
+      assignedVendorName: selectedVend ? selectedVend.vendorName : undefined,
       items: items.map(it => ({
         ...it,
         description: it.description || it.materialName || '',
@@ -512,10 +537,10 @@ export const QuotationPage: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="block font-semibold text-slate-700 text-xs">
-                Master Transaction ID
+                Quotation ID
               </label>
               <span className="text-[10px] font-mono text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                LIFECYCLE ID
+                AUTO-SEQUENCE
               </span>
             </div>
             <input
@@ -525,7 +550,7 @@ export const QuotationPage: React.FC = () => {
               className="w-full px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-slate-900 font-mono text-xs font-bold cursor-not-allowed shadow-inner"
             />
             <p className="text-[10px] text-slate-400 mt-1">
-              Generated once. Shared across Quotation, Service Report, and Invoice.
+              Sequential Quotation ID (e.g. TM260001). Also used for the linked Service Report.
             </p>
           </div>
 
@@ -889,6 +914,209 @@ export const QuotationPage: React.FC = () => {
           <span className="text-slate-400 text-[11px]">
             {items.length} line item{items.length > 1 ? 's' : ''} configured
           </span>
+        </div>
+      </div>
+
+      {/* Assign Technician and Assign Vendor Section */}
+      <div className="bg-white p-5 rounded-xl border border-slate-200/90 shadow-xs space-y-4 text-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#00C878] flex items-center justify-center shrink-0 border border-emerald-100">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-slate-900 text-sm tracking-tight">
+                  Assign Technician & Assign Vendor
+                </h3>
+                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  Resource Allocation
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Allocate certified service technician and authorized trade supplier for this quotation scope
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border ${
+              assignedTechnicianId ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-500 border-slate-200'
+            }`}>
+              <HardHat className="w-3.5 h-3.5" />
+              <span>{technicians.find(t => t.technicianId === assignedTechnicianId)?.name || 'Technician Unassigned'}</span>
+            </span>
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border ${
+              assignedVendorId ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-50 text-slate-500 border-slate-200'
+            }`}>
+              <Building2 className="w-3.5 h-3.5" />
+              <span>{vendors.find(v => v.vendorId === assignedVendorId)?.vendorName || 'Vendor Unassigned'}</span>
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
+          {/* Column 1: Assign Technician */}
+          {(() => {
+            const selectedTech = technicians.find(t => t.technicianId === assignedTechnicianId);
+            return (
+              <div className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-4 space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 font-bold text-slate-800 text-xs">
+                    <div className="w-6 h-6 rounded-md bg-blue-100/70 text-blue-700 flex items-center justify-center">
+                      <HardHat className="w-3.5 h-3.5" />
+                    </div>
+                    <span>Assign Technician</span>
+                  </label>
+                  {assignedTechnicianId && (
+                    <button
+                      type="button"
+                      onClick={() => setAssignedTechnicianId('')}
+                      className="text-[11px] text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                    >
+                      <X className="w-3 h-3" />
+                      <span>Unassign</span>
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <select
+                    value={assignedTechnicianId}
+                    onChange={(e) => setAssignedTechnicianId(e.target.value)}
+                    className="w-full h-[38px] px-3 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] focus:border-[#00C878] transition-all cursor-pointer"
+                  >
+                    <option value="">Select Technician...</option>
+                    {technicians.map(t => (
+                      <option key={t.technicianId} value={t.technicianId}>
+                        {t.name} — {t.specialization} ({t.status})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Selected Technician Card Preview */}
+                {selectedTech ? (
+                  <div className="p-3.5 bg-white rounded-lg border border-blue-100/90 shadow-xs space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 text-xs">{selectedTech.name}</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                          {selectedTech.specialization}
+                        </span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${
+                        selectedTech.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}>
+                        {selectedTech.status}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-1.5 border-t border-slate-100">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{selectedTech.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 truncate">
+                        <Mail className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{selectedTech.email}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-50">
+                      <span>Experience: <strong className="text-slate-800">{selectedTech.experienceYears} Years</strong></span>
+                      <span>Type: <strong className="text-slate-800">{selectedTech.employmentType}</strong></span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-white/70 rounded-lg border border-dashed border-slate-200 text-center text-slate-400 text-[11px]">
+                    No technician allocated yet. Selected technician will be pre-filled on Service Report generation.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Column 2: Assign Vendor */}
+          {(() => {
+            const selectedVend = vendors.find(v => v.vendorId === assignedVendorId);
+            return (
+              <div className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-4 space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 font-bold text-slate-800 text-xs">
+                    <div className="w-6 h-6 rounded-md bg-purple-100/70 text-purple-700 flex items-center justify-center">
+                      <Building2 className="w-3.5 h-3.5" />
+                    </div>
+                    <span>Assign Vendor</span>
+                  </label>
+                  {assignedVendorId && (
+                    <button
+                      type="button"
+                      onClick={() => setAssignedVendorId('')}
+                      className="text-[11px] text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                    >
+                      <X className="w-3 h-3" />
+                      <span>Unassign</span>
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <select
+                    value={assignedVendorId}
+                    onChange={(e) => setAssignedVendorId(e.target.value)}
+                    className="w-full h-[38px] px-3 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] focus:border-[#00C878] transition-all cursor-pointer"
+                  >
+                    <option value="">Select Vendor / Supplier...</option>
+                    {vendors.map(v => (
+                      <option key={v.vendorId} value={v.vendorId}>
+                        {v.vendorName} — {v.tradeCategory} ({v.tier})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Selected Vendor Card Preview */}
+                {selectedVend ? (
+                  <div className="p-3.5 bg-white rounded-lg border border-purple-100/90 shadow-xs space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 text-xs">{selectedVend.vendorName}</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                          {selectedVend.tradeCategory}
+                        </span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${
+                        selectedVend.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}>
+                        {selectedVend.status}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-1.5 border-t border-slate-100">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{selectedVend.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 truncate">
+                        <Mail className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{selectedVend.email}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-50">
+                      <span>Contact: <strong className="text-slate-800">{selectedVend.contactPerson}</strong></span>
+                      <span>GSTIN: <strong className="text-slate-800 font-mono text-[10px]">{selectedVend.gstin || 'Unregistered'}</strong></span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-white/70 rounded-lg border border-dashed border-slate-200 text-center text-slate-400 text-[11px]">
+                    No vendor allocated yet. Select an approved supplier for material sourcing and purchase settlement.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
 
