@@ -14,25 +14,20 @@ import {
   Mail, 
   ShieldCheck, 
   Building2, 
-  CreditCard, 
-  Landmark, 
   Copy, 
   Check, 
   Eye, 
-  Award, 
   Truck, 
   MapPin, 
   Clock,
-  ArrowLeft
+  ArrowLeft,
+  Tag
 } from 'lucide-react';
 import { 
   Vendor, 
   VendorCategory, 
   VENDOR_CATEGORIES, 
-  VendorStatus, 
-  VendorTier, 
-  VendorPaymentTerms, 
-  VENDOR_PAYMENT_TERMS 
+  VendorStatus
 } from '../types';
 import { db, validateGSTIN, validatePAN } from '../services/db';
 
@@ -41,7 +36,6 @@ export const VendorMasterPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | VendorStatus>('All');
   const [categoryFilter, setCategoryFilter] = useState<'All' | VendorCategory>('All');
-  const [tierFilter, setTierFilter] = useState<'All' | VendorTier>('All');
   const [sortField, setSortField] = useState<'vendorId' | 'vendorName' | 'createdAt'>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -62,15 +56,6 @@ export const VendorMasterPage: React.FC = () => {
     address: '',
     gstin: '',
     pan: '',
-    bankDetails: {
-      bankName: 'HDFC Bank Ltd',
-      accountName: '',
-      accountNumber: '',
-      ifsc: '',
-      branch: ''
-    },
-    paymentTerms: 'Net 30',
-    tier: 'Preferred Partner',
     status: 'Active',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -144,15 +129,6 @@ export const VendorMasterPage: React.FC = () => {
       address: '',
       gstin: '',
       pan: '',
-      bankDetails: {
-        bankName: 'HDFC Bank Ltd',
-        accountName: '',
-        accountNumber: '',
-        ifsc: '',
-        branch: ''
-      },
-      paymentTerms: 'Net 30',
-      tier: 'Preferred Partner',
       status: 'Active',
     });
     setFormErrors({});
@@ -171,9 +147,6 @@ export const VendorMasterPage: React.FC = () => {
       address: vendor.address,
       gstin: vendor.gstin,
       pan: vendor.pan,
-      bankDetails: { ...vendor.bankDetails },
-      paymentTerms: vendor.paymentTerms,
-      tier: vendor.tier,
       status: vendor.status,
     });
     setFormErrors({});
@@ -226,14 +199,6 @@ export const VendorMasterPage: React.FC = () => {
       errors.pan = 'Invalid PAN format. Must be 10 characters (e.g. AABCS1234F).';
     }
 
-    if (!formData.bankDetails.accountNumber.trim()) {
-      errors.accountNumber = 'Bank account number is required for PO settlements.';
-    }
-
-    if (!formData.bankDetails.ifsc.trim()) {
-      errors.ifsc = 'Bank IFSC code is required.';
-    }
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -242,17 +207,7 @@ export const VendorMasterPage: React.FC = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // Auto-populate account name if left blank
-    const submissionData = {
-      ...formData,
-      bankDetails: {
-        ...formData.bankDetails,
-        accountName: formData.bankDetails.accountName.trim() || formData.vendorName.trim(),
-        ifsc: formData.bankDetails.ifsc.trim().toUpperCase(),
-      }
-    };
-
-    const res = db.saveVendor(submissionData);
+    const res = db.saveVendor(formData);
     if (res.success) {
       showToast('success', res.message);
       setShowFormModal(false);
@@ -293,11 +248,6 @@ export const VendorMasterPage: React.FC = () => {
       'Address', 
       'GSTIN', 
       'PAN', 
-      'Bank Name', 
-      'Account Number', 
-      'IFSC', 
-      'Payment Terms', 
-      'Supplier Tier', 
       'Status', 
       'Created At'
     ];
@@ -311,11 +261,6 @@ export const VendorMasterPage: React.FC = () => {
       `"${v.address.replace(/"/g, '""')}"`,
       v.gstin,
       v.pan,
-      `"${v.bankDetails.bankName}"`,
-      v.bankDetails.accountNumber,
-      v.bankDetails.ifsc,
-      v.paymentTerms,
-      v.tier,
       v.status,
       v.createdAt
     ]);
@@ -342,9 +287,8 @@ export const VendorMasterPage: React.FC = () => {
         
         const matchesStatus = statusFilter === 'All' || vendor.status === statusFilter;
         const matchesCat = categoryFilter === 'All' || vendor.tradeCategory === categoryFilter;
-        const matchesTier = tierFilter === 'All' || vendor.tier === tierFilter;
 
-        return matchesSearch && matchesStatus && matchesCat && matchesTier;
+        return matchesSearch && matchesStatus && matchesCat;
       })
       .sort((a, b) => {
         const factor = sortOrder === 'asc' ? 1 : -1;
@@ -356,7 +300,7 @@ export const VendorMasterPage: React.FC = () => {
           return factor * a.createdAt.localeCompare(b.createdAt);
         }
       });
-  }, [vendors, searchTerm, statusFilter, categoryFilter, tierFilter, sortField, sortOrder]);
+  }, [vendors, searchTerm, statusFilter, categoryFilter, sortField, sortOrder]);
 
   const totalPages = Math.ceil(filteredVendors.length / pageSize) || 1;
   const paginatedVendors = useMemo(() => {
@@ -381,30 +325,6 @@ export const VendorMasterPage: React.FC = () => {
         return 'bg-orange-50 text-orange-700 border-orange-200';
       default:
         return 'bg-slate-100 text-slate-700 border-slate-200';
-    }
-  };
-
-  const getTierBadge = (tier: VendorTier) => {
-    switch (tier) {
-      case 'Preferred Partner':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <Award className="w-2.5 h-2.5" />
-            Preferred
-          </span>
-        );
-      case 'Standard Supplier':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-            Standard
-          </span>
-        );
-      case 'Under Review':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-            Under Review
-          </span>
-        );
     }
   };
 
@@ -436,7 +356,7 @@ export const VendorMasterPage: React.FC = () => {
 
   // KPI Metrics
   const activeVendors = vendors.filter(v => v.status === 'Active').length;
-  const preferredCount = vendors.filter(v => v.tier === 'Preferred Partner').length;
+  const tradeCategoriesCount = new Set(vendors.map(v => v.tradeCategory)).size;
   const verifiedGstinCount = vendors.filter(v => validateGSTIN(v.gstin)).length;
 
   return (
@@ -563,7 +483,7 @@ export const VendorMasterPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Trade Category */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -577,22 +497,6 @@ export const VendorMasterPage: React.FC = () => {
                       {VENDOR_CATEGORIES.map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
-                    </select>
-                  </div>
-
-                  {/* Supplier Tier */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Supplier Tier
-                    </label>
-                    <select
-                      value={formData.tier}
-                      onChange={(e) => setFormData(prev => ({ ...prev, tier: e.target.value as any }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                    >
-                      <option value="Preferred Partner">Preferred Partner (Direct OEM/Authorized)</option>
-                      <option value="Standard Supplier">Standard Supplier</option>
-                      <option value="Under Review">Under Review</option>
                     </select>
                   </div>
 
@@ -776,107 +680,6 @@ export const VendorMasterPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Section 4: Bank Settlement & Payment Terms */}
-              <div className="space-y-4 pt-1">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                  <Landmark className="w-3.5 h-3.5 text-slate-400" />
-                  <span>4. Bank Settlement Coordinates & Payment Terms</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Bank Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. HDFC Bank Ltd"
-                      value={formData.bankDetails.bankName}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        bankDetails: { ...prev.bankDetails, bankName: e.target.value }
-                      }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Account Number <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 50200044556677"
-                      value={formData.bankDetails.accountNumber}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        bankDetails: { ...prev.bankDetails, accountNumber: e.target.value }
-                      }))}
-                      className={`w-full px-3.5 py-2.5 text-xs font-mono rounded-xl border ${
-                        formErrors.accountNumber ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
-                      } focus:outline-none focus:ring-2 focus:ring-[#00C878]`}
-                    />
-                    {formErrors.accountNumber && (
-                      <p className="text-[11px] text-rose-500 mt-1">{formErrors.accountNumber}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      IFSC Code <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. HDFC0000123"
-                      value={formData.bankDetails.ifsc}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        bankDetails: { ...prev.bankDetails, ifsc: e.target.value.toUpperCase() }
-                      }))}
-                      className={`w-full px-3.5 py-2.5 text-xs font-mono uppercase rounded-xl border ${
-                        formErrors.ifsc ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'
-                      } focus:outline-none focus:ring-2 focus:ring-[#00C878]`}
-                    />
-                    {formErrors.ifsc && (
-                      <p className="text-[11px] text-rose-500 mt-1">{formErrors.ifsc}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Branch Location
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Peenya Industrial Area, Bengaluru"
-                      value={formData.bankDetails.branch}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        bankDetails: { ...prev.bankDetails, branch: e.target.value }
-                      }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-1">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Commercial Payment Terms
-                    </label>
-                    <select
-                      value={formData.paymentTerms}
-                      onChange={(e) => setFormData(prev => ({ ...prev, paymentTerms: e.target.value as any }))}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-                    >
-                      {VENDOR_PAYMENT_TERMS.map(term => (
-                        <option key={term} value={term}>{term}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
               {/* Form Actions */}
               <div className="flex items-center justify-end gap-3 pt-5 border-t border-slate-100">
                 <button
@@ -957,7 +760,6 @@ export const VendorMasterPage: React.FC = () => {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryBadge(vendorToView.tradeCategory)}`}>
                       {vendorToView.tradeCategory}
                     </span>
-                    {getTierBadge(vendorToView.tier)}
                   </div>
                 </div>
               </div>
@@ -1006,21 +808,6 @@ export const VendorMasterPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Commercial Terms & Tier */}
-              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2">
-                <div className="flex items-center gap-2 text-slate-400">
-                  <CreditCard className="w-4 h-4 text-purple-600" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Commercial Terms</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-base font-bold text-slate-900">{vendorToView.paymentTerms}</span>
-                  <span className="text-xs text-slate-500 font-medium">Credit Window</span>
-                </div>
-                <div className="text-xs text-slate-600 font-medium">
-                  Tier: <span className="font-semibold text-slate-800">{vendorToView.tier}</span>
-                </div>
-              </div>
-
               {/* Tax & GSTIN Registration */}
               <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2">
                 <div className="flex items-center gap-2 text-slate-400">
@@ -1053,22 +840,6 @@ export const VendorMasterPage: React.FC = () => {
                       {vendorToView.pan || '—'}
                     </span>
                   </div>
-                </div>
-              </div>
-
-              {/* Bank Settlement Coordinates */}
-              <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2">
-                <div className="flex items-center gap-2 text-slate-400">
-                  <Landmark className="w-4 h-4 text-amber-600" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Bank Settlement</span>
-                </div>
-                <div className="text-sm font-semibold text-slate-800">{vendorToView.bankDetails.bankName}</div>
-                <div className="text-xs text-slate-600">
-                  Branch: <span className="font-medium text-slate-800">{vendorToView.bankDetails.branch || '—'}</span>
-                </div>
-                <div className="space-y-1 pt-1 font-mono text-xs text-slate-700">
-                  <div>A/C: <span className="font-bold text-slate-900">{vendorToView.bankDetails.accountNumber}</span></div>
-                  <div>IFSC: <span className="font-bold text-slate-900">{vendorToView.bankDetails.ifsc}</span></div>
                 </div>
               </div>
 
@@ -1155,12 +926,12 @@ export const VendorMasterPage: React.FC = () => {
 
             <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs flex items-center gap-3.5">
               <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
-                <Award className="w-4 h-4" />
+                <Tag className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Preferred Tier</div>
-                <div className="text-lg font-bold text-purple-700 font-mono">{preferredCount}</div>
-                <div className="text-[10px] text-purple-600 font-medium">Discount pre-negotiated</div>
+                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Trade Categories</div>
+                <div className="text-lg font-bold text-purple-700 font-mono">{tradeCategoriesCount}</div>
+                <div className="text-[10px] text-purple-600 font-medium">Distinct service lines</div>
               </div>
             </div>
 
@@ -1206,21 +977,6 @@ export const VendorMasterPage: React.FC = () => {
                 {VENDOR_CATEGORIES.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
-              </select>
-
-              {/* Tier Filter */}
-              <select
-                value={tierFilter}
-                onChange={(e) => {
-                  setTierFilter(e.target.value as any);
-                  setCurrentPage(1);
-                }}
-                className="px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#00C878]"
-              >
-                <option value="All">All Tiers</option>
-                <option value="Preferred Partner">Preferred Partner</option>
-                <option value="Standard Supplier">Standard Supplier</option>
-                <option value="Under Review">Under Review</option>
               </select>
 
               {/* Status Filter */}
@@ -1270,15 +1026,14 @@ export const VendorMasterPage: React.FC = () => {
                     <th className="py-3 px-4">Trade Category</th>
                     <th className="py-3 px-4">Contact Person</th>
                     <th className="py-3 px-4">GSTIN & PAN</th>
-                    <th className="py-3 px-4">Settlement & Terms</th>
-                    <th className="py-3 px-4">Tier & Status</th>
+                    <th className="py-3 px-4">Status</th>
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {paginatedVendors.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-slate-400">
+                      <td colSpan={6} className="py-12 text-center text-slate-400">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <Store className="w-8 h-8 text-slate-300 stroke-1" />
                           <p className="font-medium text-slate-600">No vendors found</p>
@@ -1392,26 +1147,9 @@ export const VendorMasterPage: React.FC = () => {
                             </div>
                           </td>
 
-                          {/* Bank & Payment Terms */}
-                          <td className="py-3.5 px-4">
-                            <div className="space-y-0.5">
-                              <div className="flex items-center gap-1 text-[11px] font-medium text-slate-800">
-                                <Landmark className="w-3 h-3 text-slate-400 shrink-0" />
-                                <span className="line-clamp-1">{vendor.bankDetails.bankName}</span>
-                              </div>
-                              <div className="flex items-center gap-1 text-[10px] text-slate-500">
-                                <CreditCard className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                                <span>{vendor.paymentTerms}</span>
-                              </div>
-                            </div>
-                          </td>
-
-                          {/* Tier & Status */}
+                          {/* Status */}
                           <td className="py-3.5 px-4 whitespace-nowrap">
-                            <div className="space-y-1">
-                              <div>{getTierBadge(vendor.tier)}</div>
-                              <div>{getStatusBadge(vendor.status)}</div>
-                            </div>
+                            {getStatusBadge(vendor.status)}
                           </td>
 
                           {/* Actions */}

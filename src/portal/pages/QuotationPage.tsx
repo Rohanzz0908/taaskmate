@@ -17,7 +17,8 @@ import {
   Mail,
   Users,
   X,
-  Wrench
+  Wrench,
+  Lock
 } from 'lucide-react';
 import { 
   Category, 
@@ -26,6 +27,7 @@ import {
   Quotation, 
   QuotationItem, 
   QuotationStatus, 
+  GSTMode,
   UOM_OPTIONS, 
   UOMType,
   Technician,
@@ -68,19 +70,23 @@ export const QuotationPage: React.FC = () => {
   const [quotationId, setQuotationId] = useState('');
   const [quotationDate, setQuotationDate] = useState('');
   const [validUntil, setValidUntil] = useState('');
-  const [status, setStatus] = useState<QuotationStatus>('Draft');
+  const [status, setStatus] = useState<QuotationStatus>('Completed');
   const [selectedClientId, setSelectedClientId] = useState('');
   const [clientSnapshot, setClientSnapshot] = useState<ClientSnapshot | null>(null);
-  const [assignedTechnicianId, setAssignedTechnicianId] = useState('');
-  const [assignedVendorId, setAssignedVendorId] = useState('');
+  const [assignedTechnicianIds, setAssignedTechnicianIds] = useState<string[]>([]);
+  const [assignedVendorIds, setAssignedVendorIds] = useState<string[]>([]);
   const [items, setItems] = useState<QuotationFormItem[]>([]);
   const [notes, setNotes] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('');
+  const [sacCode, setSacCode] = useState('9985');
+  const [gstMode, setGstMode] = useState<GSTMode>('CGST_SGST');
 
   // UI state
   const [isEditMode, setIsEditMode] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const isLocked = false;
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({ type, message });
@@ -111,7 +117,11 @@ export const QuotationPage: React.FC = () => {
         setValidUntil(existingQuote.validUntil);
         setStatus(existingQuote.status);
         setSelectedClientId(existingQuote.clientId);
-        setClientSnapshot(existingQuote.clientSnapshot);
+        const clientObj = clis.find(c => c.clientId === existingQuote.clientId);
+        setClientSnapshot({
+          ...existingQuote.clientSnapshot,
+          serviceLocation: existingQuote.clientSnapshot.serviceLocation || clientObj?.serviceLocation
+        });
         setItems(existingQuote.items.map(it => {
           const vCost = it.vendorCost !== undefined ? it.vendorCost : '';
           const cRate = it.clientRate !== undefined ? it.clientRate : (it.rate ?? '');
@@ -149,8 +159,15 @@ export const QuotationPage: React.FC = () => {
         }));
         setNotes(existingQuote.notes || '');
         setPaymentTerms(existingQuote.paymentTerms || '');
-        setAssignedTechnicianId(existingQuote.assignedTechnicianId || '');
-        setAssignedVendorId(existingQuote.assignedVendorId || '');
+        setSacCode(existingQuote.sacCode || '9985');
+        setGstMode(existingQuote.gstMode || 'CGST_SGST');
+        const loadedTechIds: string[] = existingQuote.assignedTechnicianIds || 
+          (existingQuote.assignedTechnicianId ? existingQuote.assignedTechnicianId.split(',').map(s => s.trim()).filter(Boolean) : []);
+        setAssignedTechnicianIds(loadedTechIds);
+
+        const loadedVendIds: string[] = existingQuote.assignedVendorIds || 
+          (existingQuote.assignedVendorId ? existingQuote.assignedVendorId.split(',').map(s => s.trim()).filter(Boolean) : []);
+        setAssignedVendorIds(loadedVendIds);
       } else {
         showToast('error', `Quotation ${id} not found.`);
         navigate('/portal/quotations');
@@ -161,7 +178,11 @@ export const QuotationPage: React.FC = () => {
       setQuotationId(db.getNextQuotationId());
       setQuotationDate(today);
       setValidUntil(thirtyDaysLater);
-      setStatus('Draft');
+      setStatus('Completed');
+      setSacCode('9985');
+      setGstMode('CGST_SGST');
+      setAssignedTechnicianIds([]);
+      setAssignedVendorIds([]);
       setNotes('1. All materials supplied conform strictly to Indian ISI/ISO and LEED safety benchmarks.\n2. Work will be executed by certified and insured Taaskmate facility specialists.\n3. Any structural civil changes outside the scope will require additional estimation.');
       setPaymentTerms('50% mobilization advance along with signed Purchase Order, balance 50% upon successful joint inspection and sign-off within 15 days.');
 
@@ -200,6 +221,7 @@ export const QuotationPage: React.FC = () => {
         clientId: client.clientId,
         clientName: client.clientName,
         address: client.address,
+        serviceLocation: client.serviceLocation,
         email: client.email,
         phone: client.phone,
         gstin: client.gstin,
@@ -221,7 +243,13 @@ export const QuotationPage: React.FC = () => {
       const updated = [...prevItems];
       const item = { ...updated[index], [field]: value };
 
-      if (field === 'categoryId') {
+      if (field === 'description') {
+        item.description = value;
+        item.materialName = value;
+      } else if (field === 'materialName') {
+        item.materialName = value;
+        item.description = value;
+      } else if (field === 'categoryId') {
         if (!value) {
           item.categoryId = '';
           item.materialName = '';
@@ -280,14 +308,12 @@ export const QuotationPage: React.FC = () => {
       const baseClientAmt = parseFloat((qty * clientRateFinal).toFixed(2));
       item.clientAmount = baseClientAmt;
 
-      // 3. GST Amount (auto)
-      const taxPercent = Math.max(0, Number(item.taxPercent) || 0);
-      const taxAmount = parseFloat(((baseClientAmt * taxPercent) / 100).toFixed(2));
-      item.taxAmount = taxAmount;
+      // 3. Tax / GST is now applied globally via the quotation GST dropdown
+      item.taxPercent = '';
+      item.taxAmount = 0;
 
-      // 4. Client Amt = Base + GST
-      const totalAmount = parseFloat((baseClientAmt + taxAmount).toFixed(2));
-      item.amount = totalAmount;
+      // 4. Client Amt = Base Amount
+      item.amount = baseClientAmt;
 
       updated[index] = item;
       return updated;
@@ -331,8 +357,6 @@ export const QuotationPage: React.FC = () => {
     let totalVendorCost = 0;
     let subtotal = 0; // client base total
     let totalDiscount = 0;
-    let totalTax = 0; // total GST
-    let grandTotal = 0; // total client amount
 
     items.forEach(item => {
       const qty = Number(item.quantity) || 0;
@@ -343,10 +367,24 @@ export const QuotationPage: React.FC = () => {
       totalVendorCost += qty * vCost;
       subtotal += qty * cRate;
       totalDiscount += discount;
-      totalTax += Number(item.taxAmount) || 0;
-      grandTotal += Number(item.amount) || 0;
     });
 
+    const taxableAmount = Math.max(0, subtotal - totalDiscount);
+    let cgst = 0;
+    let sgst = 0;
+    let igst = 0;
+    let totalTax = 0;
+
+    if (gstMode === 'CGST_SGST') {
+      cgst = parseFloat((taxableAmount * 0.09).toFixed(2));
+      sgst = parseFloat((taxableAmount * 0.09).toFixed(2));
+      totalTax = parseFloat((cgst + sgst).toFixed(2));
+    } else {
+      igst = parseFloat((taxableAmount * 0.18).toFixed(2));
+      totalTax = igst;
+    }
+
+    const grandTotal = parseFloat((taxableAmount + totalTax).toFixed(2));
     const estimatedMargin = subtotal - totalVendorCost;
     const marginPercent = totalVendorCost > 0 ? (estimatedMargin / totalVendorCost) * 100 : 0;
 
@@ -354,12 +392,16 @@ export const QuotationPage: React.FC = () => {
       totalVendorCost,
       subtotal,
       totalDiscount,
+      taxableAmount,
+      cgst,
+      sgst,
+      igst,
       totalTax,
       grandTotal,
       estimatedMargin,
       marginPercent,
     };
-  }, [items]);
+  }, [items, gstMode]);
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
@@ -377,8 +419,8 @@ export const QuotationPage: React.FC = () => {
     }
 
     for (let i = 0; i < items.length; i++) {
-      if (!items[i].description.trim() && !items[i].categoryId && !items[i].materialName?.trim()) {
-        errors.items = `Row #${i + 1}: Please enter a description or select category.`;
+      if (!items[i].description.trim() && !items[i].materialName?.trim()) {
+        errors.items = `Row #${i + 1}: Please enter a description.`;
         break;
       }
       if (Number(items[i].quantity) <= 0) {
@@ -396,10 +438,15 @@ export const QuotationPage: React.FC = () => {
   };
 
   const handleSave = (andPrint: boolean = false) => {
-    if (!validate() || !clientSnapshot) return;
+    if (isLocked) {
+      showToast('error', 'Quotation is marked as Completed and locked. Change status to Draft or Sent to edit.');
+      return;
+    }
+    const selectedTechs = technicians.filter(t => assignedTechnicianIds.includes(t.technicianId));
+    const techNames = selectedTechs.map(t => t.name);
 
-    const selectedTech = technicians.find(t => t.technicianId === assignedTechnicianId);
-    const selectedVend = vendors.find(v => v.vendorId === assignedVendorId);
+    const selectedVends = vendors.filter(v => assignedVendorIds.includes(v.vendorId));
+    const vendNames = selectedVends.map(v => v.vendorName);
 
     const payload: Omit<Quotation, 'createdAt' | 'updatedAt'> = {
       transactionId: quotationId,
@@ -408,28 +455,42 @@ export const QuotationPage: React.FC = () => {
       validUntil,
       clientId: selectedClientId,
       clientSnapshot,
-      assignedTechnicianId: selectedTech ? selectedTech.technicianId : undefined,
-      assignedTechnicianName: selectedTech ? selectedTech.name : undefined,
-      assignedVendorId: selectedVend ? selectedVend.vendorId : undefined,
-      assignedVendorName: selectedVend ? selectedVend.vendorName : undefined,
-      items: items.map(it => ({
-        ...it,
-        description: it.description || it.materialName || '',
-        materialName: it.materialName || it.description || '',
-        itemType: it.itemType || 'Material',
-        uom: (it.uom || 'Nos') as any,
-        quantity: Number(it.quantity) || 0,
-        vendorCost: Number(it.vendorCost) || 0,
-        vendorAmount: Number(it.vendorAmount) || 0,
-        profitPercent: Number(it.profitPercent) || 0,
-        clientRate: Number(it.clientRate) || Number(it.rate) || 0,
-        rate: Number(it.clientRate) || Number(it.rate) || 0,
-        discount: Number(it.discount) || 0,
-        taxPercent: Number(it.taxPercent) || 0,
-        taxAmount: Number(it.taxAmount) || 0,
-        clientAmount: Number(it.clientAmount) || 0,
-        amount: Number(it.amount) || 0,
-      })),
+      gstMode,
+      cgst: totals.cgst,
+      sgst: totals.sgst,
+      igst: totals.igst,
+      assignedTechnicianIds,
+      assignedTechnicianNames: techNames,
+      assignedTechnicianId: assignedTechnicianIds.length > 0 ? assignedTechnicianIds.join(', ') : undefined,
+      assignedTechnicianName: techNames.length > 0 ? techNames.join(', ') : undefined,
+      assignedVendorIds,
+      assignedVendorNames: vendNames,
+      assignedVendorId: assignedVendorIds.length > 0 ? assignedVendorIds.join(', ') : undefined,
+      assignedVendorName: vendNames.length > 0 ? vendNames.join(', ') : undefined,
+      items: items.map(it => {
+        const itemName = it.description || it.materialName || '';
+        const cRate = Number(it.clientRate) || Number(it.rate) || 0;
+        const qty = Number(it.quantity) || 0;
+        const baseClientAmt = Number(it.clientAmount) || parseFloat((qty * cRate).toFixed(2));
+        return {
+          ...it,
+          description: itemName,
+          materialName: itemName,
+          itemType: it.itemType || 'Material',
+          uom: (it.uom || 'Nos') as any,
+          quantity: qty,
+          vendorCost: Number(it.vendorCost) || 0,
+          vendorAmount: Number(it.vendorAmount) || 0,
+          profitPercent: Number(it.profitPercent) || 0,
+          clientRate: cRate,
+          rate: cRate,
+          discount: Number(it.discount) || 0,
+          taxPercent: 0,
+          taxAmount: 0,
+          clientAmount: baseClientAmt,
+          amount: baseClientAmt,
+        };
+      }),
       subtotal: totals.subtotal,
       totalDiscount: totals.totalDiscount,
       totalTax: totals.totalTax,
@@ -437,6 +498,7 @@ export const QuotationPage: React.FC = () => {
       status,
       notes,
       paymentTerms,
+      sacCode: sacCode.trim() || undefined,
     };
 
     const res = db.saveQuotation(payload);
@@ -525,6 +587,8 @@ export const QuotationPage: React.FC = () => {
         </div>
       )}
 
+
+
       {/* Top Metadata Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Quotation Identity Details */}
@@ -579,22 +643,7 @@ export const QuotationPage: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <label className="block font-semibold text-slate-600 mb-1">
-              Approval Status
-            </label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as QuotationStatus)}
-              className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] cursor-pointer"
-            >
-              <option value="Draft">Draft (Internal Review)</option>
-              <option value="Sent">Sent (Awaiting PO)</option>
-              <option value="Approved">Approved & Confirmed</option>
-              <option value="Rejected">Rejected / Cancelled</option>
-              <option value="Expired">Expired</option>
-            </select>
-          </div>
+
         </div>
 
         {/* Client Selection & Snapshot */}
@@ -614,29 +663,58 @@ export const QuotationPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="mb-3">
-              <label className="block font-semibold text-slate-600 mb-1">
-                Select Client <span className="text-rose-500">*</span>
-              </label>
-              <select
-                value={selectedClientId}
-                onChange={(e) => handleClientSelect(e.target.value)}
-                className={`w-full px-3 py-1.5 rounded-lg bg-white border ${
-                  formErrors.client ? 'border-rose-400' : 'border-slate-200'
-                } text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] cursor-pointer`}
-              >
-                <option value="">-- Choose Client from Master Directory --</option>
-                {clients.map(client => (
-                  <option key={client.clientId} value={client.clientId}>
-                    {client.clientName} ({client.clientId})
-                  </option>
-                ))}
-              </select>
-              {formErrors.client && (
-                <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" /> {formErrors.client}
-                </p>
-              )}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3">
+              <div className="sm:col-span-6">
+                <label className="block font-semibold text-slate-600 mb-1">
+                  Select Client <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={selectedClientId}
+                  onChange={(e) => handleClientSelect(e.target.value)}
+                  className={`w-full px-3 py-1.5 rounded-lg bg-white border ${
+                    formErrors.client ? 'border-rose-400' : 'border-slate-200'
+                  } text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] cursor-pointer`}
+                >
+                  <option value="">-- Choose Client from Master Directory --</option>
+                  {clients.map(client => (
+                    <option key={client.clientId} value={client.clientId}>
+                      {client.clientName} ({client.clientId})
+                    </option>
+                  ))}
+                </select>
+                {formErrors.client && (
+                  <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" /> {formErrors.client}
+                  </p>
+                )}
+              </div>
+
+              <div className="sm:col-span-3">
+                <label className="block font-semibold text-slate-600 mb-1">
+                  SAC Code
+                </label>
+                <input
+                  type="text"
+                  value={sacCode}
+                  onChange={(e) => setSacCode(e.target.value)}
+                  placeholder="e.g. 998533 (or blank for N/A)"
+                  className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-mono font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878]"
+                />
+              </div>
+
+              <div className="sm:col-span-3">
+                <label className="block font-semibold text-slate-600 mb-1">
+                  GST
+                </label>
+                <select
+                  value={gstMode}
+                  onChange={(e) => setGstMode(e.target.value as GSTMode)}
+                  className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] cursor-pointer"
+                >
+                  <option value="CGST_SGST">Intrastate</option>
+                  <option value="IGST">Interstate</option>
+                </select>
+              </div>
             </div>
 
             {/* Client Snapshot Card */}
@@ -654,6 +732,11 @@ export const QuotationPage: React.FC = () => {
                 <p className="text-slate-500 text-[11px]">
                   <span className="font-medium text-slate-700">Address:</span> {clientSnapshot.address}
                 </p>
+                {clientSnapshot.serviceLocation && (
+                  <p className="text-slate-500 text-[11px]">
+                    <span className="font-medium text-slate-700">Service Location:</span> <span className="font-semibold text-emerald-800">{clientSnapshot.serviceLocation}</span>
+                  </p>
+                )}
                 <div className="flex flex-wrap items-center gap-x-5 gap-y-0.5 text-[11px] text-slate-600 pt-1 border-t border-slate-200/70">
                   <span><strong>Contact:</strong> {clientSnapshot.contactPerson}</span>
                   <span><strong>Email:</strong> {clientSnapshot.email}</span>
@@ -692,7 +775,7 @@ export const QuotationPage: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse min-w-[1380px]">
+          <table className="w-full text-left text-xs border-collapse min-w-[1160px]">
             <thead className="bg-slate-50/90 border-b border-slate-200 uppercase font-bold text-slate-600 text-[10.5px] tracking-wider">
               <tr>
                 <th className="py-3 px-2 text-center w-12 whitespace-nowrap">S.No</th>
@@ -702,8 +785,6 @@ export const QuotationPage: React.FC = () => {
                 <th className="py-3 px-2 min-w-[115px] w-28 whitespace-nowrap">Type</th>
                 <th className="py-3 px-2 min-w-[115px] w-28 text-right whitespace-nowrap">Vendor Cost (₹)</th>
                 <th className="py-3 px-2 min-w-[115px] w-28 text-right whitespace-nowrap">Vendor Amt (₹)</th>
-                <th className="py-3 px-2 min-w-[90px] w-24 text-right whitespace-nowrap">GST (%)</th>
-                <th className="py-3 px-2 min-w-[110px] w-28 text-right whitespace-nowrap">GST Amt (₹)</th>
                 <th className="py-3 px-2 min-w-[90px] w-24 text-right whitespace-nowrap">Profit (%)</th>
                 <th className="py-3 px-2 min-w-[120px] w-30 text-right whitespace-nowrap">Client Rate (₹)</th>
                 <th className="py-3 px-3 min-w-[130px] w-32 text-right whitespace-nowrap">Client Amt (₹)</th>
@@ -720,27 +801,13 @@ export const QuotationPage: React.FC = () => {
 
                   {/* 2. Description */}
                   <td className="py-3 px-3 min-w-[260px]">
-                    <div className="flex flex-col gap-1.5">
-                      <textarea
-                        rows={Math.max(2, Math.min(6, (item.description || '').split('\n').length))}
-                        placeholder="Item name / work scope & specifications..."
-                        value={item.description || ''}
-                        onChange={(e) => updateItemField(idx, 'description', e.target.value)}
-                        className="w-full min-h-[56px] px-3 py-2 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] focus:border-[#00C878] transition-all placeholder:text-slate-400 resize-y leading-relaxed"
-                      />
-                      <select
-                        value={item.categoryId || ''}
-                        onChange={(e) => updateItemField(idx, 'categoryId', e.target.value)}
-                        className="w-full h-6 px-2 rounded-md bg-slate-50 border border-slate-200/90 text-[11px] text-slate-500 focus:outline-none focus:ring-1 focus:ring-[#00C878] cursor-pointer"
-                      >
-                        <option value="">Category: General / Custom</option>
-                        {categories.map(c => (
-                          <option key={c.categoryId} value={c.categoryId}>
-                            {c.categoryName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <textarea
+                      rows={Math.max(2, Math.min(6, (item.description || '').split('\n').length))}
+                      placeholder="Item name / work scope & specifications..."
+                      value={item.description || ''}
+                      onChange={(e) => updateItemField(idx, 'description', e.target.value)}
+                      className="w-full min-h-[56px] px-3 py-2 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] focus:border-[#00C878] transition-all placeholder:text-slate-400 resize-y leading-relaxed"
+                    />
                   </td>
 
                   {/* 3. Qty */}
@@ -809,32 +876,7 @@ export const QuotationPage: React.FC = () => {
                     </div>
                   </td>
 
-                  {/* 8. GST (%) */}
-                  <td className="py-3 px-2">
-                    <div className="relative">
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="any"
-                        placeholder="0"
-                        value={item.taxPercent}
-                        onChange={(e) => updateItemField(idx, 'taxPercent', e.target.value === '' ? '' : e.target.value)}
-                        className="w-full h-[34px] pr-6 pl-2 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] focus:border-[#00C878] text-right font-mono transition-all"
-                        title="Enter GST %"
-                      />
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-[11px] font-semibold pointer-events-none select-none">%</span>
-                    </div>
-                  </td>
-
-                  {/* 9. GST Amt (Auto) */}
-                  <td className="py-3 px-2">
-                    <div className="w-full h-[34px] flex items-center justify-end px-2.5 rounded-lg bg-slate-50 border border-slate-200/80 font-mono text-xs font-semibold text-slate-600" title="Auto calculated from Client Base Amount × GST %">
-                      {item.taxAmount > 0 ? formatINR(item.taxAmount) : '—'}
-                    </div>
-                  </td>
-
-                  {/* 10. Profit (% entered by user) */}
+                  {/* 8. Profit (% entered by user) */}
                   <td className="py-3 px-2">
                     <div className="relative">
                       <input
@@ -850,7 +892,7 @@ export const QuotationPage: React.FC = () => {
                     </div>
                   </td>
 
-                  {/* 11. Client Rate */}
+                  {/* 9. Client Rate */}
                   <td className="py-3 px-2">
                     <input
                       type="number"
@@ -864,19 +906,12 @@ export const QuotationPage: React.FC = () => {
                     />
                   </td>
 
-                  {/* 12. Client Amt */}
+                  {/* 10. Client Amt */}
                   <td className="py-3 px-3 text-right whitespace-nowrap">
-                    {item.amount > 0 ? (
-                      <div className="flex flex-col items-end justify-center">
-                        <span className="font-mono text-xs font-bold text-slate-900 leading-tight">
-                          {formatINR(item.amount)}
-                        </span>
-                        {item.clientAmount > 0 && (
-                          <span className="text-[10px] text-slate-400 font-mono mt-0.5 leading-tight" title="Base amount before GST">
-                            Base: {formatINR(item.clientAmount)}
-                          </span>
-                        )}
-                      </div>
+                    {item.clientAmount > 0 ? (
+                      <span className="font-mono text-xs font-bold text-slate-900 leading-tight">
+                        {formatINR(item.clientAmount)}
+                      </span>
                     ) : (
                       <div className="h-[34px] flex items-center justify-end font-mono text-xs font-semibold text-slate-400">
                         —
@@ -941,182 +976,214 @@ export const QuotationPage: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-2">
             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border ${
-              assignedTechnicianId ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-500 border-slate-200'
+              assignedTechnicianIds.length > 0 ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-500 border-slate-200'
             }`}>
               <HardHat className="w-3.5 h-3.5" />
-              <span>{technicians.find(t => t.technicianId === assignedTechnicianId)?.name || 'Technician Unassigned'}</span>
+              <span>
+                {assignedTechnicianIds.length === 0
+                  ? 'Technician Unassigned'
+                  : assignedTechnicianIds.length === 1
+                  ? technicians.find(t => t.technicianId === assignedTechnicianIds[0])?.name || '1 Technician'
+                  : `${assignedTechnicianIds.length} Technicians Assigned`}
+              </span>
             </span>
             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border ${
-              assignedVendorId ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-50 text-slate-500 border-slate-200'
+              assignedVendorIds.length > 0 ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-50 text-slate-500 border-slate-200'
             }`}>
               <Building2 className="w-3.5 h-3.5" />
-              <span>{vendors.find(v => v.vendorId === assignedVendorId)?.vendorName || 'Vendor Unassigned'}</span>
+              <span>
+                {assignedVendorIds.length === 0
+                  ? 'Vendor Unassigned'
+                  : assignedVendorIds.length === 1
+                  ? vendors.find(v => v.vendorId === assignedVendorIds[0])?.vendorName || '1 Vendor'
+                  : `${assignedVendorIds.length} Vendors Assigned`}
+              </span>
             </span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
-          {/* Column 1: Assign Technician */}
-          {(() => {
-            const selectedTech = technicians.find(t => t.technicianId === assignedTechnicianId);
-            return (
-              <div className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-4 space-y-3.5">
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 font-bold text-slate-800 text-xs">
-                    <div className="w-6 h-6 rounded-md bg-blue-100/70 text-blue-700 flex items-center justify-center">
-                      <HardHat className="w-3.5 h-3.5" />
-                    </div>
-                    <span>Assign Technician</span>
-                  </label>
-                  {assignedTechnicianId && (
-                    <button
-                      type="button"
-                      onClick={() => setAssignedTechnicianId('')}
-                      className="text-[11px] text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
-                    >
-                      <X className="w-3 h-3" />
-                      <span>Unassign</span>
-                    </button>
-                  )}
-                </div>
-
-                <div>
-                  <select
-                    value={assignedTechnicianId}
-                    onChange={(e) => setAssignedTechnicianId(e.target.value)}
-                    className="w-full h-[38px] px-3 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] focus:border-[#00C878] transition-all cursor-pointer"
+          {/* Column 1: Assign Multiple Technicians */}
+          <div className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-4 space-y-3.5 flex flex-col justify-between">
+            <div className="space-y-3.5">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 font-bold text-slate-800 text-xs">
+                  <div className="w-6 h-6 rounded-md bg-blue-100/70 text-blue-700 flex items-center justify-center">
+                    <HardHat className="w-3.5 h-3.5" />
+                  </div>
+                  <span>Assign Technicians ({assignedTechnicianIds.length})</span>
+                </label>
+                {assignedTechnicianIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setAssignedTechnicianIds([])}
+                    className="text-[11px] text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
                   >
-                    <option value="">Select Technician...</option>
-                    {technicians.map(t => (
-                      <option key={t.technicianId} value={t.technicianId}>
-                        {t.name} — {t.specialization} ({t.status})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Selected Technician Card Preview */}
-                {selectedTech ? (
-                  <div className="p-3.5 bg-white rounded-lg border border-blue-100/90 shadow-xs space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900 text-xs">{selectedTech.name}</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                          {selectedTech.specialization}
-                        </span>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${
-                        selectedTech.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
-                      }`}>
-                        {selectedTech.status}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-1.5 border-t border-slate-100">
-                      <div className="flex items-center gap-1.5 truncate">
-                        <Phone className="w-3 h-3 text-slate-400 shrink-0" />
-                        <span className="truncate">{selectedTech.phone}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 truncate">
-                        <Mail className="w-3 h-3 text-slate-400 shrink-0" />
-                        <span className="truncate">{selectedTech.email}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-50">
-                      <span>Experience: <strong className="text-slate-800">{selectedTech.experienceYears} Years</strong></span>
-                      <span>Type: <strong className="text-slate-800">{selectedTech.employmentType}</strong></span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 bg-white/70 rounded-lg border border-dashed border-slate-200 text-center text-slate-400 text-[11px]">
-                    No technician allocated yet. Selected technician will be pre-filled on Service Report generation.
-                  </div>
+                    <X className="w-3 h-3" />
+                    <span>Unassign All</span>
+                  </button>
                 )}
               </div>
-            );
-          })()}
 
-          {/* Column 2: Assign Vendor */}
-          {(() => {
-            const selectedVend = vendors.find(v => v.vendorId === assignedVendorId);
-            return (
-              <div className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-4 space-y-3.5">
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 font-bold text-slate-800 text-xs">
-                    <div className="w-6 h-6 rounded-md bg-purple-100/70 text-purple-700 flex items-center justify-center">
-                      <Building2 className="w-3.5 h-3.5" />
-                    </div>
-                    <span>Assign Vendor</span>
-                  </label>
-                  {assignedVendorId && (
-                    <button
-                      type="button"
-                      onClick={() => setAssignedVendorId('')}
-                      className="text-[11px] text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
-                    >
-                      <X className="w-3 h-3" />
-                      <span>Unassign</span>
-                    </button>
-                  )}
-                </div>
-
-                <div>
-                  <select
-                    value={assignedVendorId}
-                    onChange={(e) => setAssignedVendorId(e.target.value)}
-                    className="w-full h-[38px] px-3 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] focus:border-[#00C878] transition-all cursor-pointer"
-                  >
-                    <option value="">Select Vendor / Supplier...</option>
-                    {vendors.map(v => (
-                      <option key={v.vendorId} value={v.vendorId}>
-                        {v.vendorName} — {v.tradeCategory} ({v.tier})
+              <div>
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val && !assignedTechnicianIds.includes(val)) {
+                      setAssignedTechnicianIds([...assignedTechnicianIds, val]);
+                    }
+                  }}
+                  className="w-full h-[38px] px-3 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] focus:border-[#00C878] transition-all cursor-pointer"
+                >
+                  <option value="">+ Add Technician to Quote...</option>
+                  {technicians.map(t => {
+                    const isAdded = assignedTechnicianIds.includes(t.technicianId);
+                    return (
+                      <option key={t.technicianId} value={t.technicianId} disabled={isAdded}>
+                        {isAdded ? '✓ ' : ''}{t.name} — {t.specialization} ({t.status})
                       </option>
-                    ))}
-                  </select>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Selected Technicians List */}
+              {assignedTechnicianIds.length > 0 ? (
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                  {assignedTechnicianIds.map(techId => {
+                    const tech = technicians.find(t => t.technicianId === techId);
+                    if (!tech) return null;
+                    return (
+                      <div key={tech.technicianId} className="p-3 bg-white rounded-lg border border-blue-100/90 shadow-2xs space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 text-xs">{tech.name}</span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                              {tech.specialization}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setAssignedTechnicianIds(assignedTechnicianIds.filter(id => id !== tech.technicianId))}
+                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Remove technician"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-1.5 border-t border-slate-100">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span className="truncate">{tech.phone}</span>
+                          </div>
+                          <div className="flex items-center justify-end text-[11px] text-slate-500">
+                            <span>Exp: <strong className="text-slate-800">{tech.experienceYears} Yrs</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+              ) : (
+                <div className="p-4 bg-white/70 rounded-lg border border-dashed border-slate-200 text-center text-slate-400 text-[11px]">
+                  No technician allocated yet. Selected technician(s) will be automatically linked to the Service Report.
+                </div>
+              )}
+            </div>
+          </div>
 
-                {/* Selected Vendor Card Preview */}
-                {selectedVend ? (
-                  <div className="p-3.5 bg-white rounded-lg border border-purple-100/90 shadow-xs space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900 text-xs">{selectedVend.vendorName}</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-                          {selectedVend.tradeCategory}
-                        </span>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${
-                        selectedVend.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
-                      }`}>
-                        {selectedVend.status}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-1.5 border-t border-slate-100">
-                      <div className="flex items-center gap-1.5 truncate">
-                        <Phone className="w-3 h-3 text-slate-400 shrink-0" />
-                        <span className="truncate">{selectedVend.phone}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 truncate">
-                        <Mail className="w-3 h-3 text-slate-400 shrink-0" />
-                        <span className="truncate">{selectedVend.email}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-50">
-                      <span>Contact: <strong className="text-slate-800">{selectedVend.contactPerson}</strong></span>
-                      <span>GSTIN: <strong className="text-slate-800 font-mono text-[10px]">{selectedVend.gstin || 'Unregistered'}</strong></span>
-                    </div>
+          {/* Column 2: Assign Multiple Vendors */}
+          <div className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-4 space-y-3.5 flex flex-col justify-between">
+            <div className="space-y-3.5">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 font-bold text-slate-800 text-xs">
+                  <div className="w-6 h-6 rounded-md bg-purple-100/70 text-purple-700 flex items-center justify-center">
+                    <Building2 className="w-3.5 h-3.5" />
                   </div>
-                ) : (
-                  <div className="p-4 bg-white/70 rounded-lg border border-dashed border-slate-200 text-center text-slate-400 text-[11px]">
-                    No vendor allocated yet. Select an approved supplier for material sourcing and purchase settlement.
-                  </div>
+                  <span>Assign Vendors / Suppliers ({assignedVendorIds.length})</span>
+                </label>
+                {assignedVendorIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setAssignedVendorIds([])}
+                    className="text-[11px] text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                  >
+                    <X className="w-3 h-3" />
+                    <span>Unassign All</span>
+                  </button>
                 )}
               </div>
-            );
-          })()}
+
+              <div>
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val && !assignedVendorIds.includes(val)) {
+                      setAssignedVendorIds([...assignedVendorIds, val]);
+                    }
+                  }}
+                  className="w-full h-[38px] px-3 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00C878] focus:border-[#00C878] transition-all cursor-pointer"
+                >
+                  <option value="">+ Add Vendor / Supplier to Quote...</option>
+                  {vendors.map(v => {
+                    const isAdded = assignedVendorIds.includes(v.vendorId);
+                    return (
+                      <option key={v.vendorId} value={v.vendorId} disabled={isAdded}>
+                        {isAdded ? '✓ ' : ''}{v.vendorName} — {v.tradeCategory} ({v.tier})
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Selected Vendors List */}
+              {assignedVendorIds.length > 0 ? (
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                  {assignedVendorIds.map(vendId => {
+                    const vend = vendors.find(v => v.vendorId === vendId);
+                    if (!vend) return null;
+                    return (
+                      <div key={vend.vendorId} className="p-3 bg-white rounded-lg border border-purple-100/90 shadow-2xs space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 text-xs">{vend.vendorName}</span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                              {vend.tradeCategory}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setAssignedVendorIds(assignedVendorIds.filter(id => id !== vend.vendorId))}
+                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Remove vendor"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-1.5 border-t border-slate-100">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span className="truncate">{vend.phone}</span>
+                          </div>
+                          <div className="flex items-center justify-end text-[11px] text-slate-500">
+                            <span>Contact: <strong className="text-slate-800">{vend.contactPerson}</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="p-4 bg-white/70 rounded-lg border border-dashed border-slate-200 text-center text-slate-400 text-[11px]">
+                  No vendor allocated yet. Select approved supplier(s) for material sourcing and purchase settlement.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1176,15 +1243,33 @@ export const QuotationPage: React.FC = () => {
                 <span className="font-mono font-medium text-slate-800">{formatINR(totals.subtotal)}</span>
               </div>
 
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Total GST (auto):</span>
-                <span className="font-mono font-medium text-slate-800">{formatINR(totals.totalTax)}</span>
+              {gstMode === 'CGST_SGST' ? (
+                <>
+                  <div className="flex justify-between items-center text-slate-600">
+                    <span>CGST (9%):</span>
+                    <span className="font-mono font-medium text-slate-800">{formatINR(totals.cgst)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-600">
+                    <span>SGST (9%):</span>
+                    <span className="font-mono font-medium text-slate-800">{formatINR(totals.sgst)}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex justify-between items-center text-slate-600">
+                  <span>IGST (18%):</span>
+                  <span className="font-mono font-medium text-slate-800">{formatINR(totals.igst)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center text-slate-600 font-medium">
+                <span>Total GST ({gstMode === 'CGST_SGST' ? 'Intrastate 18%' : 'Interstate 18%'}):</span>
+                <span className="font-mono font-bold text-slate-800">{formatINR(totals.totalTax)}</span>
               </div>
 
               <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
                 <div>
                   <span className="font-bold text-slate-900 block text-sm">Client Grand Total:</span>
-                  <span className="text-[10px] text-slate-400">Inclusive of all taxes</span>
+                  <span className="text-[10px] text-slate-400">Inclusive of {gstMode === 'CGST_SGST' ? 'CGST & SGST (18%)' : 'IGST (18%)'}</span>
                 </div>
                 <span className="text-xl font-bold font-mono text-[#00C878]">
                   {formatINR(totals.grandTotal)}

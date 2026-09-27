@@ -53,7 +53,7 @@ export const DEFAULT_BANK_DETAILS: InvoiceBankDetails = {
   accountName: 'Taaskmate Facility Services Pvt Ltd',
   accountNumber: '50200088991122',
   ifsc: 'HDFC0000456',
-  branch: 'Brookefield, Outer Ring Road, Bengaluru'
+  branch: 'Nagole, HYD'
 };
 
 // Initial Categories Seed Data
@@ -476,8 +476,12 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
           purpose: 'Replacement of LT panel busbar connectors & Schneider MCB banks',
         }
       ],
+      gstMode: 'CGST_SGST',
       subtotal: 135000,
       totalDiscount: 7000,
+      cgst: 11520,
+      sgst: 11520,
+      igst: 0,
       totalTax: 23040,
       grandTotal: 151040,
       status: 'Approved',
@@ -666,8 +670,12 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
           purpose: 'Sensor flush valve replacement across Tower A common restrooms',
         }
       ],
+      gstMode: 'CGST_SGST',
       subtotal: 103400,
       totalDiscount: 1000,
+      cgst: 9216,
+      sgst: 9216,
+      igst: 0,
       totalTax: 18432,
       grandTotal: 120832,
       status: 'Approved',
@@ -753,8 +761,12 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
           purpose: 'Hydrostatic pressure testing and ABC extinguisher nitrogen refill',
         }
       ],
+      gstMode: 'CGST_SGST',
       subtotal: 46250,
       totalDiscount: 2500,
+      cgst: 3937.5,
+      sgst: 3937.5,
+      igst: 0,
       totalTax: 7875,
       grandTotal: 51625,
       status: 'Approved',
@@ -825,8 +837,12 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
           purpose: 'Emergency backup power cable run for server farm expansion',
         }
       ],
+      gstMode: 'CGST_SGST',
       subtotal: 55000,
       totalDiscount: 2500,
+      cgst: 4725,
+      sgst: 4725,
+      igst: 0,
       totalTax: 9450,
       grandTotal: 61950,
       status: 'Draft',
@@ -905,8 +921,12 @@ const SEED_TRANSACTIONS: MasterTransaction[] = [
           amount: 6584.40,
         }
       ],
+      gstMode: 'CGST_SGST',
       subtotal: 28050,
       totalDiscount: 0,
+      cgst: 2524.5,
+      sgst: 2524.5,
+      igst: 0,
       totalTax: 5049,
       grandTotal: 33099,
       status: 'Sent',
@@ -986,6 +1006,33 @@ class DatabaseService {
               dirty = true;
               updated.invoice.invoiceId = 'TMI2600001';
             }
+
+            // Synchronize existing Service Report and Commercial Invoice if quotation items or pricing changed
+            if (updated.quotation && (updated.serviceReport || updated.invoice)) {
+              const quoteItemsKey = JSON.stringify(updated.quotation.items?.map(m => ({ n: m.description || m.materialName, q: m.quantity, r: m.rate, u: m.uom })));
+              const srItemsKey = updated.serviceReport ? JSON.stringify(updated.serviceReport.materialsUsed?.map(m => ({ n: m.description || m.materialName, q: m.quantity, r: m.rate, u: m.uom }))) : null;
+              const invItemsKey = updated.invoice ? JSON.stringify(updated.invoice.items?.map(m => ({ n: m.description || m.materialName, q: m.quantity, r: m.rate, u: m.uom }))) : null;
+
+              const hasItemNameMismatch = updated.quotation.items?.some(it => it.description && it.materialName && it.description !== it.materialName);
+
+              if ((srItemsKey && srItemsKey !== quoteItemsKey) || (invItemsKey && invItemsKey !== quoteItemsKey) || hasItemNameMismatch) {
+                dirty = true;
+                this.cascadeQuotationUpdates(updated);
+              }
+            }
+
+            // Clean up false 'Ramesh Gowda' fallback if quotation had no technician assigned
+            const hasQuoteTech = updated.quotation?.assignedTechnicianName || 
+              (updated.quotation?.assignedTechnicianNames && updated.quotation.assignedTechnicianNames.length > 0);
+            if (!hasQuoteTech && updated.serviceReport) {
+              if (updated.serviceReport.assignedTechnician === 'Ramesh Gowda') {
+                updated.serviceReport.assignedTechnician = '';
+                updated.serviceReport.technicianName = '';
+                updated.serviceReport.technicianSignature = '';
+                dirty = true;
+              }
+            }
+
             return updated;
           });
 
@@ -1325,14 +1372,16 @@ class DatabaseService {
 
   public saveClient(clientData: Omit<Client, 'createdAt' | 'updatedAt'>): { success: boolean; message: string; client?: Client } {
     const isEdit = this.clients.some(c => c.clientId === clientData.clientId);
-    const trimmedGstin = clientData.gstin.trim().toUpperCase();
+    const trimmedGstin = (clientData.gstin || '').trim().toUpperCase();
 
-    const duplicateGstin = this.clients.find(
-      c => c.gstin.toUpperCase() === trimmedGstin && c.clientId !== clientData.clientId
-    );
+    if (trimmedGstin && trimmedGstin !== 'NA') {
+      const duplicateGstin = this.clients.find(
+        c => c.gstin && c.gstin.trim().toUpperCase() === trimmedGstin && c.clientId !== clientData.clientId
+      );
 
-    if (duplicateGstin) {
-      return { success: false, message: `GSTIN "${trimmedGstin}" is already registered to client ${duplicateGstin.clientName}.` };
+      if (duplicateGstin) {
+        return { success: false, message: `GSTIN "${trimmedGstin}" is already registered to client ${duplicateGstin.clientName}.` };
+      }
     }
 
     const now = new Date().toISOString().split('T')[0];
@@ -1629,7 +1678,215 @@ class DatabaseService {
   }
 
   public getTransactionById(transactionId: string): MasterTransaction | undefined {
-    return this.transactions.find(t => t.transactionId === transactionId);
+    const t = this.transactions.find(item => item.transactionId === transactionId || item.quotation?.quotationId === transactionId);
+    if (t && t.quotation && (t.serviceReport || t.invoice)) {
+      const quoteItemsKey = JSON.stringify(t.quotation.items?.map(m => ({ n: m.description || m.materialName, q: m.quantity, r: m.rate, u: m.uom })));
+      const srItemsKey = t.serviceReport ? JSON.stringify(t.serviceReport.materialsUsed?.map(m => ({ n: m.description || m.materialName, q: m.quantity, r: m.rate, u: m.uom }))) : null;
+      const invItemsKey = t.invoice ? JSON.stringify(t.invoice.items?.map(m => ({ n: m.description || m.materialName, q: m.quantity, r: m.rate, u: m.uom }))) : null;
+
+      const hasItemNameMismatch = t.quotation.items?.some(it => it.description && it.materialName && it.description !== it.materialName);
+
+      if ((srItemsKey && srItemsKey !== quoteItemsKey) || (invItemsKey && invItemsKey !== quoteItemsKey) || hasItemNameMismatch) {
+        this.cascadeQuotationUpdates(t);
+        this.saveTransactions(t);
+      }
+    }
+    return t;
+  }
+
+  /**
+   * Public helper to synchronize a transaction's downstream documents (Service Report and Commercial Invoice)
+   * with its latest quotation items and pricing, and persist the change.
+   */
+  public syncTransactionFromQuotation(transactionId: string): MasterTransaction | undefined {
+    const t = this.transactions.find(item => item.transactionId === transactionId || item.quotation?.quotationId === transactionId);
+    if (t && t.quotation) {
+      this.cascadeQuotationUpdates(t);
+      this.saveTransactions(t);
+      return t;
+    }
+    return undefined;
+  }
+
+  /**
+   * Cascades quotation updates to existing downstream documents (Service Report and Commercial Invoice).
+   * Ensures that if items, quantities, rates, descriptions, or client details are modified in the quotation,
+   * they automatically propagate to the linked Service Report and Commercial Invoice.
+   */
+  public cascadeQuotationUpdates(transaction: MasterTransaction): boolean {
+    if (!transaction || !transaction.quotation) return false;
+    let changed = false;
+    const quote = transaction.quotation;
+    const now = new Date().toISOString();
+
+    // 0. Normalize quotation items so both description and materialName reflect any edited text accurately
+    if (quote.items && quote.items.length > 0) {
+      quote.items = quote.items.map(item => {
+        const finalName = item.description || item.materialName || '';
+        return {
+          ...item,
+          description: finalName,
+          materialName: finalName,
+        };
+      });
+    }
+
+    // 1. Ensure transaction client snapshot matches quotation client snapshot
+    if (quote.clientSnapshot) {
+      transaction.clientSnapshot = { ...quote.clientSnapshot };
+      transaction.clientId = quote.clientId || transaction.clientId;
+    }
+
+    // 2. Cascade to Service Report (if one already exists)
+    if (transaction.serviceReport) {
+      const sr = transaction.serviceReport;
+
+      // Cascade technician from quotation
+      const quoteTech = (quote.assignedTechnicianNames && quote.assignedTechnicianNames.length > 0)
+        ? quote.assignedTechnicianNames.join(', ')
+        : (quote.assignedTechnicianName || transaction.assignedTechnicianName || '');
+      sr.assignedTechnician = quoteTech;
+      sr.technicianName = quoteTech;
+      if (!quoteTech) {
+        sr.technicianSignature = '';
+      }
+
+      // Deep clone quotation items to materialsUsed with unified item name
+      sr.materialsUsed = quote.items.map(item => {
+        const finalName = item.description || item.materialName || '';
+        return {
+          ...item,
+          description: finalName,
+          materialName: finalName,
+        };
+      });
+
+      // Update primary service type if quotation has items
+      if (quote.items.length > 0 && (quote.items[0]?.description || quote.items[0]?.materialName)) {
+        sr.serviceType = quote.items[0].description || quote.items[0].materialName || sr.serviceType;
+      }
+
+      // Update location if client serviceLocation or address is present
+      if (transaction.clientSnapshot?.serviceLocation) {
+        sr.location = transaction.clientSnapshot.serviceLocation;
+      } else if (transaction.clientSnapshot?.address && (!sr.location || sr.location === 'Client Premises')) {
+        sr.location = transaction.clientSnapshot.address.split(',')[0].trim() || transaction.clientSnapshot.address;
+      }
+
+      // Update customer name if client contact person is updated
+      if (transaction.clientSnapshot?.contactPerson && !sr.customerName) {
+        sr.customerName = transaction.clientSnapshot.contactPerson;
+      }
+
+      sr.updatedAt = now;
+      changed = true;
+    }
+
+    // 3. Cascade to Invoice (if one already exists)
+    if (transaction.invoice) {
+      const inv = transaction.invoice;
+
+      // Update client snapshot on invoice
+      if (quote.clientSnapshot) {
+        inv.clientSnapshot = { ...quote.clientSnapshot };
+        inv.clientId = quote.clientId || inv.clientId;
+      }
+
+      // Synchronize invoice items with quotation items
+      inv.items = quote.items.map(item => {
+        const finalName = item.description || item.materialName || '';
+        const qty = Number(item.quantity) || 0;
+        const rate = Number(item.rate ?? item.clientRate) || 0;
+        const discount = Number(item.discount) || 0;
+        const baseAmt = Math.max(0, (qty * rate) - discount);
+        return {
+          ...item,
+          description: finalName,
+          materialName: finalName,
+          taxPercent: 0,
+          taxAmount: 0,
+          amount: baseAmt,
+        };
+      });
+
+      // Recompute invoice financial totals
+      let invSubtotal = 0;
+      let invDiscount = 0;
+
+      quote.items.forEach(item => {
+        const qty = Number(item.quantity) || 0;
+        const rate = Number(item.rate ?? item.clientRate) || 0;
+        const discount = Number(item.discount) || 0;
+
+        invSubtotal += (qty * rate);
+        invDiscount += discount;
+      });
+
+      const taxableAmount = Math.max(0, invSubtotal - invDiscount);
+
+      const gstMode = quote.gstMode || inv.gstMode || 'CGST_SGST';
+      inv.gstMode = gstMode;
+
+      let cgst = 0;
+      let sgst = 0;
+      let igst = 0;
+      let invTax = 0;
+
+      if (gstMode === 'CGST_SGST') {
+        cgst = Number((taxableAmount * 0.09).toFixed(2));
+        sgst = Number((taxableAmount * 0.09).toFixed(2));
+        invTax = Number((cgst + sgst).toFixed(2));
+      } else {
+        igst = Number((taxableAmount * 0.18).toFixed(2));
+        invTax = igst;
+      }
+
+      const grandTotal = taxableAmount + invTax;
+
+      inv.subtotal = invSubtotal;
+      inv.totalDiscount = invDiscount;
+      inv.cgst = cgst;
+      inv.sgst = sgst;
+      inv.igst = igst;
+      inv.totalTax = invTax;
+      inv.grandTotal = grandTotal;
+
+      // Recompute payment balances
+      const currentPaid = inv.payment?.amountPaid || 0;
+      const balanceDue = Math.max(0, grandTotal - currentPaid);
+
+      let paymentStatus: 'Pending' | 'Partial' | 'Paid' = 'Pending';
+      if (currentPaid >= grandTotal && grandTotal > 0) {
+        paymentStatus = 'Paid';
+      } else if (currentPaid > 0) {
+        paymentStatus = 'Partial';
+      }
+
+      inv.payment = {
+        ...inv.payment,
+        amountPaid: currentPaid,
+        balanceDue,
+        status: paymentStatus,
+      };
+
+      if (paymentStatus === 'Paid') {
+        inv.status = 'Paid';
+      } else if (paymentStatus === 'Partial') {
+        inv.status = 'Partially Paid';
+      } else if (inv.status === 'Paid' || inv.status === 'Partially Paid') {
+        inv.status = 'Issued';
+      }
+
+      inv.updatedAt = now;
+      changed = true;
+    }
+
+    if (changed) {
+      transaction.overallStatus = this.computeOverallStatus(transaction);
+      transaction.updatedAt = now;
+    }
+
+    return changed;
   }
 
   // Compute Overall Lifecycle Status
@@ -1648,7 +1905,7 @@ class DatabaseService {
     }
 
     if (t.quotation) {
-      if (t.quotation.status === 'Approved') return 'Quotation Approved';
+      if (t.quotation.status === 'Completed' || t.quotation.status === 'Approved') return 'Quotation Approved';
       if (t.quotation.status === 'Sent') return 'Quotation Sent';
       if (t.quotation.status === 'Rejected') return 'Cancelled';
       return 'Quotation Created';
@@ -1693,15 +1950,41 @@ class DatabaseService {
         clientId: quotationData.clientId,
         clientSnapshot: quotationData.clientSnapshot,
         quotation: updatedQuote,
-        assignedTechnicianId: quotationData.assignedTechnicianId ?? existing.assignedTechnicianId,
-        assignedTechnicianName: quotationData.assignedTechnicianName ?? existing.assignedTechnicianName,
-        assignedVendorId: quotationData.assignedVendorId ?? existing.assignedVendorId,
-        assignedVendorName: quotationData.assignedVendorName ?? existing.assignedVendorName,
+        assignedTechnicianId: quotationData.assignedTechnicianId !== undefined ? quotationData.assignedTechnicianId : existing.assignedTechnicianId,
+        assignedTechnicianName: quotationData.assignedTechnicianName !== undefined ? quotationData.assignedTechnicianName : existing.assignedTechnicianName,
+        assignedTechnicianIds: quotationData.assignedTechnicianIds !== undefined ? quotationData.assignedTechnicianIds : existing.assignedTechnicianIds,
+        assignedTechnicianNames: quotationData.assignedTechnicianNames !== undefined ? quotationData.assignedTechnicianNames : existing.assignedTechnicianNames,
+        assignedVendorId: quotationData.assignedVendorId !== undefined ? quotationData.assignedVendorId : existing.assignedVendorId,
+        assignedVendorName: quotationData.assignedVendorName !== undefined ? quotationData.assignedVendorName : existing.assignedVendorName,
+        assignedVendorIds: quotationData.assignedVendorIds !== undefined ? quotationData.assignedVendorIds : existing.assignedVendorIds,
+        assignedVendorNames: quotationData.assignedVendorNames !== undefined ? quotationData.assignedVendorNames : existing.assignedVendorNames,
         updatedAt: now,
       };
 
+      // Cascade quotation items and pricing to Service Report and Invoice
+      this.cascadeQuotationUpdates(updatedTransaction);
+
       updatedTransaction.overallStatus = this.computeOverallStatus(updatedTransaction);
       this.transactions[existingIndex] = updatedTransaction;
+
+      let cascadeMsg = '';
+      if (updatedTransaction.serviceReport && updatedTransaction.invoice) {
+        cascadeMsg = ' Linked Service Report and Commercial Invoice have been automatically updated.';
+      } else if (updatedTransaction.serviceReport) {
+        cascadeMsg = ' Linked Service Report has been automatically updated.';
+      } else if (updatedTransaction.invoice) {
+        cascadeMsg = ' Linked Commercial Invoice has been automatically updated.';
+      }
+
+      const savedTx = this.getTransactionById(tid);
+      this.saveTransactions(savedTx);
+
+      return {
+        success: true,
+        message: `Quotation ${tid} updated successfully.${cascadeMsg}`,
+        transaction: savedTx,
+        quotation: savedTx?.quotation
+      };
     } else {
       // Create Brand New Master Transaction
       const newTransaction: MasterTransaction = {
@@ -1713,28 +1996,35 @@ class DatabaseService {
         quotation: normalizedQuotation,
         assignedTechnicianId: quotationData.assignedTechnicianId,
         assignedTechnicianName: quotationData.assignedTechnicianName,
+        assignedTechnicianIds: quotationData.assignedTechnicianIds,
+        assignedTechnicianNames: quotationData.assignedTechnicianNames,
         assignedVendorId: quotationData.assignedVendorId,
         assignedVendorName: quotationData.assignedVendorName,
+        assignedVendorIds: quotationData.assignedVendorIds,
+        assignedVendorNames: quotationData.assignedVendorNames,
         createdAt: now,
         updatedAt: now,
       };
 
       this.transactions.unshift(newTransaction);
+
+      const savedTx = this.getTransactionById(tid);
+      this.saveTransactions(savedTx);
+
+      return {
+        success: true,
+        message: `Quotation ${tid} saved successfully under Master Transaction ID ${tid}.`,
+        transaction: savedTx,
+        quotation: savedTx?.quotation
+      };
     }
-
-    const savedTx = this.getTransactionById(tid);
-    this.saveTransactions(savedTx);
-
-    return {
-      success: true,
-      message: `Quotation ${tid} saved successfully under Master Transaction ID ${tid}.`,
-      transaction: savedTx,
-      quotation: savedTx?.quotation
-    };
   }
 
   // 2. Save Service Report (Must be against existing Transaction ID)
-  public saveServiceReport(reportData: Omit<ServiceReport, 'createdAt' | 'updatedAt'>): {
+  public saveServiceReport(
+    reportData: Omit<ServiceReport, 'createdAt' | 'updatedAt'>,
+    isEdit: boolean = false
+  ): {
     success: boolean;
     message: string;
     transaction?: MasterTransaction;
@@ -1753,10 +2043,24 @@ class DatabaseService {
     const now = new Date().toISOString();
     const existing = this.transactions[existingIndex];
 
+    // Prevent duplicate service reports for the same quotation ID
+    if (existing.serviceReport && !isEdit) {
+      return {
+        success: false,
+        message: `A Service Report already exists for Quotation ${tid}. You cannot create a duplicate service report for the same quotation.`
+      };
+    }
+
+    // Single Source of Truth: Scope items and materials strictly sync from Quotation
+    const syncedMaterials = (existing.quotation?.items && existing.quotation.items.length > 0)
+      ? existing.quotation.items.map(it => ({ ...it }))
+      : (reportData.materialsUsed || existing.serviceReport?.materialsUsed || []);
+
     const updatedReport: ServiceReport = {
       ...existing.serviceReport,
       ...reportData,
       transactionId: tid,
+      materialsUsed: syncedMaterials,
       createdAt: existing.serviceReport?.createdAt || now,
       updatedAt: now,
     };
@@ -1767,20 +2071,36 @@ class DatabaseService {
       updatedAt: now,
     };
 
+    let quoteShiftMsg = '';
+    // If quotation was on Draft, shift its status to 'Sent'
+    if (existing.quotation && existing.quotation.status === 'Draft') {
+      const updatedQuote: Quotation = {
+        ...existing.quotation,
+        status: 'Sent',
+        updatedAt: now,
+      };
+      existing.quotation = updatedQuote;
+      updatedTransaction.quotation = updatedQuote;
+      quoteShiftMsg = ' Quotation status automatically shifted from Draft to Sent.';
+    }
+
     updatedTransaction.overallStatus = this.computeOverallStatus(updatedTransaction);
     this.transactions[existingIndex] = updatedTransaction;
     this.saveTransactions(updatedTransaction);
 
     return {
       success: true,
-      message: `Service Report for ${tid} saved successfully.`,
+      message: `Service Report for ${tid} saved successfully (synced from Quotation).${quoteShiftMsg}`,
       transaction: updatedTransaction,
       serviceReport: updatedReport,
     };
   }
 
   // 3. Save Invoice (Must be against existing Transaction ID)
-  public saveInvoice(invoiceData: Omit<Invoice, 'createdAt' | 'updatedAt'>): {
+  public saveInvoice(
+    invoiceData: Omit<Invoice, 'createdAt' | 'updatedAt'>,
+    isEdit: boolean = false
+  ): {
     success: boolean;
     message: string;
     transaction?: MasterTransaction;
@@ -1799,8 +2119,49 @@ class DatabaseService {
     const now = new Date().toISOString();
     const existing = this.transactions[existingIndex];
 
+    // Prevent duplicate invoice generation for the same quotation ID
+    if (existing.invoice && !isEdit) {
+      return {
+        success: false,
+        message: `An Invoice already exists for Quotation ${tid} (Invoice ID: ${existing.invoice.invoiceId || tid}). You cannot create a duplicate invoice for the same quotation.`
+      };
+    }
+
     // Only generate an invoice ID if it hasn't been generated yet
     const invId = invoiceData.invoiceId || existing.invoice?.invoiceId || this.getNextInvoiceId();
+
+    // Single Source of Truth: Invoice items and financial calculations strictly sync from Quotation
+    const syncedItems = (existing.quotation?.items && existing.quotation.items.length > 0)
+      ? existing.quotation.items.map(it => ({ ...it }))
+      : (invoiceData.items || existing.invoice?.items || []);
+
+    let invSubtotal = 0;
+    let invDiscount = 0;
+    syncedItems.forEach(it => {
+      const qty = Number(it.quantity) || 0;
+      const rate = Number(it.rate ?? it.clientRate) || 0;
+      invSubtotal += (qty * rate);
+      invDiscount += (it.discount || 0);
+    });
+
+    const taxable = Math.max(0, invSubtotal - invDiscount);
+    const gstMode = invoiceData.gstMode || existing.quotation?.gstMode || existing.invoice?.gstMode || 'CGST_SGST';
+    let cgst = 0;
+    let sgst = 0;
+    let igst = 0;
+    let invTax = 0;
+    if (gstMode === 'CGST_SGST') {
+      cgst = Number((taxable * 0.09).toFixed(2));
+      sgst = Number((taxable * 0.09).toFixed(2));
+      invTax = Number((cgst + sgst).toFixed(2));
+    } else {
+      igst = Number((taxable * 0.18).toFixed(2));
+      invTax = igst;
+    }
+    const grandTotal = taxable + invTax;
+
+    const currentPaid = invoiceData.payment?.amountPaid ?? (existing.invoice?.payment?.amountPaid || 0);
+    const balanceDue = Math.max(0, grandTotal - currentPaid);
 
     const updatedInvoice: Invoice = {
       ...existing.invoice,
@@ -1808,6 +2169,19 @@ class DatabaseService {
       invoiceId: invId,
       transactionId: tid,
       quotationId: tid,
+      items: syncedItems,
+      subtotal: invSubtotal,
+      totalDiscount: invDiscount,
+      cgst,
+      sgst,
+      igst,
+      totalTax: invTax,
+      grandTotal,
+      payment: {
+        ...(invoiceData.payment || existing.invoice?.payment || { status: 'Pending', amountPaid: 0, balanceDue: grandTotal }),
+        amountPaid: currentPaid,
+        balanceDue,
+      },
       createdAt: existing.invoice?.createdAt || now,
       updatedAt: now,
     };
@@ -1887,14 +2261,14 @@ class DatabaseService {
     return this.transactions.find(t => t.invoice?.invoiceId === id || t.transactionId === id)?.invoice;
   }
 
-  // Filter transactions eligible for Service Report (has Quotation)
+  // Filter transactions eligible for Service Report (Draft, Sent, Completed, Approved, without existing service report)
   public getEligibleTransactionsForServiceReport(): MasterTransaction[] {
-    return this.transactions.filter(t => !!t.quotation);
+    return this.transactions.filter(t => !!t.quotation && t.quotation.status !== 'Rejected' && !t.serviceReport);
   }
 
-  // Filter transactions eligible for Invoice (has Quotation or completed Service)
+  // Filter transactions eligible for Invoice (has Completed Quotation, without existing invoice)
   public getEligibleTransactionsForInvoice(): MasterTransaction[] {
-    return this.transactions.filter(t => !!t.quotation);
+    return this.transactions.filter(t => !!t.quotation && (t.quotation.status === 'Completed' || t.quotation.status === 'Approved') && !t.invoice);
   }
 
   // Update Quotation Status
@@ -1902,12 +2276,39 @@ class DatabaseService {
     const t = this.transactions.find(item => item.transactionId === id || item.quotation?.quotationId === id);
     if (t && t.quotation) {
       t.quotation.status = status;
+      this.cascadeQuotationUpdates(t);
       t.overallStatus = this.computeOverallStatus(t);
       t.updatedAt = new Date().toISOString();
       this.saveTransactions(t);
       return true;
     }
     return false;
+  }
+
+  // Update Service Report Status
+  public updateServiceReportStatus(id: string, status: ServiceReport['status']): boolean {
+    const t = this.transactions.find(item => item.transactionId === id || item.quotation?.quotationId === id);
+    if (t && t.serviceReport) {
+      t.serviceReport.status = status;
+      t.overallStatus = this.computeOverallStatus(t);
+      t.updatedAt = new Date().toISOString();
+      this.saveTransactions(t);
+      return true;
+    }
+    return false;
+  }
+
+  // Delete Service Report from a Transaction
+  public deleteServiceReport(id: string): { success: boolean; message: string } {
+    const t = this.transactions.find(item => item.transactionId === id || item.quotation?.quotationId === id);
+    if (!t || !t.serviceReport) {
+      return { success: false, message: `Service Report for ${id} not found.` };
+    }
+    t.serviceReport = undefined;
+    t.overallStatus = this.computeOverallStatus(t);
+    t.updatedAt = new Date().toISOString();
+    this.saveTransactions(t);
+    return { success: true, message: `Service Report for ${id} deleted successfully.` };
   }
 
   // Backward compatible alias
@@ -1927,7 +2328,7 @@ class DatabaseService {
     ).length;
 
     const approvedQuotations = this.transactions.filter(
-      t => t.quotation && t.quotation.status === 'Approved'
+      t => t.quotation && (t.quotation.status === 'Completed' || t.quotation.status === 'Approved')
     ).length;
 
     // 2. Service Reports

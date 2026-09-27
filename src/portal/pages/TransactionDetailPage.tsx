@@ -22,10 +22,13 @@ import {
   AlertCircle,
   CreditCard,
   CheckCircle,
-  Eye
+  Eye,
+  Lock,
+  RefreshCw
 } from 'lucide-react';
 import { MasterTransaction, InvoicePayment } from '../types';
 import { db, formatINR } from '../services/db';
+import { formatQuotationDate } from '../utils/quotationExport';
 
 export const TransactionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -92,6 +95,7 @@ export const TransactionDetailPage: React.FC = () => {
   }
 
   const { quotation, serviceReport, invoice, clientSnapshot } = transaction;
+  const isQuotationCompleted = quotation?.status === 'Completed' || (quotation?.status as string) === 'Approved';
 
   const handleRecordPayment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,7 +189,23 @@ export const TransactionDetailPage: React.FC = () => {
 
         {/* Quick Action Buttons */}
         <div className="flex items-center gap-2">
-          {!serviceReport && quotation && (
+          {quotation && (serviceReport || invoice) && (
+            <button
+              onClick={() => {
+                if (!transaction) return;
+                const synced = db.syncTransactionFromQuotation(transaction.transactionId);
+                if (synced) {
+                  loadData();
+                  showToast('success', 'Quotation items & pricing synchronized to Service Report and Invoice!');
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-xs font-semibold border border-emerald-200 shadow-2xs transition-all cursor-pointer"
+              title="Sync quotation line items to linked service report and commercial invoice"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-emerald-600" /> Sync All Documents
+            </button>
+          )}
+          {!serviceReport && quotation && quotation.status !== 'Rejected' && (
             <Link
               to={`/portal/service-report?tid=${transaction.transactionId}`}
               className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#00C878] hover:bg-[#00B069] text-white rounded-lg text-xs font-semibold shadow-sm transition-all"
@@ -194,12 +214,22 @@ export const TransactionDetailPage: React.FC = () => {
             </Link>
           )}
           {!invoice && (
-            <Link
-              to={`/portal/invoice?tid=${transaction.transactionId}`}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold shadow-sm transition-all"
-            >
-              <Plus className="w-3.5 h-3.5" /> Create Invoice
-            </Link>
+            isQuotationCompleted ? (
+              <Link
+                to={`/portal/invoice?tid=${transaction.transactionId}`}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold shadow-sm transition-all"
+              >
+                <Plus className="w-3.5 h-3.5" /> Create Invoice
+              </Link>
+            ) : (
+              <button
+                onClick={() => showToast('error', 'Quotation must be set to Completed before creating an Invoice.')}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-semibold border border-slate-200 shadow-2xs transition-all cursor-pointer"
+                title="Quotation must be marked as Completed first"
+              >
+                <Lock className="w-3.5 h-3.5 text-slate-400" /> Create Invoice (Needs Completed)
+              </button>
+            )
           )}
         </div>
       </div>
@@ -275,7 +305,7 @@ export const TransactionDetailPage: React.FC = () => {
               <div className="mt-4 pt-3 border-t border-slate-200 space-y-1.5 text-xs">
                 <div className="flex justify-between text-slate-600">
                   <span>Date:</span>
-                  <span className="font-medium text-slate-800">{quotation.quotationDate}</span>
+                  <span className="font-medium text-slate-800">{formatQuotationDate(quotation.quotationDate)}</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Items:</span>
@@ -309,13 +339,23 @@ export const TransactionDetailPage: React.FC = () => {
                   >
                     <Eye className="w-3 h-3" /> View / Print
                   </Link>
-                  <Link
-                    to={`/portal/quotation/edit/${transaction.transactionId}`}
-                    className="py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-xs font-semibold flex items-center justify-center transition-colors"
-                    title="Edit Quotation"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                  </Link>
+                  {isQuotationCompleted ? (
+                    <button
+                      onClick={() => showToast('error', 'Quotation is marked as Completed and locked. Change status to Draft to edit.')}
+                      className="py-1.5 px-2.5 bg-slate-100 hover:bg-amber-50 text-slate-400 hover:text-amber-600 rounded-md text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer"
+                      title="Quotation is Completed (Locked) — Change status to edit"
+                    >
+                      <Lock className="w-3 h-3 text-amber-500" />
+                    </button>
+                  ) : (
+                    <Link
+                      to={`/portal/quotation/edit/${transaction.transactionId}`}
+                      className="py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-xs font-semibold flex items-center justify-center transition-colors"
+                      title="Edit Quotation"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                    </Link>
+                  )}
                 </div>
               </div>
             ) : (
@@ -352,7 +392,13 @@ export const TransactionDetailPage: React.FC = () => {
               <div className="mt-4 pt-3 border-t border-slate-200 space-y-1.5 text-xs">
                 <div className="flex justify-between text-slate-600">
                   <span>Date:</span>
-                  <span className="font-medium text-slate-800">{serviceReport.serviceDate}</span>
+                  <span className="font-medium text-slate-800">
+                    {(() => {
+                      if (!serviceReport.serviceDate) return '—';
+                      const match = serviceReport.serviceDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                      return match ? `${match[3]}-${match[2]}-${match[1]}` : serviceReport.serviceDate;
+                    })()}
+                  </span>
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Technician:</span>
@@ -382,12 +428,14 @@ export const TransactionDetailPage: React.FC = () => {
             ) : (
               <div className="mt-6 text-center py-3">
                 <p className="text-xs text-slate-400 mb-3">No service report created yet</p>
-                <Link
-                  to={`/portal/service-report?tid=${transaction.transactionId}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors"
-                >
-                  <Plus className="w-3 h-3" /> Create Service Report
-                </Link>
+                {quotation && quotation.status !== 'Rejected' && (
+                  <Link
+                    to={`/portal/service-report?tid=${transaction.transactionId}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors"
+                  >
+                    <Plus className="w-3 h-3" /> Create Service Report
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -427,7 +475,13 @@ export const TransactionDetailPage: React.FC = () => {
                 )}
                 <div className="flex justify-between text-slate-600">
                   <span>Invoice Date:</span>
-                  <span className="font-medium text-slate-800">{invoice.invoiceDate}</span>
+                  <span className="font-medium text-slate-800">
+                    {(() => {
+                      if (!invoice.invoiceDate) return '—';
+                      const match = invoice.invoiceDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                      return match ? `${match[3]}-${match[2]}-${match[1]}` : invoice.invoiceDate;
+                    })()}
+                  </span>
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Grand Total:</span>
@@ -461,12 +515,21 @@ export const TransactionDetailPage: React.FC = () => {
             ) : (
               <div className="mt-6 text-center py-3">
                 <p className="text-xs text-slate-400 mb-3">Invoice not yet issued</p>
-                <Link
-                  to={`/portal/invoice?tid=${transaction.transactionId}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors"
-                >
-                  <Plus className="w-3 h-3" /> Create Invoice
-                </Link>
+                {isQuotationCompleted ? (
+                  <Link
+                    to={`/portal/invoice?tid=${transaction.transactionId}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors"
+                  >
+                    <Plus className="w-3 h-3" /> Create Invoice
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => showToast('error', 'Quotation must be marked as Completed before creating an Invoice.')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-lg text-xs font-medium border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    <Lock className="w-3 h-3 text-slate-400" /> Needs Completed Quote
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -585,7 +648,7 @@ export const TransactionDetailPage: React.FC = () => {
                   <tbody className="divide-y divide-slate-100">
                     {quotation.items.map((item, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/50">
-                        <td className="py-2 px-3 font-medium text-slate-800">{item.materialName}</td>
+                        <td className="py-2 px-3 font-medium text-slate-800">{item.description || item.materialName}</td>
                         <td className="py-2 px-2 text-center text-slate-600">{item.quantity}</td>
                         <td className="py-2 px-2 text-center text-slate-500">{item.uom}</td>
                         <td className="py-2 px-3 text-right font-mono text-slate-600">{formatINR(item.rate)}</td>

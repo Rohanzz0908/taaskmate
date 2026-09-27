@@ -1,81 +1,78 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Printer, 
-  Receipt, 
-  AlertCircle
+  AlertCircle,
+  RefreshCw,
+  Download,
+  FileSpreadsheet,
+  Loader2,
+  Edit3
 } from 'lucide-react';
-import { db } from '../services/db';
-
-// Helper to format date as "05-Sep-26" like the reference
-function formatRefDate(dateStr: string): string {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  
-  const day = String(d.getDate()).padStart(2, '0');
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const month = months[d.getMonth()];
-  const year = String(d.getFullYear()).slice(-2);
-  
-  return `${day}-${month}-${year}`;
-}
-
-// Convert number to Indian words
-function numberToIndianWords(num: number): string {
-  if (!num || isNaN(num)) return 'Zero Rupees Only';
-
-  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 
-                'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-
-  function convertTwoDigits(n: number): string {
-    if (n < 20) return ones[n];
-    return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
-  }
-
-  function convertThreeDigits(n: number): string {
-    let str = '';
-    if (Math.floor(n / 100) > 0) {
-      str += ones[Math.floor(n / 100)] + ' Hundred ';
-    }
-    const remainder = n % 100;
-    if (remainder > 0) {
-      str += convertTwoDigits(remainder);
-    }
-    return str.trim();
-  }
-
-  let integerPart = Math.floor(Math.round(num));
-  let result = '';
-
-  const crore = Math.floor(integerPart / 10000000);
-  integerPart %= 10000000;
-
-  const lakh = Math.floor(integerPart / 100000);
-  integerPart %= 100000;
-
-  const thousand = Math.floor(integerPart / 1000);
-  integerPart %= 1000;
-
-  if (crore > 0) result += convertTwoDigits(crore) + ' Crore ';
-  if (lakh > 0) result += convertTwoDigits(lakh) + ' Lakh ';
-  if (thousand > 0) result += convertTwoDigits(thousand) + ' Thousand ';
-  if (integerPart > 0) result += convertThreeDigits(integerPart);
-
-  return (result.trim() + ' Rupees Only');
-}
+import { db, DEFAULT_BANK_DETAILS } from '../services/db';
+import { 
+  downloadInvoicePDF, 
+  downloadInvoiceXLSX,
+  formatInvoiceDate,
+  formatCurrencyNumber,
+  numberToIndianWords
+} from '../utils/invoiceExport';
 
 export const InvoiceViewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const transaction = id ? db.getTransactionById(id) : undefined;
+  const [tx, setTx] = useState(id ? db.getTransactionById(id) : undefined);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isDownloadingXlsx, setIsDownloadingXlsx] = useState(false);
+
+  const transaction = tx || (id ? db.getTransactionById(id) : undefined);
   const invoice = transaction?.invoice;
 
-  const handlePrint = () => {
-    window.print();
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleSyncFromQuotation = () => {
+    if (!id) return;
+    const synced = db.syncTransactionFromQuotation(id);
+    if (!synced) {
+      showToast('error', 'No quotation found to sync.');
+      return;
+    }
+    setTx({ ...synced });
+    showToast('success', 'Commercial Invoice synchronized with latest quotation items and pricing!');
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!transaction) return;
+    try {
+      setIsDownloadingPdf(true);
+      await downloadInvoicePDF('invoice-printable', invoice?.invoiceId || transaction.transactionId);
+      showToast('success', 'Tax Invoice PDF downloaded successfully!');
+    } catch (err) {
+      console.error('Failed to download PDF:', err);
+      showToast('error', 'Failed to generate PDF. You can also use the Print button.');
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  const handleDownloadXLSX = async () => {
+    if (!transaction) return;
+    try {
+      setIsDownloadingXlsx(true);
+      await downloadInvoiceXLSX(transaction);
+      showToast('success', 'Tax Invoice Excel (.xlsx) downloaded successfully!');
+    } catch (err) {
+      console.error('Failed to export XLSX:', err);
+      showToast('error', 'Failed to generate Excel spreadsheet.');
+    } finally {
+      setIsDownloadingXlsx(false);
+    }
   };
 
   if (!transaction || !invoice) {
@@ -98,33 +95,75 @@ export const InvoiceViewPage: React.FC = () => {
     );
   }
 
-  const { clientSnapshot, serviceReport } = transaction;
+  const { clientSnapshot, serviceReport, quotation } = transaction;
 
-  // Determine Category Name
-  const categories = db.getCategories();
-  const firstCategoryName = invoice.items[0] 
-    ? (categories.find(c => c.categoryId === invoice.items[0].categoryId)?.categoryName || 'General Maintenance')
-    : 'Electrical';
+  // Items to display: prioritize latest quotation items to stay in sync with quotation revisions
+  const items = (quotation?.items && quotation.items.length > 0)
+    ? quotation.items
+    : (invoice.items || []);
 
-  const subtotalBeforeTax = invoice.subtotal - (invoice.totalDiscount || 0);
+  let rawSubtotal = 0;
+  let totalDiscount = 0;
+  let totalTax = 0;
 
-  // Bank Account details fallback
-  const bank = invoice.bankDetails || {
-    bankName: 'HDFC BANK',
-    accountName: 'Taaskmate Facility Services Pvt Ltd',
-    accountNumber: '50200080913620',
-    ifsc: 'HDFC0000418',
-    branch: 'Kothapet, Gaddiannaram, HYD'
+  items.forEach(item => {
+    const qty = Number(item.quantity) || 0;
+    const rate = Number(item.rate ?? item.clientRate) || 0;
+    const discount = Number(item.discount) || 0;
+    const taxAmt = Number(item.taxAmount) || 0;
+
+    rawSubtotal += (qty * rate);
+    totalDiscount += discount;
+    totalTax += taxAmt;
+  });
+
+  const gstMode = quotation?.gstMode || invoice.gstMode || 'CGST_SGST';
+  const subtotalBeforeTax = Math.max(0, rawSubtotal - totalDiscount);
+
+  let cgstAmount = 0;
+  let sgstAmount = 0;
+  let igstAmount = 0;
+  let totalGstAmount = 0;
+
+  if (gstMode === 'CGST_SGST') {
+    cgstAmount = invoice.cgst !== undefined && invoice.cgst > 0
+      ? invoice.cgst
+      : Number((subtotalBeforeTax * 0.09).toFixed(2));
+    sgstAmount = invoice.sgst !== undefined && invoice.sgst > 0
+      ? invoice.sgst
+      : Number((subtotalBeforeTax * 0.09).toFixed(2));
+    totalGstAmount = Number((cgstAmount + sgstAmount).toFixed(2));
+  } else {
+    igstAmount = invoice.igst !== undefined && invoice.igst > 0
+      ? invoice.igst
+      : Number((subtotalBeforeTax * 0.18).toFixed(2));
+    totalGstAmount = igstAmount;
+  }
+
+  const calculatedGrandTotal = subtotalBeforeTax + totalGstAmount;
+  const roundedGrandTotal = Math.round(calculatedGrandTotal);
+  const roundOffDiff = roundedGrandTotal - calculatedGrandTotal;
+  const roundOffDisplay = Math.abs(roundOffDiff) < 0.001 ? '0.00' : (roundOffDiff > 0 ? `+${roundOffDiff.toFixed(2)}` : `(${Math.abs(roundOffDiff).toFixed(2)})`);
+  const finalInvoiceTotal = roundedGrandTotal;
+
+  const clientMaster = clientSnapshot.clientId ? db.getClientById(clientSnapshot.clientId) : undefined;
+  const serviceLoc = clientSnapshot.serviceLocation?.trim() || clientMaster?.serviceLocation?.trim() || serviceReport?.location || (clientSnapshot.address ? clientSnapshot.address.split(',')[0].trim() : 'Gachibowli Hyderabad');
+
+  const bank = {
+    accountNumber: invoice.bankDetails?.accountNumber || DEFAULT_BANK_DETAILS.accountNumber,
+    ifsc: invoice.bankDetails?.ifsc || DEFAULT_BANK_DETAILS.ifsc,
+    bankName: invoice.bankDetails?.bankName || DEFAULT_BANK_DETAILS.bankName,
+    branch: invoice.bankDetails?.branch || DEFAULT_BANK_DETAILS.branch || 'Nagole, HYD',
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-16">
+    <div className="space-y-6 max-w-6xl mx-auto pb-16">
       {/* Print Specific CSS for full-size single A4 page */}
       <style>{`
         @media print {
           @page {
             size: A4 portrait;
-            margin: 6mm;
+            margin: 8mm;
           }
           html, body, #root, .min-h-screen, main {
             background-color: #ffffff !important;
@@ -132,7 +171,7 @@ export const InvoiceViewPage: React.FC = () => {
             margin: 0 !important;
             padding: 0 !important;
             width: 100% !important;
-            height: 100% !important;
+            height: auto !important;
             overflow: visible !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -143,31 +182,47 @@ export const InvoiceViewPage: React.FC = () => {
           .print-invoice-outer {
             border: 2px solid #000000 !important;
             box-shadow: none !important;
-            margin: 0 !important;
+            margin: 0 auto !important;
             padding: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
-            height: 283mm !important;
-            min-height: 283mm !important;
-            max-height: 283mm !important;
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
             box-sizing: border-box !important;
-            display: flex !important;
-            flex-direction: column !important;
+            display: block !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
-            page-break-after: avoid !important;
           }
-          .table-header-gold {
+          .inv-maroon-bg {
+            background-color: #801426 !important;
+            color: #ffffff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .inv-gold-bg {
             background-color: #F7E1A0 !important;
+            color: #000000 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
         }
       `}</style>
 
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-xl transition-all duration-200 border ${
+          toast.type === 'success' 
+            ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+            : 'bg-rose-50 text-rose-800 border-rose-200'
+        }`}>
+          <span className="text-xs font-semibold">{toast.message}</span>
+        </div>
+      )}
+
       {/* Screen Action Bar (Hidden in Print) */}
-      <div className="no-print flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+      <div className="no-print flex flex-col xl:flex-row items-center justify-between gap-4 bg-white px-5 py-3.5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="flex items-center gap-3 w-full xl:w-auto shrink-0">
           <button
             onClick={() => navigate('/portal/invoices')}
             className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
@@ -181,208 +236,251 @@ export const InvoiceViewPage: React.FC = () => {
                 Invoice: {invoice.invoiceId || transaction.transactionId}
               </span>
               <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
-                invoice.payment.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                invoice.payment.status === 'Partial' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                invoice.payment?.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                invoice.payment?.status === 'Partial' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                 'bg-purple-50 text-purple-700 border-purple-200'
               }`}>
-                {invoice.payment.status.toUpperCase()}
+                {(invoice.payment?.status || 'Pending').toUpperCase()}
               </span>
             </div>
-            <p className="text-[11px] text-slate-400">Date: {formatRefDate(invoice.invoiceDate)}</p>
+            <p className="text-[11px] text-slate-400">Date: {(() => {
+              if (!invoice.invoiceDate) return '—';
+              const match = invoice.invoiceDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+              return match ? `${match[3]}-${match[2]}-${match[1]}` : formatInvoiceDate(invoice.invoiceDate);
+            })()}</p>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+        <div className="flex flex-wrap xl:flex-nowrap items-center gap-2 w-full xl:w-auto justify-end shrink-0">
+          {transaction.quotation && (
+            <button
+              onClick={handleSyncFromQuotation}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-purple-300 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-semibold shadow-2xs transition-colors cursor-pointer whitespace-nowrap"
+              title="Click to refresh commercial invoice items and pricing with latest quotation"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-purple-600" />
+              <span>Sync from Quotation</span>
+            </button>
+          )}
+
           <Link
             to={`/portal/transaction/${transaction.transactionId}`}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors"
+            className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors whitespace-nowrap"
           >
-            Transaction Hub
+            Hub
           </Link>
 
+          <Link
+            to={`/portal/invoice?tid=${transaction.transactionId}&edit=true`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors whitespace-nowrap"
+            title="Edit Commercial Invoice"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Edit</span>
+          </Link>
+
+          {/* DOWNLOAD PDF BUTTON */}
           <button
-            onClick={handlePrint}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            onClick={handleDownloadPDF}
+            disabled={isDownloadingPdf}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#801426] hover:bg-[#6b0f1f] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
+            title="Download formatted PDF document"
+          >
+            {isDownloadingPdf ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Download className="w-3.5 h-3.5" />
+            )}
+            <span>Download PDF</span>
+          </button>
+
+          {/* DOWNLOAD XLSX BUTTON */}
+          <button
+            onClick={handleDownloadXLSX}
+            disabled={isDownloadingXlsx}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
+            title="Download formatted Excel spreadsheet (.xlsx)"
+          >
+            {isDownloadingXlsx ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+            )}
+            <span>Download Excel</span>
+          </button>
+
+          {/* PRINT BUTTON */}
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer whitespace-nowrap"
+            title="Print Tax Invoice via Browser"
           >
             <Printer className="w-3.5 h-3.5 text-[#00C878]" />
-            <span>Print Tax Invoice</span>
+            <span>Print</span>
           </button>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* EXACT REFERENCE LAYOUT INVOICE CONTAINER                                 */}
+      {/* EXACT REFERENCE LAYOUT COMMERCIAL INVOICE CONTAINER                      */}
+      {/* Matches user's screenshot: Centered Logo, Maroon Banner, Scope Table      */}
       {/* ========================================================================= */}
       <div 
-        className="print-invoice-outer bg-white text-black border-2 border-black p-0 shadow-md font-sans text-xs leading-tight flex flex-col"
-        style={{ minHeight: '280mm', height: '280mm' }}
+        id="invoice-printable"
+        className="print-invoice-outer bg-white text-black border-2 border-black p-0 shadow-md font-sans text-xs leading-normal mx-auto"
+        style={{ width: '100%', maxWidth: '820px' }}
       >
         
-        {/* TOP SECTION (Fixed Height) */}
-        <div className="flex-none">
-          {/* TOP HEADER: LOGO BOX & 3-ROW COMPANY INFO */}
-          <div className="border-b border-black">
-            <div className="flex">
-              {/* Logo Box on Left */}
-              <div className="w-[22%] border-r border-black flex flex-col items-center justify-center p-3 text-center">
-                <div className="w-10 h-10 rounded-lg bg-[#0A1620] flex items-center justify-center text-[#00C878] mb-1">
-                  <svg viewBox="0 0 36 36" fill="none" className="w-6 h-6">
-                    <path d="M18 3L31 10.5V25.5L18 33L5 25.5V10.5L18 3Z" stroke="#00C878" strokeWidth="2.5" />
-                    <path d="M11 18.5L16 23.5L25 13.5" stroke="#00C878" strokeWidth="3" />
-                  </svg>
-                </div>
-                <div className="font-black text-sm tracking-tight text-slate-900 leading-none">
-                  TAASK<span className="text-[#00C878]">MATE</span>
-                </div>
-              </div>
-
-              {/* Right Side: 3 Stacked Horizontal Rows */}
-              <div className="flex-1 flex flex-col">
-                {/* Row 1: Company Legal Title */}
-                <div className="py-2 px-3 text-center border-b border-black">
-                  <h1 className="text-base sm:text-lg font-black tracking-wide text-[#1B6E3F] uppercase font-serif">
-                    TAASKMATE FACILITY SERVICES PRIVATE LIMITED
-                  </h1>
-                </div>
-
-                {/* Row 2: Address */}
-                <div className="py-1 px-3 text-center border-b border-black text-[11px] text-slate-800 font-medium">
-                  12-1-456/71/A, Sai Raghavendra Colony, Muttuguda, Hyderabad, Telangana - 500068 | Contact: +91 81425 17143 | Email: sudhir@taaskmate.in
-                </div>
-
-                {/* Row 3: GSTIN */}
-                <div className="py-1 px-3 text-center text-[11px] font-bold text-slate-900 font-mono">
-                  GSTIN: 29AAACT9876Q1Z4
-                </div>
-              </div>
+        {/* TOP SECTION: COMPANY HEADER WITH LOGO */}
+        <div>
+          <div className="flex flex-col items-center justify-center text-center pb-2.5 pt-3 px-4">
+            <div className="flex items-center justify-center mb-1">
+              <img 
+                src="/taaskmate-logo.png" 
+                alt="Taaskmate" 
+                className="h-10 sm:h-12 w-auto object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/taaskmate-logo.jpg';
+                }}
+              />
+            </div>
+            <div className="text-[11px] text-slate-800 font-medium leading-normal">
+              12-1-7/91, Sai Raghavendra Colony, Muttuguda, Bandlaguda, Nagole, Hyderabad, 500068
+            </div>
+            <div className="text-[11px] font-bold text-slate-900 mt-0.5">
+              GSTIN: 
             </div>
           </div>
 
           {/* TWO-COLUMN DETAILS TABLE: INVOICE TO & INVOICE DETAILS */}
-          <table className="w-full border-collapse border-b border-black text-[11px]">
+          <table className="w-full border-collapse border-y border-black text-[11px] leading-normal">
             <thead>
-              <tr className="bg-[#F7E1A0] text-slate-900 font-bold border-b border-black">
-                <th colSpan={2} className="py-1.5 px-2 border-r border-black text-center uppercase tracking-wide">
+              <tr className="bg-[#801426] text-white font-bold border-b border-black inv-maroon-bg">
+                <th colSpan={2} className="py-2 px-3 border-r border-black text-center uppercase tracking-wide">
                   Invoice To
                 </th>
-                <th colSpan={2} className="py-1.5 px-2 text-center uppercase tracking-wide">
+                <th colSpan={2} className="py-2 px-3 text-center uppercase tracking-wide">
                   Invoice Details
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-black">
-                <td className="w-28 py-1.5 px-2 font-bold border-r border-black align-top">Name</td>
-                <td className="w-[45%] py-1.5 px-2 font-bold uppercase border-r border-black align-top text-slate-900">
+                <td className="w-28 py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">Name</td>
+                <td className="w-[45%] py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">
                   {clientSnapshot.clientName}
                 </td>
-                <td className="w-36 py-1.5 px-2 font-bold border-r border-black align-top">Invoice Number</td>
-                <td className="py-1.5 px-2 font-mono font-bold align-top text-slate-900">
-                  {invoice.invoiceId || '—'}
+                <td className="w-36 py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">Invoice Number</td>
+                <td className="py-1.5 px-3 font-bold text-center align-middle text-slate-900">
+                  {invoice.invoiceId || transaction.transactionId}
                 </td>
               </tr>
 
               <tr className="border-b border-black">
-                <td className="py-1.5 px-2 font-bold border-r border-black align-top">Address</td>
-                <td className="py-1.5 px-2 border-r border-black align-top leading-tight text-slate-800">
+                <td className="py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">Address</td>
+                <td className="py-1.5 px-3 border-r border-black align-middle leading-snug text-slate-800">
                   {clientSnapshot.address}
                 </td>
-                <td className="py-1.5 px-2 font-bold border-r border-black align-top">Invoice Date</td>
-                <td className="py-1.5 px-2 align-top text-slate-900 font-medium">
-                  {formatRefDate(invoice.invoiceDate)}
+                <td className="py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">Invoice Date</td>
+                <td className="py-1.5 px-3 text-center align-middle text-slate-900 font-medium">
+                  {formatInvoiceDate(invoice.invoiceDate)}
                 </td>
               </tr>
 
               <tr className="border-b border-black">
-                <td className="py-1.5 px-2 font-bold border-r border-black align-top">E-Mail</td>
-                <td className="py-1.5 px-2 border-r border-black align-top text-slate-800">
+                <td className="py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">E-Mail</td>
+                <td className="py-1.5 px-3 border-r border-black align-middle text-slate-800">
                   {clientSnapshot.email || '—'}
                 </td>
-                <td className="py-1.5 px-2 font-bold border-r border-black align-top">Quotation Number</td>
-                <td className="py-1.5 px-2 font-mono font-bold align-top text-slate-900">
-                  {transaction.transactionId}
+                <td className="py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">PO / WO Number</td>
+                <td className="py-1.5 px-3 text-center align-middle text-slate-800 font-medium">
+                  {invoice.poNumber?.trim() || 'NA'}
                 </td>
               </tr>
 
               <tr className="border-b border-black">
-                <td className="py-1.5 px-2 font-bold border-r border-black align-top">GSTIN</td>
-                <td className="py-1.5 px-2 font-mono font-bold border-r border-black align-top text-slate-900">
-                  {clientSnapshot.gstin || 'Unregistered'}
+                <td className="py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">GSTIN</td>
+                <td className="py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">
+                  {clientSnapshot.gstin || 'NA'}
                 </td>
-                <td className="py-1.5 px-2 border-r border-black"></td>
-                <td className="py-1.5 px-2"></td>
+                <td className="py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">PO / WO Date</td>
+                <td className="py-1.5 px-3 text-center align-middle text-slate-800 font-medium">
+                  {invoice.poDate ? formatInvoiceDate(invoice.poDate) : 'NA'}
+                </td>
+              </tr>
+
+              <tr className="border-b border-black">
+                <td className="py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">Service Location</td>
+                <td className="py-1.5 px-3 border-r border-black align-middle text-slate-800 leading-snug">
+                  {serviceLoc}
+                </td>
+                <td className="py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">Quotation Number</td>
+                <td className="py-1.5 px-3 font-bold text-center align-middle text-slate-900">
+                  {quotation?.quotationId || transaction.transactionId}
+                </td>
               </tr>
 
               <tr>
-                <td className="py-1.5 px-2 font-bold border-r border-black align-top">Service Location</td>
-                <td className="py-1.5 px-2 border-r border-black align-top text-slate-800">
-                  {serviceReport?.location || clientSnapshot.address}
+                <td className="py-1.5 px-3 font-bold border-r border-black align-middle text-slate-900">HSN / SAC Code</td>
+                <td className="py-1.5 px-3 border-r border-black align-middle text-slate-800">
+                  {invoice.hsnCode?.trim() || '995461'}
                 </td>
-                <td className="py-1.5 px-2 border-r border-black"></td>
-                <td className="py-1.5 px-2"></td>
+                <td className="py-1.5 px-3 border-r border-black"></td>
+                <td className="py-1.5 px-3"></td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        {/* MIDDLE SECTION: MAIN ITEMIZED SCOPE TABLE (Expands to fill vertical space) */}
-        <div className="flex-1 flex flex-col min-h-0 w-full">
-          <table className="w-full h-full flex-1 border-collapse border-b border-black text-[11px]">
+        {/* MIDDLE SECTION: MAIN ITEMIZED SCOPE TABLE */}
+        <div className="w-full">
+          <table className="w-full border-collapse border-b border-black text-[11px] leading-normal">
             <thead>
-              <tr className="bg-[#F7E1A0] text-slate-900 font-bold border-b border-black">
-                <th className="py-1.5 px-2 w-12 text-center border-r border-black">S.No</th>
-                <th className="py-1.5 px-3 text-center border-r border-black">Description</th>
-                <th className="py-1.5 px-2 w-14 text-center border-r border-black">Qty</th>
-                <th className="py-1.5 px-2 w-16 text-center border-r border-black">Units</th>
-                <th className="py-1.5 px-3 w-24 text-right border-r border-black">Rate</th>
-                <th className="py-1.5 px-3 w-28 text-right">Base Amount</th>
+              <tr className="bg-[#801426] text-white font-bold border-b border-black inv-maroon-bg">
+                <th className="py-2 px-2 w-12 text-center border-r border-black">S.No</th>
+                <th className="py-2 px-3 text-left border-r border-black">Description</th>
+                <th className="py-2 px-2 w-14 text-center border-r border-black">Qty</th>
+                <th className="py-2 px-2 w-16 text-center border-r border-black">Units</th>
+                <th className="py-2 px-3 w-28 text-right border-r border-black">Rate</th>
+                <th className="py-2 px-3 w-32 text-right">Base Amount</th>
               </tr>
             </thead>
             <tbody>
-              {/* Category Subheading Row */}
-              <tr className="border-b border-black bg-slate-50/60 font-bold">
-                <td colSpan={6} className="py-1 px-2 text-slate-900 text-xs">
-                  {firstCategoryName}:
-                </td>
-              </tr>
-
               {/* Line Items */}
-              {invoice.items.map((item, index) => (
-                <tr key={item.itemId || index} className="border-b border-black align-top">
-                  <td className="py-2.5 px-2 text-center border-r border-black font-semibold text-slate-800">
-                    {index + 1}
-                  </td>
-                  <td className="py-2.5 px-3 border-r border-black">
-                    <div className="font-semibold text-slate-900">
-                      Service:
-                    </div>
-                    <div className="text-slate-800 pl-1 mt-0.5 leading-relaxed">
-                      * {item.materialName}
-                    </div>
-                    {item.purpose && (
-                      <div className="text-slate-700 pl-1 mt-0.5 leading-relaxed">
-                        * {item.purpose}
-                      </div>
-                    )}
-                  </td>
-                  <td className="py-2.5 px-2 text-center border-r border-black font-semibold text-slate-900">
-                    {item.quantity}
-                  </td>
-                  <td className="py-2.5 px-2 text-center border-r border-black text-slate-800">
-                    {item.uom === 'Nos' ? "No's" : item.uom}
-                  </td>
-                  <td className="py-2.5 px-3 text-right border-r border-black font-mono font-medium text-slate-900">
-                    {item.rate.toFixed(2)}
-                  </td>
-                  <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                    {((item.quantity * item.rate) - (item.discount || 0)).toFixed(2)}
-                  </td>
-                </tr>
-              ))}
+              {items.map((item, index) => {
+                const q = Number(item.quantity) || 0;
+                const r = Number(item.rate ?? item.clientRate) || 0;
+                const baseAmt = (q * r) - (Number(item.discount) || 0);
 
-              {/* Dynamic Spacer row that stretches all the way down to the totals */}
-              <tr className="border-b border-black align-top" style={{ height: '100%' }}>
+                return (
+                  <tr key={item.itemId || index} className="border-b border-black align-top">
+                    <td className="py-2.5 px-2 text-center border-r border-black font-semibold text-slate-800">
+                      {index + 1}
+                    </td>
+                    <td className="py-2.5 px-3 border-r border-black">
+                      <div className="font-semibold text-slate-900">
+                        {item.description || item.materialName}
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-2 text-center border-r border-black font-semibold text-slate-900">
+                      {item.quantity}
+                    </td>
+                    <td className="py-2.5 px-2 text-center border-r border-black text-slate-800">
+                      {item.uom === 'Nos' ? "No's" : item.uom}
+                    </td>
+                    <td className="py-2.5 px-3 text-right border-r border-black font-medium text-slate-900 tabular-nums">
+                      {formatCurrencyNumber(r)}
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-semibold text-slate-900 tabular-nums">
+                      {formatCurrencyNumber(baseAmt)}
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {/* Clean Spacer row that preserves visual balance without breaking table layout */}
+              <tr className="border-b border-black align-top" style={{ height: items.length === 1 ? '160px' : items.length <= 2 ? '110px' : items.length <= 4 ? '60px' : '20px' }}>
                 <td className="border-r border-black"></td>
                 <td className="border-r border-black"></td>
                 <td className="border-r border-black"></td>
@@ -392,118 +490,109 @@ export const InvoiceViewPage: React.FC = () => {
               </tr>
 
               {/* Total Amount Before Tax */}
-              <tr className="border-b border-black font-bold">
-                <td colSpan={5} className="py-1 px-3 text-right border-r border-black text-slate-900">
+              <tr className="border-b border-black">
+                <td colSpan={5} className="py-1.5 px-3 text-right border-r border-black font-bold text-slate-900">
                   Total Amount Before Tax
                 </td>
-                <td className="py-1 px-3 text-right font-mono font-bold text-slate-900">
-                  {subtotalBeforeTax.toFixed(2)}
+                <td className="py-1.5 px-3 text-right font-bold text-slate-900 tabular-nums">
+                  {formatCurrencyNumber(subtotalBeforeTax)}
                 </td>
               </tr>
 
-              {/* GST Tax Breakdown */}
-              {invoice.gstMode === 'CGST_SGST' ? (
+              {/* GST Tax from Quotation */}
+              {gstMode === 'CGST_SGST' ? (
                 <>
-                  <tr className="border-b border-black font-bold">
-                    <td colSpan={5} className="py-1 px-3 text-right border-r border-black text-slate-900">
-                      CGST @ 9%
+                  <tr className="border-b border-black">
+                    <td colSpan={5} className="py-1.5 px-3 text-right border-r border-black font-bold text-slate-900">
+                      Add: CGST @ 9%
                     </td>
-                    <td className="py-1 px-3 text-right font-mono font-bold text-slate-900">
-                      {invoice.cgst.toFixed(2)}
+                    <td className="py-1.5 px-3 text-right font-bold text-slate-900 tabular-nums">
+                      {formatCurrencyNumber(cgstAmount)}
                     </td>
                   </tr>
-                  <tr className="border-b border-black font-bold">
-                    <td colSpan={5} className="py-1 px-3 text-right border-r border-black text-slate-900">
-                      SGST @ 9%
+                  <tr className="border-b border-black">
+                    <td colSpan={5} className="py-1.5 px-3 text-right border-r border-black font-bold text-slate-900">
+                      Add: SGST @ 9%
                     </td>
-                    <td className="py-1 px-3 text-right font-mono font-bold text-slate-900">
-                      {invoice.sgst.toFixed(2)}
+                    <td className="py-1.5 px-3 text-right font-bold text-slate-900 tabular-nums">
+                      {formatCurrencyNumber(sgstAmount)}
                     </td>
                   </tr>
                 </>
               ) : (
-                <tr className="border-b border-black font-bold">
-                  <td colSpan={5} className="py-1 px-3 text-right border-r border-black text-slate-900">
-                    IGST @ 18%
+                <tr className="border-b border-black">
+                  <td colSpan={5} className="py-1.5 px-3 text-right border-r border-black font-bold text-slate-900">
+                    Add: IGST @ 18%
                   </td>
-                  <td className="py-1 px-3 text-right font-mono font-bold text-slate-900">
-                    {invoice.igst.toFixed(2)}
+                  <td className="py-1.5 px-3 text-right font-bold text-slate-900 tabular-nums">
+                    {formatCurrencyNumber(igstAmount)}
                   </td>
                 </tr>
               )}
 
+              {/* Round off Row */}
+              <tr className="border-b border-black">
+                <td colSpan={5} className="py-1.5 px-3 text-right border-r border-black font-bold text-slate-900">
+                  Round off
+                </td>
+                <td className="py-1.5 px-3 text-right font-bold text-slate-900 tabular-nums">
+                  {roundOffDisplay}
+                </td>
+              </tr>
+
               {/* TOTAL AMOUNT (Gold Row) */}
-              <tr className="bg-[#F7E1A0] font-bold text-xs">
-                <td colSpan={5} className="py-1.5 px-3 text-right border-r border-black text-slate-900">
+              <tr className="bg-[#F7E1A0] inv-gold-bg border-b border-black font-bold text-xs">
+                <td colSpan={5} className="py-2 px-3 text-right border-r border-black text-slate-950">
                   Total Amount
                 </td>
-                <td className="py-1.5 px-3 text-right font-mono font-bold text-slate-900">
-                  {invoice.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <td className="py-2 px-3 text-right font-bold text-slate-950 text-xs tabular-nums">
+                  {formatCurrencyNumber(finalInvoiceTotal)}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        {/* BOTTOM SECTION: IN WORDS, TERMS & CONDITIONS, SIGN-OFF / BANK DETAILS (Pinned at bottom) */}
-        <div className="flex-none text-[11px]">
+        {/* BOTTOM SECTION: IN WORDS, TERMS & CONDITIONS, SIGN-OFF / BANK DETAILS */}
+        <div className="text-[11px] leading-normal">
           {/* IN WORDS ROW */}
-          <div className="border-b border-black p-2 font-bold bg-white text-slate-900">
+          <div className="border-b border-black p-2.5 font-bold bg-white text-slate-900">
             <span>IN WORDS : </span>
-            <span className="font-semibold">{numberToIndianWords(invoice.grandTotal)}</span>
+            <span className="font-semibold">{numberToIndianWords(finalInvoiceTotal)}</span>
           </div>
 
           {/* TERMS & CONDITIONS BOX */}
-          <div className="border-b border-black p-2 bg-white text-slate-900">
+          <div className="border-b border-black p-2.5 bg-white text-slate-900">
             <div className="font-bold mb-0.5">
-              Terms & Conditions:
+              Terms & Condition:
             </div>
-            <div className="text-slate-800">
-              Payment should be clear immediately after invoice submission
-            </div>
-            {invoice.notes && invoice.notes !== 'Payment should be clear immediately after invoice submission' && (
-              <div className="text-slate-700 text-[10px] mt-0.5">
-                {invoice.notes}
-              </div>
-            )}
-          </div>
-
-          {/* Header Row (50% / 50%) */}
-          <div className="flex border-b border-black font-bold">
-            <div className="w-1/2 py-1.5 px-3 text-center border-r border-black text-slate-900">
-              Taaskmate Facility Services Pvt Ltd
-            </div>
-            <div className="w-1/2 py-1.5 px-3 text-left pl-4 text-slate-900">
-              Taaskmate Bank Account Details
+            <div className="text-slate-800 text-[10.5px] whitespace-pre-line leading-relaxed">
+              {invoice.notes?.trim() || '1. Payment should be clear immediately after invoice submission'}
             </div>
           </div>
 
-          {/* Body Row */}
+          {/* Dual Columns: Taaskmate Stamp (Left) | Bank Account Details (Right) */}
           <div className="flex">
-            {/* Left Box: Blank for Stamp & Signature */}
-            <div className="w-1/2 h-24 print:h-20 border-r border-black relative p-2 flex flex-col justify-end items-center">
-              <div className="font-bold text-slate-900 text-center text-[10px] print:text-[9px]">
+            {/* Left Box: Taaskmate Signature & Stamp */}
+            <div className="w-1/2 border-r border-black flex flex-col justify-between p-3 h-28 print:h-24">
+              <div className="font-bold text-slate-900 text-center text-xs">
+                Taaskmate
+              </div>
+              <div className="font-bold text-slate-800 text-center text-[10px] print:text-[9px]">
                 Stamp & Signature
               </div>
             </div>
 
             {/* Right Box: Bank Details */}
-            <div className="w-1/2 p-2 print:p-1.5 space-y-0.5 text-slate-900 leading-tight font-sans text-[10px] print:text-[9.5px]">
-              <div>
-                <span className="font-bold">Bank Account Number : </span>
-                <span className="font-mono font-medium">{bank.accountNumber}</span>
+            <div className="w-1/2 p-3 print:p-2 space-y-1 text-slate-900 leading-tight font-sans text-[10px] print:text-[9.5px] flex flex-col justify-center h-28 print:h-24">
+              <div className="text-center font-bold text-xs pb-1">
+                Taaskmate Bank Account Details
               </div>
-              <div>
-                <span className="font-bold">Bank IFSC Code: </span>
-                <span className="font-mono font-medium">{bank.ifsc}</span>
-              </div>
-              <div>
-                <span className="font-bold">Bank Name: </span>
-                <span className="font-bold">{bank.bankName}</span>
-              </div>
-              <div>
-                <span className="font-bold">Branch Address: </span>
-                <span>{bank.branch}</span>
+              <div className="space-y-0.5 text-center">
+                <div>Bank Account Number: {bank.accountNumber || ''}</div>
+                <div>Bank IFSC Code: {bank.ifsc || ''}</div>
+                <div className="font-medium">Bank Name: {bank.bankName || ''}</div>
+                <div>Branch Address: {bank.branch || 'Nagole, HYD'}</div>
               </div>
             </div>
           </div>

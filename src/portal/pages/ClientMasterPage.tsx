@@ -22,7 +22,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { Client } from '../types';
-import { db, validateGSTIN } from '../services/db';
+import { db } from '../services/db';
 
 export const ClientMasterPage: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
@@ -42,6 +42,7 @@ export const ClientMasterPage: React.FC = () => {
     clientId: '',
     clientName: '',
     address: '',
+    serviceLocation: '',
     email: '',
     phone: '',
     gstin: '',
@@ -110,6 +111,7 @@ export const ClientMasterPage: React.FC = () => {
       clientId: db.getNextClientId(),
       clientName: '',
       address: '',
+      serviceLocation: '',
       email: '',
       phone: '',
       gstin: '',
@@ -126,6 +128,7 @@ export const ClientMasterPage: React.FC = () => {
       clientId: client.clientId,
       clientName: client.clientName,
       address: client.address,
+      serviceLocation: client.serviceLocation || '',
       email: client.email,
       phone: client.phone,
       gstin: client.gstin,
@@ -135,12 +138,6 @@ export const ClientMasterPage: React.FC = () => {
     setFormErrors({});
     setShowFormModal(true);
   };
-
-  // Live GSTIN validation
-  const isGstinValid = useMemo(() => {
-    if (!formData.gstin) return false;
-    return validateGSTIN(formData.gstin);
-  }, [formData.gstin]);
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -167,10 +164,8 @@ export const ClientMasterPage: React.FC = () => {
       errors.phone = 'Please enter a valid phone number.';
     }
 
-    if (!formData.gstin.trim()) {
-      errors.gstin = 'GSTIN is required for tax invoicing.';
-    } else if (!validateGSTIN(formData.gstin)) {
-      errors.gstin = 'Invalid GSTIN format. Must be 15 alphanumeric characters (e.g. 29AABCP1234F1Z5).';
+    if (formData.gstin && formData.gstin.trim().length > 20) {
+      errors.gstin = 'GSTIN cannot exceed 20 characters.';
     }
 
     if (!formData.contactPerson.trim()) {
@@ -216,11 +211,12 @@ export const ClientMasterPage: React.FC = () => {
   };
 
   const exportCSV = () => {
-    const headers = ['Client ID', 'Client Name', 'Address', 'Email', 'Phone', 'GSTIN', 'Contact Person', 'Status', 'Created At'];
+    const headers = ['Client ID', 'Client Name', 'Address', 'Service Location', 'Email', 'Phone', 'GSTIN', 'Contact Person', 'Status', 'Created At'];
     const rows = clients.map(c => [
       c.clientId,
       `"${c.clientName.replace(/"/g, '""')}"`,
       `"${c.address.replace(/"/g, '""')}"`,
+      `"${(c.serviceLocation || '').replace(/"/g, '""')}"`,
       c.email,
       c.phone,
       c.gstin,
@@ -247,6 +243,7 @@ export const ClientMasterPage: React.FC = () => {
           client.clientId.toLowerCase().includes(searchTerm.toLowerCase()) ||
           client.gstin.toLowerCase().includes(searchTerm.toLowerCase()) ||
           client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (client.serviceLocation && client.serviceLocation.toLowerCase().includes(searchTerm.toLowerCase())) ||
           client.contactPerson.toLowerCase().includes(searchTerm.toLowerCase());
         
         const matchesStatus = statusFilter === 'All' || client.status === statusFilter;
@@ -440,6 +437,23 @@ export const ClientMasterPage: React.FC = () => {
                 )}
               </div>
 
+              {/* Service Location */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                  Service Location <span className="text-slate-400 font-normal normal-case">(Site / Branch location for Quotations, Service Reports & Invoices)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. bowenpally hyd, Madhapur, Gachibowli..."
+                  value={formData.serviceLocation || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, serviceLocation: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 focus:ring-[#00C878] text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00C878]/20 transition-all text-sm"
+                />
+                <span className="text-[11px] text-slate-400 mt-1 block">
+                  This location will automatically populate Location and Service Location in Quotations, Service Reports, and Invoices.
+                </span>
+              </div>
+
               {/* Contact Person & GSTIN */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -465,24 +479,23 @@ export const ClientMasterPage: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                      GSTIN Number <span className="text-rose-500">*</span>
+                      GSTIN Number
                     </label>
                     {formData.gstin && (
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        isGstinValid 
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                          : 'bg-rose-50 text-rose-700 border border-rose-200'
-                      }`}>
-                        {isGstinValid ? 'Valid Format' : 'Invalid format (15 digits)'}
+                      <span className="text-[10px] font-medium text-slate-400">
+                        {formData.gstin.length}/20 chars
                       </span>
                     )}
                   </div>
                   <input
                     type="text"
                     placeholder="e.g. 29AABCP1234F1Z5"
-                    maxLength={15}
+                    maxLength={20}
                     value={formData.gstin}
-                    onChange={(e) => setFormData(prev => ({ ...prev, gstin: e.target.value.toUpperCase() }))}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20).toUpperCase();
+                      setFormData(prev => ({ ...prev, gstin: val }));
+                    }}
                     className={`w-full px-3.5 py-2.5 rounded-xl font-mono uppercase bg-white border ${
                       formErrors.gstin ? 'border-rose-400' : 'border-slate-200'
                     } text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00C878]/20 transition-all text-sm`}
@@ -714,6 +727,19 @@ export const ClientMasterPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Service Location */}
+            {clientToView.serviceLocation && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-slate-400">
+                  <MapPin className="w-4 h-4 text-emerald-600" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Service Location</span>
+                </div>
+                <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200 text-slate-800 text-sm font-semibold leading-relaxed">
+                  {clientToView.serviceLocation}
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       ) : (
@@ -879,6 +905,12 @@ export const ClientMasterPage: React.FC = () => {
                       <div className="text-[11px] text-slate-400 truncate max-w-sm mt-0.5" title={client.address}>
                         {client.address}
                       </div>
+                      {client.serviceLocation && (
+                        <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-medium mt-0.5" title={`Service Location: ${client.serviceLocation}`}>
+                          <MapPin className="w-3 h-3 text-[#00C878] shrink-0" />
+                          <span className="truncate max-w-sm">Service Location: {client.serviceLocation}</span>
+                        </div>
+                      )}
                     </td>
 
                     {/* Contact Details */}

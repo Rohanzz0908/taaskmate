@@ -33,8 +33,8 @@ export const UOM_OPTIONS: UOMType[] = [
   'Other'
 ];
 
-export type QuotationStatus = 'Draft' | 'Sent' | 'Approved' | 'Rejected' | 'Expired';
-export type ServiceStatus = 'Scheduled' | 'In Progress' | 'Completed' | 'Cancelled';
+export type QuotationStatus = 'Draft' | 'Sent' | 'Completed' | 'Approved' | 'Rejected' | 'Expired';
+export type ServiceStatus = 'Scheduled' | 'In Progress' | 'Completed' | 'Cancelled' | 'Hold';
 export type ServiceReportStatus = ServiceStatus;
 export type InvoiceStatus = 'Draft' | 'Issued' | 'Pending' | 'Partially Paid' | 'Paid' | 'Overdue' | 'Cancelled';
 
@@ -66,6 +66,7 @@ export interface Client {
   clientId: string; // e.g. CLI-0001
   clientName: string;
   address: string;
+  serviceLocation?: string;
   email: string;
   phone: string;
   gstin: string;
@@ -79,6 +80,7 @@ export interface ClientSnapshot {
   clientId: string;
   clientName: string;
   address: string;
+  serviceLocation?: string;
   email: string;
   phone: string;
   gstin: string;
@@ -115,6 +117,10 @@ export interface Quotation {
   clientId: string;
   clientSnapshot: ClientSnapshot;
   items: QuotationItem[];
+  gstMode?: GSTMode; // CGST_SGST (Intrastate) or IGST (Interstate)
+  cgst?: number;
+  sgst?: number;
+  igst?: number;
   subtotal: number;
   totalDiscount: number;
   totalTax: number;
@@ -122,8 +128,13 @@ export interface Quotation {
   status: QuotationStatus;
   notes?: string;
   paymentTerms?: string;
+  sacCode?: string;
+  assignedTechnicianIds?: string[];
+  assignedTechnicianNames?: string[];
   assignedTechnicianId?: string;
   assignedTechnicianName?: string;
+  assignedVendorIds?: string[];
+  assignedVendorNames?: string[];
   assignedVendorId?: string;
   assignedVendorName?: string;
   createdAt: string;
@@ -193,6 +204,9 @@ export interface Invoice {
   payment: InvoicePayment;
   bankDetails: InvoiceBankDetails;
   notes?: string;
+  hsnCode?: string;
+  poNumber?: string;
+  poDate?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -206,8 +220,12 @@ export interface MasterTransaction {
   quotation?: Quotation;
   serviceReport?: ServiceReport;
   invoice?: Invoice;
+  assignedTechnicianIds?: string[];
+  assignedTechnicianNames?: string[];
   assignedTechnicianId?: string;
   assignedTechnicianName?: string;
+  assignedVendorIds?: string[];
+  assignedVendorNames?: string[];
   assignedVendorId?: string;
   assignedVendorName?: string;
   createdAt: string;
@@ -323,9 +341,9 @@ export interface Vendor {
   address: string;
   gstin: string;
   pan: string;
-  bankDetails: InvoiceBankDetails;
-  paymentTerms: VendorPaymentTerms;
-  tier: VendorTier;
+  bankDetails?: InvoiceBankDetails;
+  paymentTerms?: VendorPaymentTerms;
+  tier?: VendorTier;
   status: VendorStatus;
   createdAt: string;
   updatedAt: string;

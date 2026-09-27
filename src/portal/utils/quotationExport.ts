@@ -2,16 +2,23 @@ import ExcelJS from 'exceljs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Quotation } from '../types';
+import { db } from '../services/db';
 
-// Helper to format date like "26-Sep-2026" or "3-Oct-2026"
+// Helper to format date as DD-MM-YYYY (e.g. "27-09-2026")
 export function formatQuotationDate(dateStr: string): string {
   if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3 && parts[0].length === 4) {
+    const day = parts[2].padStart(2, '0');
+    const month = parts[1].padStart(2, '0');
+    const year = parts[0];
+    return `${day}-${month}-${year}`;
+  }
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
   
-  const day = d.getDate();
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const month = months[d.getMonth()];
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
   const year = d.getFullYear();
   
   return `${day}-${month}-${year}`;
@@ -80,14 +87,39 @@ export async function downloadQuotationXLSX(quotation: Quotation): Promise<void>
   const client = quotation.clientSnapshot;
   const quoteDate = formatQuotationDate(quotation.quotationDate);
   const validityDate = formatQuotationDate(quotation.validUntil);
-  const location = client.address ? client.address.split(',')[0].trim() : 'AS Rao Nagar';
-  const sacCode = '998533';
+  const clientMaster = client.clientId ? db.getClientById(client.clientId) : undefined;
+  const location = client.serviceLocation?.trim() || clientMaster?.serviceLocation?.trim() || (client.address ? client.address.split(',')[0].trim() : 'AS Rao Nagar');
+  const sacCode = quotation.sacCode?.trim() || 'N/A';
 
   // Tax calculations
+  const gstMode = quotation.gstMode || 'CGST_SGST';
   const amountBeforeTax = quotation.subtotal - (quotation.totalDiscount || 0);
-  const sgstAmount = Number((amountBeforeTax * 0.09).toFixed(2));
-  const cgstAmount = Number((amountBeforeTax * 0.09).toFixed(2));
-  const calculatedGrandTotal = amountBeforeTax + sgstAmount + cgstAmount;
+
+  let cgstAmount = 0;
+  let sgstAmount = 0;
+  let igstAmount = 0;
+  let totalGstAmount = 0;
+
+  if (gstMode === 'CGST_SGST') {
+    cgstAmount = quotation.cgst !== undefined && quotation.cgst > 0
+      ? quotation.cgst
+      : Number((amountBeforeTax * 0.09).toFixed(2));
+    sgstAmount = quotation.sgst !== undefined && quotation.sgst > 0
+      ? quotation.sgst
+      : Number((amountBeforeTax * 0.09).toFixed(2));
+    totalGstAmount = quotation.totalTax !== undefined && quotation.totalTax > 0 
+      ? quotation.totalTax 
+      : Number((cgstAmount + sgstAmount).toFixed(2));
+  } else {
+    igstAmount = quotation.igst !== undefined && quotation.igst > 0
+      ? quotation.igst
+      : Number((amountBeforeTax * 0.18).toFixed(2));
+    totalGstAmount = quotation.totalTax !== undefined && quotation.totalTax > 0 
+      ? quotation.totalTax 
+      : igstAmount;
+  }
+
+  const calculatedGrandTotal = amountBeforeTax + totalGstAmount;
   const roundedGrandTotal = Math.round(calculatedGrandTotal);
   const roundOffDiff = roundedGrandTotal - calculatedGrandTotal;
   const roundOffDisplay = Math.abs(roundOffDiff) < 0.001 ? '-' : (roundOffDiff > 0 ? `+${roundOffDiff.toFixed(2)}` : roundOffDiff.toFixed(2));
@@ -401,10 +433,7 @@ export async function downloadQuotationXLSX(quotation: Quotation): Promise<void>
   // ==========================================
   let currentRow = 17;
   quotation.items.forEach((item, index) => {
-    let serviceDetail = item.description || item.materialName || 'Service description';
-    if (item.purpose && !serviceDetail.includes(item.purpose)) {
-      serviceDetail += `\n• ${item.purpose}`;
-    }
+    const serviceDetail = item.description || item.materialName || 'Service description';
 
     const qty = Number(item.quantity) || 1;
     const rate = Number(item.rate) || 0;
@@ -511,43 +540,65 @@ export async function downloadQuotationXLSX(quotation: Quotation): Promise<void>
   worksheet.getRow(currentRow).height = 20;
   currentRow++;
 
-  // 2. Add: SGST @ 9%
-  worksheet.getCell(`A${currentRow}`).border = { left: { style: 'thin', color: { argb: 'FF000000' } } };
-  worksheet.mergeCells(`B${currentRow}:I${currentRow}`);
-  worksheet.getCell(`B${currentRow}`).border = {
-    left: { style: 'thin', color: { argb: 'FF000000' } },
-    right: { style: 'thin', color: { argb: 'FF000000' } }
-  };
-  worksheet.mergeCells(`J${currentRow}:L${currentRow}`);
-  formatCellRange(10, currentRow, 13, currentRow, { border: thinBorder });
-  worksheet.getCell(`J${currentRow}`).value = 'Add: SGST @ 9%';
-  worksheet.getCell(`J${currentRow}`).font = blackRegularFont;
-  worksheet.getCell(`J${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
-  worksheet.getCell(`M${currentRow}`).value = sgstAmount;
-  worksheet.getCell(`M${currentRow}`).font = blackRegularFont;
-  worksheet.getCell(`M${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
-  worksheet.getCell(`M${currentRow}`).numFmt = '#,##0.00';
-  worksheet.getRow(currentRow).height = 20;
-  currentRow++;
+  // 2. Tax rows: CGST + SGST (Intrastate) or IGST (Interstate)
+  if (gstMode === 'CGST_SGST') {
+    // Add: CGST @ 9%
+    worksheet.getCell(`A${currentRow}`).border = { left: { style: 'thin', color: { argb: 'FF000000' } } };
+    worksheet.mergeCells(`B${currentRow}:I${currentRow}`);
+    worksheet.getCell(`B${currentRow}`).border = {
+      left: { style: 'thin', color: { argb: 'FF000000' } },
+      right: { style: 'thin', color: { argb: 'FF000000' } }
+    };
+    worksheet.mergeCells(`J${currentRow}:L${currentRow}`);
+    formatCellRange(10, currentRow, 13, currentRow, { border: thinBorder });
+    worksheet.getCell(`J${currentRow}`).value = 'Add: CGST @ 9%';
+    worksheet.getCell(`J${currentRow}`).font = blackRegularFont;
+    worksheet.getCell(`J${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
+    worksheet.getCell(`M${currentRow}`).value = cgstAmount;
+    worksheet.getCell(`M${currentRow}`).font = blackRegularFont;
+    worksheet.getCell(`M${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
+    worksheet.getCell(`M${currentRow}`).numFmt = '#,##0.00';
+    worksheet.getRow(currentRow).height = 20;
+    currentRow++;
 
-  // 3. Add: CGST @ 9%
-  worksheet.getCell(`A${currentRow}`).border = { left: { style: 'thin', color: { argb: 'FF000000' } } };
-  worksheet.mergeCells(`B${currentRow}:I${currentRow}`);
-  worksheet.getCell(`B${currentRow}`).border = {
-    left: { style: 'thin', color: { argb: 'FF000000' } },
-    right: { style: 'thin', color: { argb: 'FF000000' } }
-  };
-  worksheet.mergeCells(`J${currentRow}:L${currentRow}`);
-  formatCellRange(10, currentRow, 13, currentRow, { border: thinBorder });
-  worksheet.getCell(`J${currentRow}`).value = 'Add: CGST @ 9%';
-  worksheet.getCell(`J${currentRow}`).font = blackRegularFont;
-  worksheet.getCell(`J${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
-  worksheet.getCell(`M${currentRow}`).value = cgstAmount;
-  worksheet.getCell(`M${currentRow}`).font = blackRegularFont;
-  worksheet.getCell(`M${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
-  worksheet.getCell(`M${currentRow}`).numFmt = '#,##0.00';
-  worksheet.getRow(currentRow).height = 20;
-  currentRow++;
+    // Add: SGST @ 9%
+    worksheet.getCell(`A${currentRow}`).border = { left: { style: 'thin', color: { argb: 'FF000000' } } };
+    worksheet.mergeCells(`B${currentRow}:I${currentRow}`);
+    worksheet.getCell(`B${currentRow}`).border = {
+      left: { style: 'thin', color: { argb: 'FF000000' } },
+      right: { style: 'thin', color: { argb: 'FF000000' } }
+    };
+    worksheet.mergeCells(`J${currentRow}:L${currentRow}`);
+    formatCellRange(10, currentRow, 13, currentRow, { border: thinBorder });
+    worksheet.getCell(`J${currentRow}`).value = 'Add: SGST @ 9%';
+    worksheet.getCell(`J${currentRow}`).font = blackRegularFont;
+    worksheet.getCell(`J${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
+    worksheet.getCell(`M${currentRow}`).value = sgstAmount;
+    worksheet.getCell(`M${currentRow}`).font = blackRegularFont;
+    worksheet.getCell(`M${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
+    worksheet.getCell(`M${currentRow}`).numFmt = '#,##0.00';
+    worksheet.getRow(currentRow).height = 20;
+    currentRow++;
+  } else {
+    // Add: IGST @ 18%
+    worksheet.getCell(`A${currentRow}`).border = { left: { style: 'thin', color: { argb: 'FF000000' } } };
+    worksheet.mergeCells(`B${currentRow}:I${currentRow}`);
+    worksheet.getCell(`B${currentRow}`).border = {
+      left: { style: 'thin', color: { argb: 'FF000000' } },
+      right: { style: 'thin', color: { argb: 'FF000000' } }
+    };
+    worksheet.mergeCells(`J${currentRow}:L${currentRow}`);
+    formatCellRange(10, currentRow, 13, currentRow, { border: thinBorder });
+    worksheet.getCell(`J${currentRow}`).value = 'Add: IGST @ 18%';
+    worksheet.getCell(`J${currentRow}`).font = blackRegularFont;
+    worksheet.getCell(`J${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
+    worksheet.getCell(`M${currentRow}`).value = igstAmount;
+    worksheet.getCell(`M${currentRow}`).font = blackRegularFont;
+    worksheet.getCell(`M${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
+    worksheet.getCell(`M${currentRow}`).numFmt = '#,##0.00';
+    worksheet.getRow(currentRow).height = 20;
+    currentRow++;
+  }
 
   // 4. Round off
   worksheet.getCell(`A${currentRow}`).border = { left: { style: 'thin', color: { argb: 'FF000000' } } };
@@ -610,11 +661,10 @@ export async function downloadQuotationXLSX(quotation: Quotation): Promise<void>
   currentRow++;
 
   // ==========================================
-  // 10. FOOTER: TERMS & CONDITIONS + BANK DETAILS
+  // 10. FOOTER: TERMS & CONDITIONS
   // ==========================================
   const footerStartRow = currentRow;
-  worksheet.mergeCells(`A${footerStartRow}:F${footerStartRow}`);
-  worksheet.mergeCells(`G${footerStartRow}:M${footerStartRow}`);
+  worksheet.mergeCells(`A${footerStartRow}:M${footerStartRow}`);
   formatCellRange(1, footerStartRow, 13, footerStartRow, {
     border: {
       top: { style: 'thin', color: { argb: 'FF000000' } },
@@ -628,83 +678,40 @@ export async function downloadQuotationXLSX(quotation: Quotation): Promise<void>
   termsHead.value = 'Terms & Conditions:';
   termsHead.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF850E24' } };
   termsHead.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
-
-  const bankHead = worksheet.getCell(`G${footerStartRow}`);
-  bankHead.value = 'TAASKMATE\nBANK DETAILS';
-  bankHead.font = blackBoldFont;
-  bankHead.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true, indent: 1 };
-  worksheet.getRow(footerStartRow).height = 26;
+  worksheet.getRow(footerStartRow).height = 24;
   currentRow++;
 
-  // Footer Details Row 2
-  worksheet.mergeCells(`A${currentRow}:F${currentRow}`);
-  worksheet.mergeCells(`G${currentRow}:M${currentRow}`);
+  // Footer Details Row: Payment Terms
+  worksheet.mergeCells(`A${currentRow}:M${currentRow}`);
   formatCellRange(1, currentRow, 13, currentRow, {
     border: {
       left: { style: 'thin', color: { argb: 'FF000000' } },
-      right: { style: 'thin', color: { argb: 'FF000000' } }
+      right: { style: 'thin', color: { argb: 'FF000000' } },
+      ...(quotation.notes ? {} : { bottom: { style: 'thin', color: { argb: 'FF000000' } } })
     },
     alignment: { vertical: 'middle', wrapText: true }
   });
   worksheet.getCell(`A${currentRow}`).value = quotation.paymentTerms || 'Payment Terms will be Net 7 days after Invoice date';
   worksheet.getCell(`A${currentRow}`).font = blackRegularFont;
   worksheet.getCell(`A${currentRow}`).alignment = { horizontal: 'left', vertical: 'middle', indent: 1, wrapText: true };
-  worksheet.getCell(`G${currentRow}`).value = 'BANK ACCOUNT NUMBER : ';
-  worksheet.getCell(`G${currentRow}`).font = blackRegularFont;
-  worksheet.getCell(`G${currentRow}`).alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
   worksheet.getRow(currentRow).height = 20;
-  currentRow++;
 
-  // Footer Details Row 3
-  worksheet.mergeCells(`A${currentRow}:F${currentRow}`);
-  worksheet.mergeCells(`G${currentRow}:M${currentRow}`);
-  formatCellRange(1, currentRow, 13, currentRow, {
-    border: {
-      left: { style: 'thin', color: { argb: 'FF000000' } },
-      right: { style: 'thin', color: { argb: 'FF000000' } }
-    },
-    alignment: { vertical: 'middle', wrapText: true }
-  });
-  worksheet.getCell(`A${currentRow}`).value = quotation.notes || '';
-  worksheet.getCell(`A${currentRow}`).font = { name: 'Arial', size: 8, color: { argb: 'FF555555' } };
-  worksheet.getCell(`A${currentRow}`).alignment = { horizontal: 'left', vertical: 'middle', indent: 1, wrapText: true };
-  worksheet.getCell(`G${currentRow}`).value = 'BANK IFSC CODE: ';
-  worksheet.getCell(`G${currentRow}`).font = blackRegularFont;
-  worksheet.getCell(`G${currentRow}`).alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
-  worksheet.getRow(currentRow).height = 20;
-  currentRow++;
-
-  // Footer Details Row 4
-  worksheet.mergeCells(`A${currentRow}:F${currentRow}`);
-  worksheet.mergeCells(`G${currentRow}:M${currentRow}`);
-  formatCellRange(1, currentRow, 13, currentRow, {
-    border: {
-      left: { style: 'thin', color: { argb: 'FF000000' } },
-      right: { style: 'thin', color: { argb: 'FF000000' } }
-    },
-    alignment: { vertical: 'middle' }
-  });
-  worksheet.getCell(`G${currentRow}`).value = 'BANK NAME: Bank OF Baroda';
-  worksheet.getCell(`G${currentRow}`).font = blackRegularFont;
-  worksheet.getCell(`G${currentRow}`).alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
-  worksheet.getRow(currentRow).height = 20;
-  currentRow++;
-
-  // Footer Details Row 5 (Bottom Border)
-  worksheet.mergeCells(`A${currentRow}:F${currentRow}`);
-  worksheet.mergeCells(`G${currentRow}:M${currentRow}`);
-  formatCellRange(1, currentRow, 13, currentRow, {
-    border: {
-      left: { style: 'thin', color: { argb: 'FF000000' } },
-      right: { style: 'thin', color: { argb: 'FF000000' } },
-      bottom: { style: 'thin', color: { argb: 'FF000000' } }
-    },
-    alignment: { vertical: 'middle' }
-  });
-  worksheet.getCell(`G${currentRow}`).value = 'BRANCH NAME: Nagole Branch';
-  worksheet.getCell(`G${currentRow}`).font = blackRegularFont;
-  worksheet.getCell(`G${currentRow}`).alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
-  worksheet.getRow(currentRow).height = 20;
+  if (quotation.notes) {
+    currentRow++;
+    worksheet.mergeCells(`A${currentRow}:M${currentRow}`);
+    formatCellRange(1, currentRow, 13, currentRow, {
+      border: {
+        left: { style: 'thin', color: { argb: 'FF000000' } },
+        right: { style: 'thin', color: { argb: 'FF000000' } },
+        bottom: { style: 'thin', color: { argb: 'FF000000' } }
+      },
+      alignment: { vertical: 'middle', wrapText: true }
+    });
+    worksheet.getCell(`A${currentRow}`).value = quotation.notes;
+    worksheet.getCell(`A${currentRow}`).font = { name: 'Arial', size: 8, color: { argb: 'FF555555' } };
+    worksheet.getCell(`A${currentRow}`).alignment = { horizontal: 'left', vertical: 'middle', indent: 1, wrapText: true };
+    worksheet.getRow(currentRow).height = 20;
+  }
 
   // Print area: ONLY strictly A1 to M[lastRow]
   const lastRow = currentRow;
@@ -733,12 +740,26 @@ export async function downloadQuotationPDF(elementId: string, filename: string):
     throw new Error(`Quotation element with ID "${elementId}" not found`);
   }
 
-  // High-res canvas scale for crisp output
+  // High-res canvas scale for crisp output with fixed width & font
   const canvas = await html2canvas(element, {
     scale: 2.5,
     useCORS: true,
     logging: false,
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    windowWidth: 1200,
+    onclone: (clonedDoc) => {
+      const clonedEl = clonedDoc.getElementById(elementId);
+      if (clonedEl) {
+        clonedEl.style.width = '800px';
+        clonedEl.style.maxWidth = '800px';
+        clonedEl.style.minWidth = '800px';
+        clonedEl.style.boxSizing = 'border-box';
+        clonedEl.style.margin = '0 auto';
+        clonedEl.style.padding = '24px';
+        clonedEl.style.boxShadow = 'none';
+        clonedEl.style.fontFamily = 'Arial, "Helvetica Neue", Helvetica, sans-serif';
+      }
+    }
   });
 
   const imgData = canvas.toDataURL('image/png');
@@ -751,14 +772,23 @@ export async function downloadQuotationPDF(elementId: string, filename: string):
   const pdfWidth = 210; // A4 width in mm
   const pdfHeight = 297; // A4 height in mm
   
-  // Fit on page with margins
-  const imgWidth = pdfWidth - 10;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  // Calculate proportionate fit maintaining aspect ratio with neat margins
+  const maxAvailableWidth = pdfWidth - 10; // 200 mm
+  const maxAvailableHeight = pdfHeight - 10; // 287 mm
 
-  const xOffset = 5;
-  const yOffset = 5;
+  let imgWidth = maxAvailableWidth;
+  let imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, Math.min(imgHeight, pdfHeight - 10));
+  if (imgHeight > maxAvailableHeight) {
+    imgHeight = maxAvailableHeight;
+    imgWidth = (canvas.width * imgHeight) / canvas.height;
+  }
+
+  // Perfectly center the quotation document on the A4 page
+  const xOffset = (pdfWidth - imgWidth) / 2;
+  const yOffset = (pdfHeight - imgHeight) / 2;
+
+  pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight);
   
   const cleanQuoteId = (filename || 'TM260001').replace(/[^a-zA-Z0-9_-]/g, '_');
   pdf.save(`${cleanQuoteId}_Corporate_Quotation.pdf`);
